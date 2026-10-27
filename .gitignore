@@ -1,0 +1,17 @@
+bin/
+obj/
+publish/
+TestResults/
+*.user
+.vs/
+
+# Local build output and private files
+**/bin/
+**/obj/
+.vs/
+.env
+.env.*
+*.user
+*.suo
+*.pfx
+*.p12

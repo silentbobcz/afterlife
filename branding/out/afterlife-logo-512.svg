@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><defs>
+  <pattern id="raster" width="12" height="12" patternUnits="userSpaceOnUse">
+    <rect width="12" height="4.2" fill="#050508" fill-opacity="0.55"/>
+  </pattern>
+  <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+    <path d="M48 0H0V48" fill="none" stroke="#00F0FF" stroke-opacity="0.045" stroke-width="1"/>
+  </pattern>
+  <radialGradient id="glowC"><stop offset="0" stop-color="#00F0FF" stop-opacity="0.16"/><stop offset="1" stop-color="#00F0FF" stop-opacity="0"/></radialGradient>
+  <radialGradient id="glowM"><stop offset="0" stop-color="#FF2A6D" stop-opacity="0.12"/><stop offset="1" stop-color="#FF2A6D" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+  <linearGradient id="ruleC" x1="0" x2="1"><stop offset="0" stop-color="#00F0FF" stop-opacity="0.30"/><stop offset="0.5" stop-color="#FF2A6D" stop-opacity="0.14"/><stop offset="1" stop-color="#00F0FF" stop-opacity="0"/></linearGradient>
+</defs><rect width="512" height="512" fill="#050508"/><rect width="512" height="512" fill="url(#grid)"/><ellipse cx="256" cy="256" rx="240" ry="240" fill="url(#glowC)"/><g transform="translate(76.00,76.00) scale(3.00000)">
+  <path d="M0 0H92L120 28V120H28L0 92Z" fill="#FCEE0A"/>
+  <path d="M20 22H40V28H26V42H20Z M100 22H80V28H94V42H100Z M20 102H40V96H26V82H20Z M100 102H80V96H94V82H100Z M46 40L82 62L46 84Z M20 60H34V64H20Z M86 60H100V64H86Z" fill="#00F0FF" transform="translate(-2.4,0)"/>
+  <path d="M20 22H40V28H26V42H20Z M100 22H80V28H94V42H100Z M20 102H40V96H26V82H20Z M100 102H80V96H94V82H100Z M46 40L82 62L46 84Z M20 60H34V64H20Z M86 60H100V64H86Z" fill="#FF2A6D" transform="translate(2.4,0)"/>
+  <path d="M20 22H40V28H26V42H20Z M100 22H80V28H94V42H100Z M20 102H40V96H26V82H20Z M100 102H80V96H94V82H100Z M46 40L82 62L46 84Z M20 60H34V64H20Z M86 60H100V64H86Z" fill="#050508"/>
+  <path d="M38 92H82V95H38Z M9 9H18V18H9Z" fill="#FF2A6D"/>
+  <path d="M108 100V108H100" fill="none" stroke="#050508" stroke-width="3"/>
+  
+</g></svg>

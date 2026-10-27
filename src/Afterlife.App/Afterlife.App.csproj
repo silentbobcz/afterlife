@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Afterlife.App</RootNamespace>
+    <AssemblyName>AFTERLIFE</AssemblyName>
+    <ApplicationIcon>Assets\afterlife.ico</ApplicationIcon>
+    <Product>AFTERLIFE</Product>
+    <Description>Unofficial mod manager for Cyberpunk 2077</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\*.ttf" />
+    <Resource Include="Assets\afterlife.ico" />
+    <None Include="Assets\Fonts\OFL-*.txt" CopyToOutputDirectory="PreserveNewest" Link="licenses\%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Afterlife.Core\Afterlife.Core.csproj" />
+    <ProjectReference Include="..\Afterlife.Infrastructure\Afterlife.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
