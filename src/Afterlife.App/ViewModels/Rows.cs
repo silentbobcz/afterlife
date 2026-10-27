@@ -51,8 +51,14 @@ public sealed partial class ModRowVm : ObservableObject
     /// <summary>P23: core mods form their own chapter at the top of the list.</summary>
     public bool IsCore => Overview.IsCore;
     /// <summary>P51: a collection is its own chapter, below CORE MODS.</summary>
-    public string Chapter => IsCore ? MainViewModel.CoreChapter : Overview.Collections.Count > 0 ? MainViewModel.CollectionChapterPrefix + Overview.Collections[0] : MainViewModel.PlainChapter;
-    public int ChapterRank => IsCore ? 0 : Overview.Collections.Count > 0 ? 1 : 2;
+    /// <summary>P51/P95: group key in the list; set by the main view model from the block layout.</summary>
+    public string Chapter { get; set; } = "";
+    /// <summary>P97: layout section (block or category) the mod loads in; see <see cref="Afterlife.Core.BlockLayout"/>.</summary>
+    public string Section { get; set; } = "";
+    /// <summary>P97: position of the section in the load order (core = -1).</summary>
+    public int BlockRank { get; set; }
+    /// <summary>P95: in MODS or one of its categories (can move between them).</summary>
+    public bool InModsBlock => Chapter == MainViewModel.PlainChapter || Chapter.StartsWith(MainViewModel.CategoryChapterPrefix, StringComparison.Ordinal);
     public bool InCollection => !IsCore && Overview.Collections.Count > 0;
     /// <summary>P22: selection for bulk actions is its own state; clicking a row only shows its details.</summary>
     [ObservableProperty] private bool _isChecked;
@@ -60,6 +66,8 @@ public sealed partial class ModRowVm : ObservableObject
     [ObservableProperty] private int _dropHint;
     public bool CanDrag => CanToggle && !IsCore && Overview.Package.LayerOfModId is null && !Overview.OrderLocked;
     public string Name => Overview.Package.LayerOfModId is null ? Overview.Package.ModName : "└ " + Overview.Package.ModName;
+    /// <summary>P98: another version of this mod is on in the profile too.</summary>
+    public string? TwinText { get; set; }
     /// <summary>M4: newer version on Nexus.</summary>
     public bool HasUpdate => Overview.Update is not null;
     public string? UpdateText => Overview.Update is { } u ? "UPDATE " + (u.Version is null ? "" : "v" + u.Version.TrimStart('v', 'V')) : null;
@@ -387,9 +395,9 @@ public sealed class CoreModVm(CoreModStatus s)
 
 public sealed record NexusSource(string ModId, string? FileId, string? ModName, string? Version, string? ExistingModId = null);
 
-public enum ChapterKind { Core, Collection, Plain }
+public enum ChapterKind { Core, Collection, Plain, Category }
 
-/// <summary>P68/P82/P83: header of a chapter in the mod list: fold arrow, count and (core, collection) a switch for all its mods.</summary>
+/// <summary>P68/P82/P83/P95/P97: header of a chapter in the mod list: fold arrow, count, marks, a switch for all its mods and (not core) a drag handle.</summary>
 public sealed class CollectionChapterVm(ChapterKind kind, string key, string label, string name, int on, int total, bool canToggle,
     bool collapsed, ICommand? toggle, ICommand? manage, ICommand fold)
 {
@@ -400,37 +408,65 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public int On { get; } = on;
     public int Total { get; } = total;
     public bool IsPlain => Kind == ChapterKind.Plain;
+    public bool IsCategory => Kind == ChapterKind.Category;
+    public bool IsBlock => Kind != ChapterKind.Category;
     public bool IsOn => On > 0;
     public bool CanToggle { get; } = canToggle && toggle is not null;
     public bool IsCollapsed { get; } = collapsed;
+    /// <summary>P95: a category inside a folded MODS block is hidden with it.</summary>
+    public bool IsHidden { get; init; }
     public string CountText => $"{On} / {Total} ON";
-    public Tone Tone => Kind switch { ChapterKind.Core => Tone.Brand, ChapterKind.Collection => Tone.Info, _ => Tone.Neutral };
+    public Tone Tone => Kind switch { ChapterKind.Core => Tone.Brand, ChapterKind.Collection => Tone.Info, ChapterKind.Category => Tone.Category, _ => Tone.Plain };
+    /// <summary>P102: quickhack-like icon of the block in its colour (own drawing, not game art): chip, layers, cube, bookmark (P104).</summary>
+    public string IconData => Kind switch
+    {
+        ChapterKind.Core => "M4.5,4.5 H11.5 V11.5 H4.5 Z M6.5,6.5 H9.5 V9.5 H6.5 Z M6.5,1 V4.5 M9.5,1 V4.5 M6.5,11.5 V15 M9.5,11.5 V15 M1,6.5 H4.5 M1,9.5 H4.5 M11.5,6.5 H15 M11.5,9.5 H15",
+        ChapterKind.Collection => "M8,1.5 L14.5,5 L8,8.5 L1.5,5 Z M1.5,8 L8,11.5 L14.5,8 M1.5,11 L8,14.5 L14.5,11",
+        ChapterKind.Category => "M3.5,1.5 H12.5 V14.5 L8,10.8 L3.5,14.5 Z M6,5 H10",
+        _ => "M8,1.5 L14.5,4.8 V11.2 L8,14.5 L1.5,11.2 V4.8 Z M1.5,4.8 L8,8.1 L14.5,4.8 M8,8.1 V14.5",
+    };
+    public string IconTip => BlockKey is null ? "CORE MODS always stay on top and load first" : MoveTip;
     public string ArrowData => IsCollapsed ? "M0,0 L6,5 L0,10 Z" : "M0,0 L10,0 L5,6 Z";
     public string FoldTip => IsCollapsed ? "Show the mods" : "Hide the mods (fold)";
     public string ToggleTip => Kind switch
     {
         ChapterKind.Core => "Switch all core mods on or off in this profile",
         ChapterKind.Collection => "Switch the whole collection on or off in this profile",
-        _ => "Switch all these mods on or off in this profile",
+        ChapterKind.Category => "Switch all mods of this category on or off in this profile",
+        _ => "Switch all mods of MODS (with its categories) on or off in this profile",
     };
     public ICommand? ToggleCommand { get; } = toggle;
     public ICommand? ManageCommand { get; } = manage;
     public ICommand FoldCommand { get; } = fold;
 
-    // P89: what needs attention inside, as small marks in the header (also when folded)
-    public int Updates { get; init; }
-    public int Conflicts { get; init; }
-    public int Missing { get; init; }
+    // P97: blocks after CORE MODS can be moved; their order is the load order
+    /// <summary>Layout key: "mods", "collection:slug" or "category:id"; null for CORE MODS (never moves).</summary>
+    public string? BlockKey { get; init; }
+    public bool CanMove => BlockKey is not null && MoveUpCommand is not null;
+    public ICommand? MoveUpCommand { get; init; }
+    public ICommand? MoveDownCommand { get; init; }
+    public string MoveTip => IsCategory
+        ? "Drag to move the category inside MODS (or use the arrows). Categories higher up load first."
+        : "Drag to move the whole block (or use the arrows). Blocks higher up load first; CORE MODS always stay on top.";
+
+    // P95: categories
+    public ICommand? AddCategoryCommand { get; init; }
+    public ICommand? RenameCommand { get; init; }
+    public ICommand? RemoveCommand { get; init; }
+    public string EmptyHint => IsCategory ? "empty · drag mods here or select them and use MOVE TO CATEGORY" : "";
+    public bool IsEmpty => Total == 0;
+
+    // P89/P92: what needs attention inside, as small marks in the header (also when folded)
+    public int Updates { get; set; }
+    public int Conflicts { get; set; }
+    public int Missing { get; set; }
     public bool HasUpdates => Updates > 0;
     public bool HasConflicts => Conflicts > 0;
     public bool HasMissing => Missing > 0;
-    public string UpdatesText => $"▲ {Updates}";
-    public string ConflictsText => $"⚠ {Conflicts}";
-    public string MissingText => $"✕ {Missing}";
     public string UpdatesTip => $"{Updates} mod(s) with a newer version on Nexus · click to show the first";
     public string ConflictsTip => $"{Conflicts} mod(s) with file conflicts · click to show the first";
     public string MissingTip => $"{Missing} mod(s) missing something they need · click to show the first";
-    public ICommand? ShowUpdateCommand { get; init; }
-    public ICommand? ShowConflictCommand { get; init; }
-    public ICommand? ShowMissingCommand { get; init; }
+    public ICommand? ShowUpdateCommand { get; set; }
+    public ICommand? ShowConflictCommand { get; set; }
+    public ICommand? ShowMissingCommand { get; set; }
 }

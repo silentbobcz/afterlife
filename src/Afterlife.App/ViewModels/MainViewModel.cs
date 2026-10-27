@@ -116,7 +116,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private Tone _seg3 = Tone.Neutral;
     [ObservableProperty] private string _seg2Label = "Applying";
 
-    partial void OnSearchTextChanged(string value) { ModsView.Refresh(); BuildCollectionChapters(); }
+    partial void OnSearchTextChanged(string value) { UpdateGroupNames(); ModsView.Refresh(); BuildCollectionChapters(); }
 
     partial void OnSelectedModChanged(ModRowVm? value)
     {
@@ -166,6 +166,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (await _host.RunAsync(c => c.RefreshRequirements()) > 0) await RefreshAsync();
         }
         catch (Exception ex) when (IsExpected(ex)) { }
+        await CheckDuplicatesAsync(); // P99
         await CheckNexusAsync(null);
         await FetchNexusInfoAsync(onlyMissing: true);
         await CheckUpdatesAsync(force: false);
@@ -317,7 +318,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     // ---------------- P59: update all (Premium) ----------------
     [ObservableProperty] private int _updateCount;
     public bool CanUpdateAll => UpdateCount > 1 && _nexusAccount is { IsPremium: true };
-    public string UpdateAllLabel => $"Update all ({UpdateCount})";
+    public string UpdateAllLabel => $"UPDATE ALL ({UpdateCount})";
 
     [RelayCommand]
     private Task UpdateAll() => RunUiAsync(async () =>
@@ -329,6 +330,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             $"AFTERLIFE downloads {list.Count} newer version(s) from Nexus Mods and puts them in the profile instead of the old ones. The old versions stay in the library. Nothing changes in the game until you apply.",
             "UPDATE ALL", false, list.Select(x => $"{x.ModName}   → {x.Update.Version ?? x.Update.Name}").ToList()));
         if (!ok) return;
+        _collectionUpdateChoice = null; // P98: asked once, "for all" remembered for this run
         var done = new List<string>();
         var failed = new List<string>();
         foreach (var (name, u) in list)
@@ -564,8 +566,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         if (!_host.IsOpen) return;
         var o = await _host.RunAsync(OverviewBuilder.Build);
+        await LoadLayoutAsync(); // P95/P97: collections and the block layout decide the groups
         Apply(o);
-        await LoadCollectionChaptersAsync();
+        BuildCollectionChapters();
+        PruneLayout();
     }
 
     private void Apply(InstallOverview o)
@@ -594,7 +598,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
             var keep = SelectedMod?.PackageId;
             var keepMulti = Mods.Where(m => m.IsChecked).Select(m => m.PackageId).ToHashSet();
-            Mods.Reset(o.Mods.Select(m => new ModRowVm(m, !st.Selected.IsSystemModsOff && st.Unfinished is null, OnWantChangedAsync)).OrderBy(r => r.ChapterRank));
+            var rows = o.Mods.Select(m => new ModRowVm(m, !st.Selected.IsSystemModsOff && st.Unfinished is null, OnWantChangedAsync)).ToList();
+            AssignChapters(rows);
+            MarkTwins(rows, o);
+            Mods.Reset(rows.OrderBy(r => r.BlockRank)); // stable: inside a block the load order stays
+            UpdateGroupNames();
             foreach (var m in Mods)
             {
                 m.IsChecked = keepMulti.Contains(m.PackageId);
@@ -643,6 +651,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             var ids = await WithRelatedAsync([row.PackageId], want);
             if (ids is null) { row.ResetWant(!want); return; }
+            // P98: another version of the same mod is on: offer to switch it off
+            var twinsOff = want ? await OtherVersionsToSwitchOffAsync(row.PackageId) : [];
+            if (twinsOff.Count > 0) await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, twinsOff, false));
             if (ids.Count == 1) await _host.RunAsync(c => c.SetEnabled(row.PackageId, want));
             else
             {
@@ -830,22 +841,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void ClearSelection() => SetAllChecked(false);
 
     // ---------------- load order (P25) ----------------
-    /// <summary>Drag and drop in the list: the moved mods go before (or after) the target row.</summary>
-    public Task MoveModsAsync(IReadOnlyList<string> moved, string targetId, bool after) => RunUiAsync(async () =>
-    {
-        if (_overview is null || IsModsOff) return;
-        var order = Mods.Where(m => !m.IsCore && m.Overview.Package.LayerOfModId is null).Select(m => m.PackageId).ToList();
-        var movedSet = moved.Where(order.Contains).ToList();
-        if (movedSet.Count == 0 || movedSet.Contains(targetId)) return;
-        order.RemoveAll(movedSet.Contains);
-        var i = order.IndexOf(targetId);
-        if (i < 0) i = order.Count; else if (after) i++;
-        order.InsertRange(i, movedSet);
-        await _host.RunAsync(c => c.Reorder(_overview.Status.Selected.Id, order));
-        await RefreshAsync();
-        Say("Load order changed: mods higher in the list load first and win conflicts. Apply to update the game.", Tone.Info);
-    });
-
     [RelayCommand]
     private Task ResetOrder() => RunUiAsync(async () =>
     {
@@ -980,7 +975,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     // ---------------- Nexus Mods (P24) ----------------
-    private static string AppVersion => typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "0.5.0";
+    private static string AppVersion => AppInfo.Version;
 
     private async Task SaveNexusKeyAsync(SettingsVm vm, string key)
     {
@@ -1142,7 +1137,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var older = OlderVersionOf(link.ModId, link.FileId);
         var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, info.ModName ?? older?.ModName, info.Version ?? info.ModVersion, older?.ModId),
             presetChoices ?? older?.FomodChoices, enable, quiet);
-        if (older is not null && imported.Count == 1) await ReplaceOlderAsync(older, imported[0], quiet);
+        if (older is not null && imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet);
         return imported;
     }
 
@@ -1157,15 +1152,34 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         if (_overview is null) return;
         var wasOn = !IsModsOff && _overview.Status.Selected.IsEnabled(older.PackageId);
+        // P98: the old version is in a collection: ask what the new one does there
+        var collections = CollectionsOf(older.PackageId);
+        var choice = collections.Count == 0 ? 0 : await AskCollectionUpdateAsync(older, newer, collections, batch: quiet);
+        if (choice is null)
+        {
+            if (!quiet) Say($"{newer.ModName} {newer.Version} is in the library as a separate mod; the collection keeps {older.Version}.", Tone.Info);
+            return;
+        }
         await _host.RunAsync(c =>
         {
             c.SetEnabled(older.PackageId, false);
             if (wasOn) c.SetEnabled(newer.PackageId, true);
             NexusUpdates.Save(c.Store, older.PackageId, null, DateTimeOffset.UtcNow);
+            if (collections.Count > 0 && choice is 0 or 1) c.ReplaceInCollections(older.PackageId, newer.PackageId);
         });
+        // P95: the new version keeps the category of the old one
+        if (_layout.CategoryIdOf(older.PackageId) is { } cat) await SaveLayoutAsync(_layout.Assign([newer.PackageId], cat));
+        var deleted = false;
+        if (choice == 1)
+        {
+            var r = await _host.RunAsync(c => c.DeleteEverywhere([older.PackageId]));
+            deleted = r.Deleted.Count > 0;
+        }
         await RefreshAsync();
-        if (!quiet)
-            Say($"{older.ModName} {older.Version} → {newer.Version}{(wasOn ? " in the profile" : "")}. The old version stays in the library, switched off. Apply to put it in the game.", Tone.Ok);
+        if (quiet) return;
+        var where = collections.Count == 0 ? "" : choice == 2 ? " (outside the collection)" : $" in {string.Join(", ", collections)}";
+        var old = deleted ? "The old version was deleted from the library." : "The old version stays in the library, switched off.";
+        Say($"{older.ModName} {older.Version} → {newer.Version}{(wasOn ? " in the profile" : "")}{where}. {old} Apply to put it in the game.", Tone.Ok);
     }
 
     /// <summary>
@@ -1187,7 +1201,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 "REPLACE OLD VERSION", false, [$"{older.ModName} {older.Version}   → {version ?? "new file"}"]));
             if (!replace) { plain.Add(file); continue; }
             var imported = await ImportFilesCoreAsync([file], new NexusSource(guess.NexusModId!, null, older.ModName, version, older.ModId), older.FomodChoices);
-            if (imported.Count == 1) await ReplaceOlderAsync(older, imported[0], quiet: false);
+            if (imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet: false);
         }
         return plain;
     }
@@ -1311,7 +1325,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 if (r.Succeeded)
                 {
                     var p = r.Package!;
-                    imported.Add(p.ModName);
+                    imported.Add(r.AlreadyInLibrary ? $"{p.ModName} (already in the library, no second copy)" : p.ModName);
                     packages.Add(p);
                     if (!IsModsOff && enable) await _host.RunAsync(c => c.SetEnabled(p.PackageId, true));
                     await RefreshAsync();
@@ -1382,6 +1396,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (added > 0) lines.Add($"+ {added} mod(s) into the game");
         if (removed > 0) lines.Add($"− {removed} mod(s) out of the game");
         if (_overview.OrderIsCustom) lines.Add("load order from the list (modlist.txt)");
+        lines.AddRange(TwinWarnings()); // P98: two versions of one mod would go into the game
         foreach (var n in LeavingCore().Select(c => c.Name)) lines.Add($"{n}: files it made itself (logs, settings) go to the library, restorable");
         var msg = IsModsOff
             ? "Every mod AFTERLIFE put in the game will be taken out. Manually installed mods stay."
@@ -1586,6 +1601,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [RelayCommand]
     private void OpenAbout() => Overlay = new AboutVm { CloseCommand = new RelayCommand(() => Overlay = null) };
+
+    /// <summary>P96: the legend left the bottom bar; it lives in a guide behind the GUIDE tab.</summary>
+    [RelayCommand]
+    private void OpenGuide() => Overlay = new GuideVm { CloseCommand = new RelayCommand(() => Overlay = null) };
 
     [RelayCommand] private void OpenSupport() => AppLinks.Open(AppLinks.Sponsors);
     [RelayCommand] private void OpenContact() => AppLinks.Open(AppLinks.ContactMailto);

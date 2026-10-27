@@ -325,7 +325,82 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     // ---------------- library ----------------
-    public ImportResult Import(ImportRequest request) => Packages.Import(request);
+    /// <summary>
+    /// P99: an archive whose files are exactly those of a package already in the library (same digest:
+    /// paths, hashes and sizes) does not become a second copy; the existing package is returned instead.
+    /// </summary>
+    public ImportResult Import(ImportRequest request)
+    {
+        var r = Packages.Import(request);
+        if (r.Package is not { } p) return r;
+        var same = Store.GetPackages()
+            .Where(x => x.PackageId != p.PackageId && x.LayerOfModId is null && x.ManifestDigest == p.ManifestDigest)
+            .OrderBy(x => x.ImportedAt ?? DateTimeOffset.MinValue).FirstOrDefault();
+        if (same is null) return r;
+        Packages.Delete(p.PackageId);
+        return r with { Package = same, AlreadyInLibrary = true };
+    }
+
+    /// <summary>P99: groups of packages with exactly the same files (duplicates made before 0.5.3).</summary>
+    public IReadOnlyList<IReadOnlyList<PackageManifest>> DuplicateGroups() =>
+        Store.GetPackages().Where(p => p.LayerOfModId is null && p.Files.Count > 0)
+            .GroupBy(p => p.ManifestDigest)
+            .Where(g => g.Count() > 1)
+            .Select(g => (IReadOnlyList<PackageManifest>)g.OrderBy(p => p.ImportedAt ?? DateTimeOffset.MinValue).ToList())
+            .ToList();
+
+    /// <summary>
+    /// P99: the kept package takes the place of its duplicates: in every profile (on when any copy was on,
+    /// at the position of the first copy) and in every collection. The duplicates are then free to delete.
+    /// </summary>
+    public void AdoptDuplicates(string keepId, IReadOnlyCollection<string> others)
+    {
+        var all = others.Append(keepId).ToHashSet(StringComparer.Ordinal);
+        Store.InTransaction(() =>
+        {
+            foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff))
+            {
+                var entries = p.Entries.ToList();
+                var first = entries.FindIndex(e => all.Contains(e.PackageId));
+                if (first < 0) continue;
+                var on = entries.Any(e => all.Contains(e.PackageId) && e.Enabled);
+                entries.RemoveAll(e => all.Contains(e.PackageId));
+                entries.Insert(Math.Min(first, entries.Count), new ProfileEntry(keepId, on));
+                Store.SaveProfile(p with { Entries = entries });
+            }
+            foreach (var r in CollectionStore.List(Store))
+            {
+                if (!r.PackageOf.Values.Any(others.Contains)) continue;
+                var map = r.PackageOf.ToDictionary(kv => kv.Key, kv => others.Contains(kv.Value) ? keepId : kv.Value);
+                CollectionStore.Save(Store, r with { PackageOf = map });
+            }
+        });
+    }
+
+    /// <summary>P98: the new version of a mod takes the place of the old one in every collection.</summary>
+    public void ReplaceInCollections(string oldId, string newId)
+    {
+        foreach (var r in CollectionStore.List(Store))
+        {
+            if (!r.PackageOf.Values.Contains(oldId)) continue;
+            var map = r.PackageOf.ToDictionary(kv => kv.Key, kv => kv.Value == oldId ? newId : kv.Value);
+            CollectionStore.Save(Store, r with { PackageOf = map });
+        }
+    }
+
+    /// <summary>P101: a new name for a profile; Mods off keeps its name, two profiles cannot share one.</summary>
+    public ProfileState RenameProfile(string profileId, string name)
+    {
+        var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
+        if (p.IsSystemModsOff) throw new InvalidOperationException("Mods off cannot be renamed");
+        name = name.Trim();
+        if (name.Length == 0) throw new InvalidOperationException("the name cannot be empty");
+        if (Store.GetProfiles().Any(x => x.Id != profileId && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"a profile {name} already exists");
+        var q = p with { Name = name };
+        Store.SaveProfile(q);
+        return q;
+    }
 
     /// <summary>Removes a package that no profile wants: drops its disabled entries, then deletes it from the library.</summary>
     public void RemoveFromLibrary(string packageId)

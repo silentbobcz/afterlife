@@ -189,6 +189,8 @@ public sealed partial class ConfirmVm : OverlayVm
     public string? OptionLabel { get; }
     [ObservableProperty] private bool _optionChecked;
     public Task<bool> Result => _tcs.Task;
+    /// <summary>P98/P99: the second button can say what it does ("Keep both", "Not now").</summary>
+    public string CancelLabel { get; init; } = "Cancel";
 
     [RelayCommand] private void Confirm() => _tcs.TrySetResult(true);
     [RelayCommand] private void Cancel() => _tcs.TrySetResult(false);
@@ -669,7 +671,7 @@ public sealed class PlanPreviewVm : OverlayVm
 public sealed class AboutVm : OverlayVm
 {
     public override string Title => "ABOUT AFTERLIFE";
-    public string Version => "Version " + (typeof(AboutVm).Assembly.GetName().Version?.ToString(3) ?? "0.5.0") + " · beta, unsigned";
+    public string Version => "Version " + AppInfo.DisplayVersion + " · unsigned";
     public string Copyright => "© 2026 Silentbobcz · MIT License · free & open source";
     public string Disclaimer => "This is an unofficial fan work and is not approved/endorsed by CD PROJEKT RED.";
     public string Trademarks => "Cyberpunk 2077 and related marks are trademarks of CD PROJEKT S.A. AFTERLIFE uses no game assets.";
@@ -1130,4 +1132,60 @@ public sealed partial class CollectionProgressItemVm(string key, string name) : 
     public string Name { get; } = name;
     [ObservableProperty] private string _status = "waiting";
     [ObservableProperty] private Tone _tone = Tone.Neutral;
+}
+
+/// <summary>P95/P98: one of several options (category of the checked mods, what a new collection version does).</summary>
+public sealed partial class ChoiceVm : OverlayVm
+{
+    private readonly TaskCompletionSource<int?> _tcs = new();
+
+    public ChoiceVm(string title, string message, IReadOnlyList<string> options, string confirmLabel = "OK", string? optionLabel = null, int selected = 0)
+    {
+        TitleText = title;
+        Message = message;
+        Options = options;
+        ConfirmLabel = confirmLabel;
+        OptionLabel = optionLabel;
+        _selected = options.Count == 0 ? null : options[Math.Clamp(selected, 0, options.Count - 1)];
+        CloseCommand = CancelCommand;
+    }
+
+    public string TitleText { get; }
+    public override string Title => TitleText;
+    public string Message { get; }
+    public IReadOnlyList<string> Options { get; }
+    public string ConfirmLabel { get; }
+    /// <summary>Optional checkbox, for example "use this for all" (P98).</summary>
+    public string? OptionLabel { get; }
+    [ObservableProperty] private bool _optionChecked;
+    public Task<int?> Result => _tcs.Task;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
+    private string? _selected;
+
+    [RelayCommand(CanExecute = nameof(CanConfirm))]
+    private void Confirm() => _tcs.TrySetResult(Selected is null ? null : Options.ToList().IndexOf(Selected));
+    private bool CanConfirm() => Selected is not null;
+
+    [RelayCommand] private void Cancel() => _tcs.TrySetResult(null);
+}
+
+/// <summary>P96: visual guide to the list; a short basic part, everything on request.</summary>
+public sealed partial class GuideVm : OverlayVm
+{
+    public override string Title => "QUICK GUIDE";
+    [ObservableProperty] private bool _showAll;
+    [RelayCommand] private void ToggleAll() => ShowAll = !ShowAll;
+    public string ToggleLabel => ShowAll ? "‹ SHOW LESS" : "SHOW EVERYTHING ›";
+    partial void OnShowAllChanged(bool value) => OnPropertyChanged(nameof(ToggleLabel));
+}
+
+/// <summary>Version as released: 1.0.0-alpha from the build (VersionPrefix + VersionSuffix), shown as "1.0.0 alpha".</summary>
+public static class AppInfo
+{
+    public static string Version { get; } =
+        (System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(typeof(AppInfo).Assembly)?.InformationalVersion
+         ?? typeof(AppInfo).Assembly.GetName().Version?.ToString(3) ?? "1.0.0-alpha").Split('+')[0];
+    public static string DisplayVersion => Version.Replace('-', ' ');
 }

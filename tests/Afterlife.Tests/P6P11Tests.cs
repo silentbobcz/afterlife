@@ -896,7 +896,7 @@ public class CollectionTests
         Assert.False(CollectionLink.TryParse("nxm://cyberpunk2077/mods/107/files/1", out _));
     }
 
-    private static CollectionRevisionInfo Api() => CollectionLogic.FromGraphQl("abc", System.Text.Json.JsonDocument.Parse("""
+    internal static CollectionRevisionInfo Api() => CollectionLogic.FromGraphQl("abc", System.Text.Json.JsonDocument.Parse("""
         {"data":{"collectionRevision":{"revisionNumber":3,"downloadLink":"/v1/collections/abc/revisions/3/download_link","installationInfo":"Run the game once.",
           "adultContent":false,"totalSize":1000,
           "collection":{"name":"Night City Plus","summary":"s","slug":"abc","user":{"name":"Curator"},"latestPublishedRevision":{"revisionNumber":4}},

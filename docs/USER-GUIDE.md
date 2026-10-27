@@ -30,7 +30,7 @@ This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run 
 ## 1. Before you start
 
 - Windows 10 or 11, 64-bit. Cyberpunk 2077 2.x from Steam, GOG or Epic.
-- AFTERLIFE is a beta. It is careful with your files, but it is still new: if you have a heavily modded install you care about, copy your save games first (`%USERPROFILE%\Saved Games\CD Projekt Red\Cyberpunk 2077`).
+- AFTERLIFE is an alpha of 1.0. It is careful with your files, but it is still new: if you have a heavily modded install you care about, copy your save games first (`%USERPROFILE%\Saved Games\CD Projekt Red\Cyberpunk 2077`).
 - **Use one mod manager per install.** If Vortex or Mod Organizer 2 already manages the game, either keep using it or remove its mods first (its own *purge* or *disable all*). AFTERLIFE will then find any leftovers in *Scan manual mods*.
 - Close the game before you apply changes. AFTERLIFE refuses to write while the game is running.
 
@@ -74,9 +74,11 @@ Each row has:
 - the **DEPLOYED** column: what is really in the game (**DEPLOYED**, **+ PENDING · APPLY**, **− PENDING · APPLY**, **! CONFLICT · DECIDE** and so on),
 - the **IN PROFILE** switch: whether the mod is on in the selected profile.
 
-When several mods are selected, the bar at the bottom offers **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
+When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
-Above the list: **Refresh** (F5) reads the game folder and the library again, **Check updates** asks Nexus now, **Update all** (Premium, see section 11), **Export list** ([section 16](#16-export-the-mod-list)) and **Preview changes**.
+The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order.
+
+Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (Premium, see section 11), **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **RESET ORDER**, **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
 ## 4. Adding mods
 
@@ -94,6 +96,10 @@ What you may see after an import:
 - **Choose a variant** · the archive contains several variants (for example different colours). Pick one and **INSTALL THIS VARIANT**.
 - **FOMOD wizard** · the archive has an installer with options ([section 13](#13-fomod-installers-and-redmods)).
 - **Newer version of a mod you have?** · the file is a newer download of a mod already in the library. **REPLACE OLD VERSION** puts it in the profile instead of the old one; the old version stays in the library, switched off. Cancel adds it as a separate mod.
+- **New version of a collection mod** · when the old version is part of a collection, choose: put the new one into the collection and switch the old one off, replace the old one (deleted from the library), or keep the new one outside the collection.
+- **Another version is on** · switching on a second version of a mod offers to switch the other one off; rows show **2 VERSIONS ON** while both are on.
+- **Duplicate mods in the library** · copies with exactly the same files (made by older AFTERLIFE versions) are found after start; **MERGE** keeps one with its place in profiles, collections, categories and the load order.
+- **Already in the library** · the archive has exactly the same files as a mod you have; no second copy is made, the existing mod is used.
 - **Not accepted** · the archive is damaged, empty, or its layout is unknown. The message says why.
 
 ## 5. Profiles
@@ -158,6 +164,8 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 - **USE THIS MOD FOR ALL n FILES** makes it win every conflict it has, in one click.
 
 Archive mods (`archive/pc/mod`) are loaded by the game in an order. Drag rows by the **⋮⋮** handle to change it; mods higher in the list load first and win. AFTERLIFE writes the order to `modlist.txt` when you apply. **Reset order** returns to the default. Mods of a collection keep the curator's order unless you unlock it (section 12).
+
+The blocks are part of the order: CORE MODS load first, then the blocks from top to bottom. Inside MODS the mods without a category load first, then the categories from top to bottom. Moving a block, a category, or a mod into another category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. Mods of a collection stay in their collection; CORE MODS cannot be moved.
 
 ## 11. Nexus Mods: key, downloads, updates
 
@@ -302,6 +310,6 @@ More in the [FAQ](FAQ.md).
 |---|---|
 | Ctrl+O | Add mod |
 | F5 | Refresh |
-| Double-click a mod name | Rename |
+| Double-click a mod, profile or category name | Rename |
 | Shift+click, Ctrl+click | Select several mods |
-| Drag ⋮⋮ | Change the load order |
+| Drag ⋮⋮ | Change the load order (a row, a block or a category) |

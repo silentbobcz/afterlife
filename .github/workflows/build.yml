@@ -36,12 +36,17 @@ jobs:
         shell: pwsh
         run: |
           [xml]$props = Get-Content Directory.Build.props
-          $v = $props.Project.PropertyGroup.Version
+          $pg = $props.Project.PropertyGroup
+          $v = if ($pg.VersionSuffix) { "$($pg.VersionPrefix)-$($pg.VersionSuffix)" } else { "$($pg.VersionPrefix)" }
+          # a tag must match the version in Directory.Build.props (v1.0.0-alpha <-> 1.0.0-alpha)
+          if ($env:GITHUB_REF -like 'refs/tags/v*' -and $env:GITHUB_REF_NAME -ne "v$v") { throw "Tag $env:GITHUB_REF_NAME does not match version $v in Directory.Build.props" }
           $dir = "dist/AFTERLIFE-$v"
           New-Item -ItemType Directory -Force $dir | Out-Null
           Copy-Item publish/app/AFTERLIFE.exe, README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
           Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt $dir
-          $zip = "dist/AFTERLIFE-$v-beta-win-x64.zip"
+          New-Item -ItemType Directory -Force "$dir/licenses" | Out-Null
+          Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt "$dir/licenses"
+          $zip = "dist/AFTERLIFE-$v-win-x64.zip"
           Compress-Archive -Path "$dir/*" -DestinationPath $zip
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
           "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
@@ -61,23 +66,45 @@ jobs:
           path: tests/Afterlife.Tests/TestResults
 
   release:
+    # a pushed tag vX.Y.Z[-suffix] publishes the next GitHub release with the zip, its SHA-256
+    # and the matching section of CHANGELOG.md; a suffix (alpha, beta, rc) makes it a pre-release
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: AFTERLIFE-win-x64
           path: dist
 
-      - name: Draft release
+      - name: Release notes from CHANGELOG.md
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          awk -v v="$v" '
+            /^## / { if (found) exit; split($0, h, " "); if (h[2] == v) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "No section '## $v' in CHANGELOG.md" >&2; exit 1; fi
+          {
+            echo
+            echo "---"
+            echo "**Download:** \`AFTERLIFE-$v-win-x64.zip\` below, unzip anywhere outside the game folder and run \`AFTERLIFE.exe\` (Windows 10/11 64-bit, .NET included)."
+            echo "Not code-signed yet: on the SmartScreen warning click *More info* → *Run anyway*. Check the download with the \`.sha256\` file."
+          } >> notes.md
+          case "$v" in *-*) echo "PRERELEASE=true" >> "$GITHUB_ENV";; *) echo "PRERELEASE=false" >> "$GITHUB_ENV";; esac
+
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
-          prerelease: true
-          generate_release_notes: true
+          name: AFTERLIFE ${{ github.ref_name }}
+          body_path: notes.md
+          draft: false
+          prerelease: ${{ env.PRERELEASE }}
+          make_latest: true
           files: |
             dist/*.zip
             dist/*.sha256

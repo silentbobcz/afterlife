@@ -358,17 +358,6 @@ public sealed partial class MainViewModel
     [ObservableProperty] private IReadOnlyDictionary<string, CollectionChapterVm> _collectionChapters = new Dictionary<string, CollectionChapterVm>();
     private IReadOnlyList<CollectionRecord> _collections = [];
 
-    private async Task LoadCollectionChaptersAsync()
-    {
-        try
-        {
-            (_collections, var folded) = await _host.RunAsync(c => (c.Collections(), _collapsed is null ? c.Store.GetMeta("ui.collapsed") : null));
-            if (_collapsed is null) _collapsed = (folded ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
-        }
-        catch (Exception ex) when (IsExpected(ex)) { _collections = []; }
-        BuildCollectionChapters();
-    }
-
     private HashSet<string>? _collapsed;
 
     private void BuildCollectionChapters()
@@ -382,27 +371,25 @@ public sealed partial class MainViewModel
         ICommand Fold(string key) => new RelayCommand(() => ToggleFold(key));
         var rows = Mods.ToList();
         // P89: marks in the header; the click unfolds the chapter and selects the first such mod
-        CollectionChapterVm Marks(CollectionChapterVm vm, string key)
+        CollectionChapterVm Marks(CollectionChapterVm vm, Func<ModRowVm, bool> inIt)
         {
-            var inChapter = rows.Where(r => r.Chapter == key).ToList();
-            ModRowVm? First(Func<ModRowVm, bool> f) => inChapter.FirstOrDefault(f);
-            ICommand Show(Func<ModRowVm, bool> f) => new RelayCommand(() => ShowInChapter(key, First(f)));
+            var inChapter = rows.Where(inIt).ToList();
+            ICommand Show(Func<ModRowVm, bool> f) => new RelayCommand(() => ShowInChapter(inChapter.FirstOrDefault(f)));
             static bool Upd(ModRowVm r) => r.Overview.Update is not null;
             static bool Con(ModRowVm r) => r.Overview.State == ModState.Conflict || r.Overview.Conflicts.Any(c => !c.ThisModWins);
             static bool Mis(ModRowVm r) => r.Overview.Missing.Count > 0;
-            return new CollectionChapterVm(vm.Kind, vm.Slug, vm.Label, vm.Name, vm.On, vm.Total, vm.CanToggle, vm.IsCollapsed, vm.ToggleCommand, vm.ManageCommand, vm.FoldCommand)
-            {
-                Updates = inChapter.Count(Upd), Conflicts = inChapter.Count(Con), Missing = inChapter.Count(Mis),
-                ShowUpdateCommand = Show(Upd), ShowConflictCommand = Show(Con), ShowMissingCommand = Show(Mis),
-            };
+            vm.Updates = inChapter.Count(Upd); vm.Conflicts = inChapter.Count(Con); vm.Missing = inChapter.Count(Mis);
+            vm.ShowUpdateCommand = Show(Upd); vm.ShowConflictCommand = Show(Con); vm.ShowMissingCommand = Show(Mis);
+            return vm;
         }
+        static bool Real(ModRowVm r) => r.Overview.Package.LayerOfModId is null;
         var map = new Dictionary<string, CollectionChapterVm>(StringComparer.Ordinal);
 
-        // P82: core mods as one block with a switch
+        // P82: core mods as one block with a switch; never moves (P97)
         var core = _overview.Mods.Where(m => m.IsCore && m.Package.LayerOfModId is null).Select(m => m.Package.PackageId).ToList();
         var coreOn = core.Count(selected.IsEnabled);
-        map[CoreChapter] = Marks(new CollectionChapterVm(ChapterKind.Core, CoreChapter, "CORE MODS", "Frameworks the other mods build on", coreOn, core.Count,
-            canEdit && core.Count > 0, Folded(CoreChapter), new AsyncRelayCommand(() => SetCoreEnabledAsync(coreOn == 0)), null, Fold(CoreChapter)), CoreChapter);
+        map[CoreChapter] = Marks(new CollectionChapterVm(ChapterKind.Core, CoreChapter, "CORE MODS", "Frameworks the other mods build on · always load first", coreOn, core.Count,
+            canEdit && core.Count > 0, Folded(CoreChapter), new AsyncRelayCommand(() => SetCoreEnabledAsync(coreOn == 0)), null, Fold(CoreChapter)), r => r.Chapter == CoreChapter);
 
         foreach (var r in _collections)
         {
@@ -410,28 +397,59 @@ public sealed partial class MainViewModel
             var on = ids.Count(selected.IsEnabled);
             var slug = r.Slug;
             var key = CollectionChapterPrefix + r.Name;
+            var block = BlockLayout.CollectionKey(slug);
+            var (up, down) = StepCommands(block);
             map[key] = Marks(new CollectionChapterVm(ChapterKind.Collection, slug, "COLLECTION", r.Name, on, ids.Count,
                 canEdit && ids.Count > 0, Folded(key),
                 new AsyncRelayCommand(() => SetCollectionEnabledAsync(slug, on == 0)),
-                new RelayCommand(() => ManageCollection(key)), Fold(key)), key);
+                new RelayCommand(() => ManageCollection(key)), Fold(key))
+            { BlockKey = block, MoveUpCommand = up, MoveDownCommand = down }, x => x.Chapter == key);
         }
-        // P88: the other mods get the same kind of block and a switch
-        var plain = rows.Where(r => r.Chapter == PlainChapter && r.Overview.Package.LayerOfModId is null).Select(r => r.PackageId).ToList();
-        var plainOn = plain.Count(selected.IsEnabled);
-        map[PlainChapter] = Marks(new CollectionChapterVm(ChapterKind.Plain, PlainChapter, "MODS", "Your mods outside collections", plainOn, plain.Count,
-            canEdit && plain.Count > 0, Folded(PlainChapter), new AsyncRelayCommand(() => SetPlainEnabledAsync(plainOn == 0)), null, Fold(PlainChapter)), PlainChapter);
+
+        // P88/P94/P95: MODS = mods outside core and collections, with its categories; the switch takes all of them
+        var family = rows.Where(r => r.InModsBlock && Real(r)).Select(r => r.PackageId).ToList();
+        var familyOn = family.Count(selected.IsEnabled);
+        var modsFolded = Folded(PlainChapter);
+        var (mUp, mDown) = StepCommands(BlockLayout.ModsBlock);
+        map[PlainChapter] = Marks(new CollectionChapterVm(ChapterKind.Plain, PlainChapter, "MODS",
+            _layout.Categories.Count == 0 ? "Your mods outside collections" : $"Your mods outside collections · {_layout.Categories.Count} categor{(_layout.Categories.Count == 1 ? "y" : "ies")}",
+            familyOn, family.Count, canEdit && family.Count > 0, modsFolded, new AsyncRelayCommand(() => SetPlainEnabledAsync(familyOn == 0)), null, Fold(PlainChapter))
+        {
+            BlockKey = BlockLayout.ModsBlock, MoveUpCommand = mUp, MoveDownCommand = mDown,
+            AddCategoryCommand = canEdit ? AddCategoryCommand : null,
+        }, x => x.InModsBlock);
+
+        foreach (var cat in _layout.Categories)
+        {
+            var key = CategoryChapterPrefix + cat.Id;
+            var ids = rows.Where(r => r.Chapter == key && Real(r)).Select(r => r.PackageId).ToList();
+            var on = ids.Count(selected.IsEnabled);
+            var id = cat.Id;
+            var (up, down) = StepCommands(BlockLayout.CategoryKey(id));
+            map[key] = Marks(new CollectionChapterVm(ChapterKind.Category, id, "CATEGORY", cat.Name, on, ids.Count,
+                canEdit && ids.Count > 0, modsFolded || Folded(key), new AsyncRelayCommand(() => SetChapterEnabledAsync(key, on == 0)), null, Fold(key))
+            {
+                IsHidden = modsFolded, BlockKey = BlockLayout.CategoryKey(id), MoveUpCommand = up, MoveDownCommand = down,
+                RenameCommand = new AsyncRelayCommand(() => RenameCategoryAsync(id)),
+                RemoveCommand = new AsyncRelayCommand(() => RemoveCategoryAsync(id)),
+            }, x => x.Chapter == key);
+        }
         CollectionChapters = map;
     }
 
-    private void ShowInChapter(string key, ModRowVm? row)
+    private void ShowInChapter(ModRowVm? row)
     {
-        if (_collapsed?.Remove(key) == true)
+        if (row is null) return;
+        // unfold the row's chapter and, for a category, MODS around it
+        var changed = _collapsed?.Remove(row.Chapter) == true;
+        if (row.Chapter.StartsWith(CategoryChapterPrefix, StringComparison.Ordinal)) changed |= _collapsed?.Remove(PlainChapter) == true;
+        if (changed && _collapsed is not null)
         {
             var text = string.Join("\n", _collapsed);
             _ = _host.RunAsync(c => c.Store.SetMeta("ui.collapsed", text));
             BuildCollectionChapters();
         }
-        if (row is not null) { SelectedMod = row; ScrollToSelected?.Invoke(); }
+        SelectedMod = row; ScrollToSelected?.Invoke();
     }
 
     /// <summary>Asks the window to bring the selected row into view (P89).</summary>
@@ -442,7 +460,23 @@ public sealed partial class MainViewModel
     {
         if (_overview is null || IsModsOff) return;
         var selected = _overview.Status.Selected;
-        var ids = Mods.Where(r => r.Chapter == PlainChapter && r.Overview.Package.LayerOfModId is null && selected.IsEnabled(r.PackageId) != on)
+        var ids = Mods.Where(r => r.InModsBlock && r.Overview.Package.LayerOfModId is null && selected.IsEnabled(r.PackageId) != on)
+            .Select(r => r.PackageId).ToList();
+        if (ids.Count == 0) return;
+        var all = await WithRelatedAsync(ids, on);
+        if (all is null) { await RefreshAsync(); return; }
+        await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, all, on));
+        await RefreshAsync();
+        Say(on ? $"{all.Count} mod(s) switched on in the profile. Apply to put them in the game."
+               : $"{all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
+    });
+
+    /// <summary>P95: all mods of one category on or off; asks about requirements and dependents.</summary>
+    private Task SetChapterEnabledAsync(string chapter, bool on) => RunUiAsync(async () =>
+    {
+        if (_overview is null || IsModsOff) return;
+        var selected = _overview.Status.Selected;
+        var ids = Mods.Where(r => r.Chapter == chapter && r.Overview.Package.LayerOfModId is null && selected.IsEnabled(r.PackageId) != on)
             .Select(r => r.PackageId).ToList();
         if (ids.Count == 0) return;
         var all = await WithRelatedAsync(ids, on);

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the latest release gets fixes. AFTERLIFE is in public beta.
+Only the latest release gets fixes. AFTERLIFE is in alpha (1.0.0-alpha).
 
 ## Reporting a vulnerability
 

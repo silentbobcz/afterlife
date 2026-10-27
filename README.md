@@ -1,5 +1,3 @@
-![AFTERLIFE](docs/branding/afterlife-github-logo-7c38dbe4.png)
-
 <p align="center">
   <img src="branding/out/github-social-1280x640.png" alt="AFTERLIFE · mod manager for Cyberpunk 2077" width="100%">
 </p>
@@ -23,7 +21,7 @@
 
 ## Status
 
-**Public beta (0.5.0).** It works on real installs and is still young. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
+**Alpha (1.0.0-alpha).** Feature-complete for 1.0 and being tested on real installs. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
 The executable is not code-signed yet, so Windows SmartScreen shows a warning the first time (*More info → Run anyway*). See [FAQ](docs/FAQ.md#windows-says-it-protected-my-pc).
 
 ## What it does
@@ -46,7 +44,7 @@ The executable is not code-signed yet, so Windows SmartScreen shows a warning th
 
 Get the latest release from **[Releases](https://github.com/silentbobcz/afterlife/releases)** (also on Nexus Mods once the page is approved):
 
-- `AFTERLIFE-<version>-beta-win-x64.zip` · the app, a single `AFTERLIFE.exe`, .NET included, no installer.
+- `AFTERLIFE-<version>-win-x64.zip` · the app, a single `AFTERLIFE.exe`, .NET included, no installer.
 
 Requirements: Windows 10 or 11 (64-bit), Cyberpunk 2077 2.x (Steam, GOG or Epic). No admin rights needed.
 

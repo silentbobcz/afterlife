@@ -3,7 +3,7 @@ using Afterlife.Core;
 namespace Afterlife.Infrastructure;
 
 /// <summary>Colour role of a status (AFTERLIFE-architektura-v2.1.md, "Barvy a priorita sdělení").</summary>
-public enum Tone { Neutral, Ok, Info, Warn, Block, Brand }
+public enum Tone { Neutral, Ok, Info, Warn, Block, Brand, Plain, Category }
 
 public enum ModState
 {

@@ -44,6 +44,8 @@ public sealed record ImportRequest(
 public sealed record ImportResult(ImportAnalysis Analysis, PackageManifest? Package)
 {
     public bool Succeeded => Package is not null;
+    /// <summary>P99: the same content was already in the library; <see cref="Package"/> is that existing package.</summary>
+    public bool AlreadyInLibrary { get; init; }
 }
 
 public sealed class ImportException(string message) : Exception(message);

@@ -5,7 +5,7 @@
         xmlns:vm="clr-namespace:Afterlife.App.ViewModels"
         xmlns:fx="clr-namespace:Afterlife.App.Controls"
         Title="AFTERLIFE · mod manager for Cyberpunk 2077"
-        Width="1440" Height="900" MinWidth="1240" MinHeight="700"
+        Width="1680" Height="960" MinWidth="1612" MinHeight="910"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource Bg}"
         Tag="P17 EDDIES background is drawn by fx:Backdrop"
@@ -170,7 +170,7 @@
                 <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding OptionChecked}" Content="{Binding OptionLabel}"
                           Visibility="{Binding OptionLabel, Converter={StaticResource NullToVis}}" />
                 <StackPanel Margin="0,20,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" IsCancel="True" />
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="{Binding CancelLabel}" Margin="0,0,18,0" IsCancel="True" />
                     <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}" MinWidth="150"
                             Visibility="{Binding Danger, Converter={StaticResource InverseBoolToVis}}" />
                     <Button Style="{StaticResource DangerButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}"
@@ -336,42 +336,184 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:CollectionChapterVm}">
-            <Grid>
-                <!-- framed block for every chapter: core (yellow), collection (cyan), other mods (grey) -->
+            <Grid Visibility="{Binding IsHidden, Converter={StaticResource InverseBoolToVis}}">
+                <!-- framed block for core (yellow), collection (cyan) and MODS (light grey, P94) -->
                 <c:CutBorder Margin="0,14,0,6" Background="{StaticResource Bg3}" BorderBrush="{Binding Tone, Converter={StaticResource ToneBrush}}" AccentBrush="{Binding Tone, Converter={StaticResource ToneBrush}}"
-                             CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="10,8,12,8">
+                             CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="8,8,12,8"
+                             Visibility="{Binding IsBlock, Converter={StaticResource BoolToVis}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="78" />
                         </Grid.ColumnDefinitions>
-                        <Button Style="{StaticResource QuietLinkButton}" Command="{Binding FoldCommand}" ToolTip="{Binding FoldTip}" Padding="4,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <!-- P102: block icon in its colour (also the drag handle), then the arrows (P97) -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                            <Grid Width="28" Height="28" Background="Transparent" Tag="{Binding BlockKey}" ToolTip="{Binding IconTip}"
+                                  MouseLeftButtonDown="OnBlockHandleDown" MouseMove="OnBlockHandleMove">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CanMove}" Value="True">
+                                                <Setter Property="Cursor" Value="SizeAll" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <c:CutBorder Background="{Binding Tone, Converter={StaticResource ToneTint}}" BorderBrush="{Binding Tone, Converter={StaticResource ToneBrush}}"
+                                             Cut="7" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                                <Path Data="{Binding IconData}" Stroke="{Binding Tone, Converter={StaticResource ToneBrush}}" StrokeThickness="1.4"
+                                      StrokeLineJoin="Round" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Path Fill="{StaticResource Y}" Width="7" Height="8" Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-3,-3"
+                                      Visibility="{Binding BlockKey, Converter={StaticResource NullToVis}, ConverterParameter=invert}"
+                                      Data="M1,4.2 H9 V10 H1 Z M2.3,4.2 V3 A2.7,2.7 0 0 1 7.7,3 V4.2 H6.4 V3 A1.4,1.4 0 0 0 3.6,3 V4.2 Z" />
+                            </Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="4,0,0,0" Visibility="{Binding CanMove, Converter={StaticResource BoolToVis}}">
+                                <Button Style="{StaticResource TinyIconButton}" Height="11" Command="{Binding MoveUpCommand}" ToolTip="Move up (loads earlier)" AutomationProperties.Name="Move up">
+                                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="8" Height="5" Stretch="Fill" Data="M0,5 L4,0 L8,5 Z" />
+                                </Button>
+                                <Button Style="{StaticResource TinyIconButton}" Height="11" Command="{Binding MoveDownCommand}" ToolTip="Move down (loads later)" AutomationProperties.Name="Move down">
+                                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="8" Height="5" Stretch="Fill" Data="M0,0 L8,0 L4,5 Z" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource QuietLinkButton}" Command="{Binding FoldCommand}" ToolTip="{Binding FoldTip}" Padding="4,2" Margin="0,0,8,0" VerticalAlignment="Center">
                             <Path Data="{Binding ArrowData}" Fill="{Binding Tone, Converter={StaticResource ToneBrush}}" Width="10" Height="10" Stretch="Uniform" />
                         </Button>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
                             <TextBlock Style="{StaticResource MonoLabel}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" FontWeight="Bold" Text="{Binding Label}" />
                             <TextBlock Margin="0,2,0,0" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource T}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Margin="12,0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <!-- P89: attention marks -->
-                            <Button Style="{StaticResource LinkButton}" Foreground="{StaticResource C}" FontFamily="{StaticResource MonoFont}" FontSize="12" FontWeight="Bold" Margin="0,0,10,0"
-                                    Content="{Binding UpdatesText}" ToolTip="{Binding UpdatesTip}" Command="{Binding ShowUpdateCommand}" Visibility="{Binding HasUpdates, Converter={StaticResource BoolToVis}}" />
-                            <Button Style="{StaticResource LinkButton}" Foreground="{StaticResource O}" FontFamily="{StaticResource MonoFont}" FontSize="12" FontWeight="Bold" Margin="0,0,10,0"
-                                    Content="{Binding ConflictsText}" ToolTip="{Binding ConflictsTip}" Command="{Binding ShowConflictCommand}" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVis}}" />
-                            <Button Style="{StaticResource LinkButton}" Foreground="{StaticResource M}" FontFamily="{StaticResource MonoFont}" FontSize="12" FontWeight="Bold" Margin="0,0,10,0"
-                                    Content="{Binding MissingText}" ToolTip="{Binding MissingTip}" Command="{Binding ShowMissingCommand}" Visibility="{Binding HasMissing, Converter={StaticResource BoolToVis}}" />
-                            <TextBlock Style="{StaticResource Mono}" FontSize="12" VerticalAlignment="Center" Foreground="{StaticResource T2}" Text="{Binding CountText}" />
+                        <StackPanel Grid.Column="3" Margin="12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- P89/P92: attention marks as small bevelled tags with an icon and a count -->
+                            <Button Style="{StaticResource MarkButton}" Foreground="{StaticResource C}" Background="{StaticResource CTint}"
+                                    ToolTip="{Binding UpdatesTip}" AutomationProperties.Name="{Binding UpdatesTip}" Command="{Binding ShowUpdateCommand}" Visibility="{Binding HasUpdates, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource MarkIcon}" Data="M5,0 L10,5.6 L6.7,5.6 L6.7,10 L3.3,10 L3.3,5.6 L0,5.6 Z" />
+                                    <TextBlock Text="{Binding Updates}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource MarkButton}" Foreground="{StaticResource O}" Background="{StaticResource OTint}"
+                                    ToolTip="{Binding ConflictsTip}" AutomationProperties.Name="{Binding ConflictsTip}" Command="{Binding ShowConflictCommand}" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource MarkIcon}" Width="11" Data="F0 M5.5,0 L11,10 L0,10 Z M4.8,3.4 L6.2,3.4 L6.0,6.9 L5.0,6.9 Z M4.8,7.8 L6.2,7.8 L6.2,9.1 L4.8,9.1 Z" />
+                                    <TextBlock Text="{Binding Conflicts}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource MarkButton}" Foreground="{StaticResource M}" Background="{StaticResource MTint}"
+                                    ToolTip="{Binding MissingTip}" AutomationProperties.Name="{Binding MissingTip}" Command="{Binding ShowMissingCommand}" Visibility="{Binding HasMissing, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource MarkIcon}" Width="9" Height="9" Data="M1.4,0 L5,3.6 L8.6,0 L10,1.4 L6.4,5 L10,8.6 L8.6,10 L5,6.4 L1.4,10 L0,8.6 L3.6,5 L0,1.4 Z" />
+                                    <TextBlock Text="{Binding Missing}" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Style="{StaticResource Mono}" FontSize="12" Margin="4,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource T2}" Text="{Binding CountText}" />
                         </StackPanel>
-                        <Button Grid.Column="3" Margin="0,0,16,0" Style="{StaticResource LinkButton}" FontSize="12" Content="Manage ›" VerticalAlignment="Center"
-                                Command="{Binding ManageCommand}" Visibility="{Binding ManageCommand, Converter={StaticResource NullToVis}}" />
-                        <CheckBox Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource WantToggle}"
+                        <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
+                            <!-- P95: new category inside MODS -->
+                            <Button Style="{StaticResource SmallButton}" Content="+ CATEGORY" Command="{Binding AddCategoryCommand}"
+                                    ToolTip="New category inside MODS; its mods load after the mods without a category"
+                                    Visibility="{Binding AddCategoryCommand, Converter={StaticResource NullToVis}}" />
+                            <Button Margin="6,0,0,0" Style="{StaticResource LinkButton}" FontSize="12" Content="Manage ›" VerticalAlignment="Center"
+                                    Command="{Binding ManageCommand}" Visibility="{Binding ManageCommand, Converter={StaticResource NullToVis}}" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="5" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource WantToggle}"
                                   IsChecked="{Binding IsOn, Mode=OneWay}" Command="{Binding ToggleCommand}" IsEnabled="{Binding CanToggle}"
                                   ToolTip="{Binding ToggleTip}" AutomationProperties.Name="{Binding ToggleTip}" />
                     </Grid>
                 </c:CutBorder>
+
+                <!-- P95: category inside MODS: a smaller violet divider, indented under the MODS block -->
+                <Grid Margin="22,8,0,4" Visibility="{Binding IsCategory, Converter={StaticResource BoolToVis}}">
+                    <Border Background="{StaticResource VTint}" BorderBrush="{StaticResource V}" BorderThickness="3,0,0,1" Padding="6,4,12,4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="56" />
+                            </Grid.ColumnDefinitions>
+                            <!-- P102: block icon in its colour (also the drag handle), then the arrows (P97) -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                            <Grid Width="22" Height="22" Background="Transparent" Tag="{Binding BlockKey}" ToolTip="{Binding IconTip}"
+                                  MouseLeftButtonDown="OnBlockHandleDown" MouseMove="OnBlockHandleMove">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CanMove}" Value="True">
+                                                <Setter Property="Cursor" Value="SizeAll" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <c:CutBorder Background="{Binding Tone, Converter={StaticResource ToneTint}}" BorderBrush="{Binding Tone, Converter={StaticResource ToneBrush}}"
+                                             Cut="7" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                                <Path Data="{Binding IconData}" Stroke="{Binding Tone, Converter={StaticResource ToneBrush}}" StrokeThickness="1.4"
+                                      StrokeLineJoin="Round" Width="9" Height="10" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Path Fill="{StaticResource Y}" Width="7" Height="8" Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-3,-3"
+                                      Visibility="{Binding BlockKey, Converter={StaticResource NullToVis}, ConverterParameter=invert}"
+                                      Data="M1,4.2 H9 V10 H1 Z M2.3,4.2 V3 A2.7,2.7 0 0 1 7.7,3 V4.2 H6.4 V3 A1.4,1.4 0 0 0 3.6,3 V4.2 Z" />
+                            </Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="4,0,0,0" Visibility="{Binding CanMove, Converter={StaticResource BoolToVis}}">
+                                <Button Style="{StaticResource TinyIconButton}" Height="11" Command="{Binding MoveUpCommand}" ToolTip="Move up (loads earlier)" AutomationProperties.Name="Move up">
+                                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="8" Height="5" Stretch="Fill" Data="M0,5 L4,0 L8,5 Z" />
+                                </Button>
+                                <Button Style="{StaticResource TinyIconButton}" Height="11" Command="{Binding MoveDownCommand}" ToolTip="Move down (loads later)" AutomationProperties.Name="Move down">
+                                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="8" Height="5" Stretch="Fill" Data="M0,0 L8,0 L4,5 Z" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                            <Button Grid.Column="1" Style="{StaticResource QuietLinkButton}" Command="{Binding FoldCommand}" ToolTip="{Binding FoldTip}" Padding="3,2" Margin="0,0,6,0" VerticalAlignment="Center">
+                                <Path Data="{Binding ArrowData}" Fill="{StaticResource V}" Width="8" Height="8" Stretch="Uniform" />
+                            </Button>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource V}" FontWeight="Bold" Text="{Binding Label}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource T}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                           Background="Transparent" MouseLeftButtonDown="OnCategoryNameMouseDown" ToolTip="Double-click to rename" />
+                                <TextBlock Style="{StaticResource Meta}" FontSize="11.5" Margin="12,0,0,0" VerticalAlignment="Center" Text="{Binding EmptyHint}"
+                                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="3" Margin="10,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- P89/P92: attention marks as small bevelled tags with an icon and a count -->
+                            <Button Style="{StaticResource MarkButton}" Foreground="{StaticResource C}" Background="{StaticResource CTint}"
+                                    ToolTip="{Binding UpdatesTip}" AutomationProperties.Name="{Binding UpdatesTip}" Command="{Binding ShowUpdateCommand}" Visibility="{Binding HasUpdates, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource MarkIcon}" Data="M5,0 L10,5.6 L6.7,5.6 L6.7,10 L3.3,10 L3.3,5.6 L0,5.6 Z" />
+                                    <TextBlock Text="{Binding Updates}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource MarkButton}" Foreground="{StaticResource O}" Background="{StaticResource OTint}"
+                                    ToolTip="{Binding ConflictsTip}" AutomationProperties.Name="{Binding ConflictsTip}" Command="{Binding ShowConflictCommand}" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource MarkIcon}" Width="11" Data="F0 M5.5,0 L11,10 L0,10 Z M4.8,3.4 L6.2,3.4 L6.0,6.9 L5.0,6.9 Z M4.8,7.8 L6.2,7.8 L6.2,9.1 L4.8,9.1 Z" />
+                                    <TextBlock Text="{Binding Conflicts}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource MarkButton}" Foreground="{StaticResource M}" Background="{StaticResource MTint}"
+                                    ToolTip="{Binding MissingTip}" AutomationProperties.Name="{Binding MissingTip}" Command="{Binding ShowMissingCommand}" Visibility="{Binding HasMissing, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource MarkIcon}" Width="9" Height="9" Data="M1.4,0 L5,3.6 L8.6,0 L10,1.4 L6.4,5 L10,8.6 L8.6,10 L5,6.4 L1.4,10 L0,8.6 L3.6,5 L0,1.4 Z" />
+                                    <TextBlock Text="{Binding Missing}" />
+                                </StackPanel>
+                            </Button>
+                                <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Margin="4,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource T2}" Text="{Binding CountText}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                                <Button Style="{StaticResource QuietLinkButton}" FontSize="11.5" Content="Rename" Command="{Binding RenameCommand}" Margin="0,0,12,0" />
+                                <Button Style="{StaticResource QuietLinkButton}" FontSize="11.5" Content="Remove" Command="{Binding RemoveCommand}"
+                                        ToolTip="Remove the category; its mods go back to MODS (nothing is deleted)" />
+                            </StackPanel>
+                            <CheckBox Grid.Column="5" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource WantToggle}"
+                                      IsChecked="{Binding IsOn, Mode=OneWay}" Command="{Binding ToggleCommand}" IsEnabled="{Binding CanToggle}"
+                                      ToolTip="{Binding ToggleTip}" AutomationProperties.Name="{Binding ToggleTip}" />
+                        </Grid>
+                    </Border>
+                </Grid>
             </Grid>
         </DataTemplate>
 
@@ -905,6 +1047,357 @@
             </StackPanel>
         </DataTemplate>
 
+        <!-- P96/P105: visual guide; the short part first, everything on request -->
+        <DataTemplate DataType="{x:Type vm:GuideVm}">
+            <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto" Focusable="False">
+            <StackPanel Width="680" Margin="0,0,10,0">
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="THE LIST" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="IN PROFILE" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The switch: the mod is on in the selected profile. Nothing reaches the game before APPLY CHANGES." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="DEPLOYED" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The mod is really in the game folder right now." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <Path Fill="{StaticResource T3}" Width="6" Height="10" HorizontalAlignment="Left" Data="M0,0 H2 V2 H0 Z M4,0 H6 V2 H4 Z M0,4 H2 V6 H0 Z M4,4 H6 V6 H4 Z M0,8 H2 V10 H0 Z M4,8 H6 V10 H4 Z" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag a row by this handle, or a whole block by its icon, to change the load order. Higher in the list loads first and wins file conflicts." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECKBOXES" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Select mods for bulk actions. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
+                </Grid>
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="BLOCKS" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="24" Height="24" VerticalAlignment="Center">
+                                <c:CutBorder Background="{StaticResource YTint}" BorderBrush="{StaticResource Y}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                                <Path Data="M4.5,4.5 H11.5 V11.5 H4.5 Z M6.5,6.5 H9.5 V9.5 H6.5 Z M6.5,1 V4.5 M9.5,1 V4.5 M6.5,11.5 V15 M9.5,11.5 V15 M1,6.5 H4.5 M1,9.5 H4.5 M11.5,6.5 H15 M11.5,9.5 H15" Stroke="{StaticResource Y}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Path Fill="{StaticResource Y}" Width="7" Height="8" Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-3,-3"
+                                      Data="M1,4.2 H9 V10 H1 Z M2.3,4.2 V3 A2.7,2.7 0 0 1 7.7,3 V4.2 H6.4 V3 A1.4,1.4 0 0 0 3.6,3 V4.2 Z" />
+                            </Grid>
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource Y}" Text="CORE MODS" />
+                        </StackPanel>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Frameworks (CET, RED4ext, redscript …). Always on top, always load first, cannot be moved (the lock)." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="24" Height="24" VerticalAlignment="Center">
+                                <c:CutBorder Background="{StaticResource CTint}" BorderBrush="{StaticResource C}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                                <Path Data="M8,1.5 L14.5,5 L8,8.5 L1.5,5 Z M1.5,8 L8,11.5 L14.5,8 M1.5,11 L8,14.5 L14.5,11" Stroke="{StaticResource C}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource C}" Text="COLLECTION" />
+                        </StackPanel>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Mods of a Nexus collection; MANAGE for its order, lock and downloads." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="24" Height="24" VerticalAlignment="Center">
+                                <c:CutBorder Background="{StaticResource TagTextTint}" BorderBrush="{StaticResource TagText}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                                <Path Data="M8,1.5 L14.5,4.8 V11.2 L8,14.5 L1.5,11.2 V4.8 Z M1.5,4.8 L8,8.1 L14.5,4.8 M8,8.1 V14.5" Stroke="{StaticResource TagText}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource TagText}" Text="MODS" />
+                        </StackPanel>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Your other mods. + CATEGORY splits them into categories." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="24" Height="24" VerticalAlignment="Center">
+                                <c:CutBorder Background="{StaticResource VTint}" BorderBrush="{StaticResource V}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                                <Path Data="M3.5,1.5 H12.5 V14.5 L8,10.8 L3.5,14.5 Z M6,5 H10" Stroke="{StaticResource V}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="10" Height="11" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource V}" Text="CATEGORY" />
+                        </StackPanel>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="A category inside MODS: a smaller violet divider with its own switch, Rename and Remove." />
+                </Grid>
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="MARKS" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <c:CutBorder Background="{StaticResource CTint}" BorderBrush="{StaticResource C}" Cut="5" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="6,1,7,1" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="{StaticResource C}" Width="10" Height="10" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" Data="M5,0 L10,5.6 L6.7,5.6 L6.7,10 L3.3,10 L3.3,5.6 L0,5.6 Z" />
+                                <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C}" Text="2" />
+                            </StackPanel>
+                        </c:CutBorder>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Newer version on Nexus. Click the mark in a block header to show the first such mod." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <c:CutBorder Background="{StaticResource OTint}" BorderBrush="{StaticResource O}" Cut="5" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="6,1,7,1" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="{StaticResource O}" Width="11" Height="10" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" Data="F0 M5.5,0 L11,10 L0,10 Z M4.8,3.4 L6.2,3.4 L6.0,6.9 L5.0,6.9 Z M4.8,7.8 L6.2,7.8 L6.2,9.1 L4.8,9.1 Z" />
+                                <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource O}" Text="1" />
+                            </StackPanel>
+                        </c:CutBorder>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="File conflict: another mod replaces some of its files." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <c:CutBorder Background="{StaticResource MTint}" BorderBrush="{StaticResource M}" Cut="5" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="6,1,7,1" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="{StaticResource M}" Width="9" Height="9" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" Data="M1.4,0 L5,3.6 L8.6,0 L10,1.4 L6.4,5 L10,8.6 L8.6,10 L5,6.4 L1.4,10 L0,8.6 L3.6,5 L0,1.4 Z" />
+                                <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource M}" Text="1" />
+                            </StackPanel>
+                        </c:CutBorder>
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Missing something it needs (a core mod or another mod)." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource O}" Text="2 VERSIONS ON" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Two versions of one mod are on in this profile; usually switch one off." />
+                </Grid>
+                <StackPanel Visibility="{Binding ShowAll, Converter={StaticResource BoolToVis}}">
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="LOAD ORDER" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="BLOCKS" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="CORE MODS first, then the blocks in the order you see. Drag a block by its icon or use the small arrows next to it; the block keeps its inner order." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="INSIDE MODS" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Mods without a category load first, then the categories from top to bottom. Putting a mod into a category moves it in the load order too; AFTERLIFE tells you when a conflicting file gets another winner." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="COLLECTIONS" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Their mods stay inside the collection. A locked collection keeps the curator's order; unlock it in MANAGE to drag." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="RESET ORDER" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Back to the game's alphabetical order." />
+                </Grid>
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="SELECTING AND MOVING" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CTRL / SHIFT" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+click adds one mod to the selection, Shift+click a range, Ctrl+A all visible mods." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="GROUP" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag one of the checked mods to move all of them together, or use MOVE TO CATEGORY in the bar below the list. After the move the mods are unchecked." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="HEADERS" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drop mods on a MODS or category header to put them at its end. Removing a category never deletes mods." />
+                </Grid>
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="VERSIONS AND DUPLICATES" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="NEW VERSION" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="A newer download replaces the old version in the profile. For a mod in a collection you choose: into the collection (old one off), replace (old one deleted) or keep it outside." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="TWO VERSIONS" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Switching on another version of a mod that is on offers to switch the other one off; Keep both is for optional files from the same Nexus page." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="DUPLICATES" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The same files are never imported twice: the mod already in the library is used. Older duplicates are found after start and merged with MERGE." />
+                </Grid>
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="RENAMING" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="DOUBLE-CLICK" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="On a mod, profile or category name to rename it. Profiles also have Rename next to Delete profile; Mods off keeps its name." />
+                </Grid>
+                <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="APPLY AND TOOLS" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="PREVIEW" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="What APPLY CHANGES will copy, remove or reorder in the game; Apply also lists two versions of one mod." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECK UPDATES" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Asks Nexus Mods for newer versions (needs your Nexus key). UPDATE ALL needs Nexus Premium." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="EXPORT LIST" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Active mods with versions, handy when you look for a problem mod." />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Focusable="False" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="KEYS" />
+                    </ContentControl>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A select all · Esc closes a panel." />
+                </Grid>
+                </StackPanel>
+                <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource SmallAccentButton}" Command="{Binding ToggleAllCommand}" Content="{Binding ToggleLabel}" />
+            </StackPanel>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- P95/P98: one of several options -->
+        <DataTemplate DataType="{x:Type vm:ChoiceVm}">
+            <StackPanel Width="560">
+                <TextBlock Style="{StaticResource Body}" FontSize="13.5" Text="{Binding Message}" TextWrapping="Wrap" Margin="0,0,0,12" />
+                <ListBox Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource CardItem}" MaxHeight="320"
+                         ItemsSource="{Binding Options}" SelectedItem="{Binding Selected}" AutomationProperties.Name="Options">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Style="{StaticResource Body}" FontSize="14" Text="{Binding}" TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding OptionChecked}" Content="{Binding OptionLabel}"
+                          Visibility="{Binding OptionLabel, Converter={StaticResource NullToVis}}" />
+                <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" IsCancel="True" />
+                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}" MinWidth="120" IsDefault="True" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:AboutVm}">
             <StackPanel Width="680">
                 <TextBlock Style="{StaticResource Mono}" Foreground="{StaticResource T2}" Text="{Binding Version}" />
@@ -958,6 +1451,7 @@
             <Grid x:Name="Header" Margin="0,0,0,14" ClipToBounds="True">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -1073,6 +1567,38 @@
                         </StackPanel>
                     </Grid>
                 </c:CutBorder>
+                <!-- P96: the list legend lives behind a vertical GUIDE tab right after CORE MODS -->
+                <Button Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Stretch" Command="{Binding OpenGuideCommand}" Cursor="Hand"
+                        ToolTip="Quick guide: what the columns, colours, marks and blocks mean" AutomationProperties.Name="Quick guide"
+                        FocusVisualStyle="{StaticResource FocusRing}">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <c:CutBorder x:Name="Frame" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Line}" AccentBrush="{StaticResource C}"
+                                         CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="8" Padding="6,12">
+                                <StackPanel VerticalAlignment="Center">
+                                    <Grid Width="16" Height="16" HorizontalAlignment="Center" Margin="0,0,0,8">
+                                        <Ellipse x:Name="Ring" Stroke="{StaticResource C}" StrokeThickness="1.4" />
+                                        <TextBlock x:Name="Q" Text="?" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource C}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Grid>
+                                    <TextBlock x:Name="Label" Text="GUIDE" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" FontSize="11" Foreground="{StaticResource T2}"
+                                               HorizontalAlignment="Center">
+                                        <TextBlock.LayoutTransform>
+                                            <RotateTransform Angle="90" />
+                                        </TextBlock.LayoutTransform>
+                                    </TextBlock>
+                                </StackPanel>
+                            </c:CutBorder>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource C}" />
+                                    <Setter TargetName="Frame" Property="Background" Value="{StaticResource CTint}" />
+                                    <Setter TargetName="Label" Property="Foreground" Value="{StaticResource C}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </Grid>
 
             <!-- ===================== MAIN ===================== -->
@@ -1202,7 +1728,8 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource T}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource T}" TextTrimming="CharacterEllipsis"
+                                                           Background="Transparent" MouseLeftButtonDown="OnProfileNameMouseDown" />
                                                 <TextBlock Margin="0,2,0,0" Style="{StaticResource Meta}" Text="{Binding Subtitle}" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" VerticalAlignment="Top" Margin="8,2,0,0"
@@ -1213,6 +1740,9 @@
                             </ListBox>
                             <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
                                 <Button Style="{StaticResource LinkButton}" Command="{Binding NewProfileCommand}" Content="+ New profile" />
+                                <!-- P101 -->
+                                <Button Margin="16,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding RenameProfileCommand}" Content="Rename"
+                                        Visibility="{Binding CanDeleteProfile, Converter={StaticResource BoolToVis}}" ToolTip="Rename the selected profile (or double-click its name)" />
                                 <!-- P72 -->
                                 <Button Margin="16,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding DeleteProfileCommand}" Content="Delete profile"
                                         Visibility="{Binding CanDeleteProfile, Converter={StaticResource BoolToVis}}" ToolTip="Delete the selected profile; the mods stay in the library" />
@@ -1345,8 +1875,8 @@
                             </Grid>
                         </Border>
 
-                        <!-- Column headers -->
-                        <Grid Grid.Row="3" Margin="18,6,12,6">
+                        <!-- Column headers; P103: a click outside the select-all box clears the selection -->
+                        <Grid Grid.Row="3" Margin="18,6,12,6" Background="Transparent" MouseLeftButtonDown="OnColumnHeaderClick">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30" />
                                 <ColumnDefinition Width="*" />
@@ -1463,6 +1993,9 @@
                                             <TextBlock Style="{StaticResource Mono}" Text="{Binding Version}" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource O}" Text="{Binding VersionNote}"
                                                        Visibility="{Binding VersionNote, Converter={StaticResource NullToVis}}" TextWrapping="Wrap" />
+                                            <!-- P98 -->
+                                            <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource O}" Text="{Binding TwinText}"
+                                                       Visibility="{Binding TwinText, Converter={StaticResource NullToVis}}" ToolTip="Another version of this mod is on in this profile too; usually switch one off" />
                                             <!-- M4 -->
                                             <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" Text="{Binding UpdateText}"
                                                        Visibility="{Binding UpdateText, Converter={StaticResource NullToVis}}" ToolTip="A newer version is on Nexus Mods; see the details" />
@@ -1537,6 +2070,10 @@
                                 <Button HorizontalAlignment="Left" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear selection" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- P95: checked mods into a category (or back to MODS) -->
+                                <Button Style="{StaticResource AccentButton}" Command="{Binding BulkMoveToCategoryCommand}" Content="MOVE TO CATEGORY" Margin="0,0,10,0"
+                                        BorderBrush="{StaticResource V}" Foreground="{StaticResource V}" Background="{StaticResource VTint}"
+                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Put the checked mods into a category inside MODS; their load order moves with it" />
                                 <Button Style="{StaticResource AccentButton}" Command="{Binding BulkActivateCommand}" Content="ACTIVATE" Margin="0,0,10,0"
                                         IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch on in the selected profile" />
                                 <Button Style="{StaticResource WarnButton}" Command="{Binding BulkDeactivateCommand}" Content="DEACTIVATE" Margin="0,0,10,0"
@@ -1546,14 +2083,14 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Apply bar -->
+                        <!-- Apply bar (P96): status left, small bevelled tools, APPLY on the right; the legend moved to the GUIDE tab -->
                         <Grid Grid.Row="6" Margin="0,12,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource InverseBoolToVis}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock FontSize="13">
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock FontSize="13" TextTrimming="CharacterEllipsis">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock" BasedOn="{StaticResource Body}">
                                             <Setter Property="Foreground" Value="{StaticResource G}" />
@@ -1566,27 +2103,26 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource M}" Text="{Binding ApplyBlockedReason}"
+                                <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource M}" Text="{Binding ApplyBlockedReason}" TextWrapping="Wrap"
                                            Visibility="{Binding ApplyBlockedReason, Converter={StaticResource NullToVis}}" />
-                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                    <TextBlock Style="{StaticResource MonoLabel}" Text="IN PROFILE = on in the selected profile · DEPLOYED = really in the game · drag ⋮⋮ to set the load order" />
-                                    <Button Margin="12,0,0,0" Style="{StaticResource QuietLinkButton}" FontSize="11" Command="{Binding ResetOrderCommand}" Content="Reset order"
-                                            Visibility="{Binding OrderIsCustom, Converter={StaticResource BoolToVis}}" ToolTip="Back to the game's alphabetical order" />
-                                </StackPanel>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <WrapPanel Margin="0,7,0,0">
                                 <!-- P52: always visible -->
-                                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding RefreshLibraryCommand}" Content="Refresh" Margin="0,0,16,0"
+                                <Button Style="{StaticResource SmallButton}" Command="{Binding RefreshLibraryCommand}" Content="REFRESH"
                                         ToolTip="Read the game folder and the library again (F5)" />
-                                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CheckUpdatesCommand}" Content="Check updates" Margin="0,0,16,0"
+                                <Button Style="{StaticResource SmallButton}" Command="{Binding CheckUpdatesCommand}" Content="CHECK UPDATES"
                                         ToolTip="Look for newer versions on Nexus Mods (needs your Nexus key)" />
                                 <!-- P59: Premium only, Nexus allows direct downloads only for Premium -->
-                                <Button Style="{StaticResource LinkButton}" Command="{Binding UpdateAllCommand}" Content="{Binding UpdateAllLabel}" Margin="0,0,16,0"
+                                <Button Style="{StaticResource SmallAccentButton}" Command="{Binding UpdateAllCommand}" Content="{Binding UpdateAllLabel}"
                                         Visibility="{Binding CanUpdateAll, Converter={StaticResource BoolToVis}}" ToolTip="Download every newer version and put it in the profile instead of the old one" />
-                                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding ExportListCommand}" Content="Export list" Margin="0,0,16,0"
+                                <Button Style="{StaticResource SmallButton}" Command="{Binding ExportListCommand}" Content="EXPORT LIST"
                                         ToolTip="Active mods with versions, for finding a problem mod" />
-                                <Button Style="{StaticResource LinkButton}" Command="{Binding PreviewCommand}" Content="Preview changes" Margin="0,0,16,0"
-                                        Visibility="{Binding HasChanges, Converter={StaticResource BoolToVis}}" />
+                                <Button Style="{StaticResource SmallButton}" Command="{Binding ResetOrderCommand}" Content="RESET ORDER"
+                                        Visibility="{Binding OrderIsCustom, Converter={StaticResource BoolToVis}}" ToolTip="Back to the game's alphabetical order" />
+                                </WrapPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Style="{StaticResource SmallAccentButton}" Margin="8,0,10,0" Command="{Binding PreviewCommand}" Content="PREVIEW"
+                                        ToolTip="What Apply will do in the game" Visibility="{Binding HasChanges, Converter={StaticResource BoolToVis}}" />
                                 <Button Style="{StaticResource PrimaryButton}" MinHeight="38" MinWidth="170" Command="{Binding ApplyChangesCommand}" IsEnabled="{Binding CanApply}"
                                         Content="APPLY CHANGES" FontSize="14" Visibility="{Binding HasChanges, Converter={StaticResource BoolToVis}}" />
                             </StackPanel>

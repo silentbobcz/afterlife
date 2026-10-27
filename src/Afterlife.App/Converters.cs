@@ -26,8 +26,9 @@ public sealed class InverseBool : IValueConverter
 
 public sealed class NullToVisibility : IValueConverter
 {
+    /// <summary>ConverterParameter "invert": visible only when the value is empty (P97: lock of CORE MODS).</summary>
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        value is null || (value is string s && s.Length == 0) ? Visibility.Collapsed : Visibility.Visible;
+        (value is null || (value is string s && s.Length == 0)) != (parameter as string == "invert") ? Visibility.Collapsed : Visibility.Visible;
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
@@ -44,6 +45,8 @@ public sealed class ToneToBrush : IValueConverter
             Tone.Warn => "O",
             Tone.Block => "M",
             Tone.Brand => "Y",
+            Tone.Plain => "TagText",
+            Tone.Category => "V",
             _ => "T3",
         };
         var brush = (SolidColorBrush)Application.Current.Resources[key];
