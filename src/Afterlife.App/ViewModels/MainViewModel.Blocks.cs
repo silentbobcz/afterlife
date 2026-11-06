@@ -170,6 +170,12 @@ public sealed partial class MainViewModel
         var target = Mods.FirstOrDefault(m => m.PackageId == targetId);
         if (target is null) return;
         if (WhyNotDrop(moved, target.Chapter) is { } why) { Say("Not moved: " + why + ".", Tone.Warn); return; }
+        // P124: inside MODS and categories the order is alphabetical; a drop there only changes the category
+        if (InModsFamily(target.Chapter) && Mods.Where(m => moved.Contains(m.PackageId)).All(m => m.Chapter == target.Chapter))
+        {
+            Say("Inside MODS and categories mods are sorted by name. To load a mod earlier, put it in a category and move the category up.", Tone.Info);
+            return;
+        }
         var order = CurrentOrder();
         var movedSet = moved.Where(order.Contains).ToList();
         if (movedSet.Count == 0 || movedSet.Contains(targetId)) return;

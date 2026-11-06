@@ -77,7 +77,13 @@ public sealed record NexusFiles(string ModId, IReadOnlyList<NexusFile> Files, IR
 /// <summary>M4: a newer file for a package. Exact = the author marked our file as replaced; otherwise the version of the main file differs.</summary>
 public sealed record NexusUpdate(string ModId, string FileId, string? Version, string Name, bool Exact, DateTimeOffset CheckedAt)
 {
-    public string Url => $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}?tab=files&file_id={FileId}";
+    /// <summary>
+    /// Page of the new file. P117: <c>nmm=1</c> opens Nexus' download page for mod managers, where one click on
+    /// "Slow download" (free) or "Download" (Premium) sends the file through the nxm:// link straight into AFTERLIFE.
+    /// </summary>
+    public string Url => $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}?tab=files&file_id={FileId}&nmm=1";
+    /// <summary>Plain files tab (no mod-manager hand-off), for the case that no nxm:// handler is registered.</summary>
+    public string FilesUrl => $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}?tab=files&file_id={FileId}";
 }
 
 public static class NexusUpdates

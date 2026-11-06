@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.IO;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -374,13 +375,18 @@ public sealed class ObservableList<T> : ObservableCollection<T>
 }
 
 /// <summary>P12: one row of the core table in the header.</summary>
-public sealed class CoreModVm(CoreModStatus s)
+public sealed class CoreModVm(CoreModStatus s, NexusUpdate? update = null, ICommand? updateCommand = null)
 {
     public CoreModStatus Status { get; } = s;
     public string Name => Status.Name;
     public string Version => Status.Version ?? "–";
     public string Source => Status.SourceLabel;
     public string? NexusUrl => Status.NexusUrl;
+    /// <summary>P118: a newer version of this core mod is on Nexus; shown as a quiet mark next to the version.</summary>
+    public NexusUpdate? Update { get; } = update;
+    public bool HasUpdate => Update is not null;
+    public ICommand? UpdateCommand { get; } = updateCommand;
+    public string UpdateTip => Update is null ? "" : $"Newer version on Nexus Mods: {Update.Version ?? Update.Name} · click to update";
     public bool Installed => Status.Source is CoreSource.InGame or CoreSource.Manual;
     public bool CanGet => !Installed && Status.NexusUrl is not null;
     public string Glyph => Installed ? "■" : Status.Source == CoreSource.Library ? "◩" : "□";
@@ -399,9 +405,37 @@ public enum ChapterKind { Core, Collection, Plain, Category }
 
 /// <summary>P68/P82/P83/P95/P97: header of a chapter in the mod list: fold arrow, count, marks, a switch for all its mods and (not core) a drag handle.</summary>
 public sealed class CollectionChapterVm(ChapterKind kind, string key, string label, string name, int on, int total, bool canToggle,
-    bool collapsed, ICommand? toggle, ICommand? manage, ICommand fold)
+    bool collapsed, ICommand? toggle, ICommand? manage, ICommand fold) : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     public ChapterKind Kind { get; } = kind;
+
+    // P110: the header checkbox selects (checks) every mod of the chapter for bulk actions; three states like the list header
+    private IReadOnlyList<ModRowVm> _rows = [];
+    public bool? Selection => _rows.Count == 0 ? false : _rows.All(r => r.IsChecked) ? true : _rows.Any(r => r.IsChecked) ? null : false;
+    public bool CanSelect => _rows.Count > 0;
+    public string SelectTip => Kind switch
+    {
+        ChapterKind.Core => "Select all core mods (for MOVE TO CATEGORY, bulk on/off, ...)",
+        ChapterKind.Collection => "Select all mods of this collection",
+        ChapterKind.Category => "Select all mods of this category",
+        _ => "Select all mods of MODS (with its categories)",
+    };
+    public ICommand SelectAllCommand => _selectAll ??= new RelayCommand(() =>
+    {
+        var all = _rows.Count > 0 && _rows.All(r => r.IsChecked);
+        foreach (var r in _rows) r.IsChecked = !all;
+    });
+    private ICommand? _selectAll;
+    /// <summary>Rows of the chapter; the header follows their check marks.</summary>
+    public void WatchRows(IReadOnlyList<ModRowVm> rows)
+    {
+        _rows = rows;
+        foreach (var r in rows)
+            r.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ModRowVm.IsChecked)) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection))); };
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selection)));
+    }
     public string Slug { get; } = key;
     public string Label { get; } = label;
     public string Name { get; } = name;

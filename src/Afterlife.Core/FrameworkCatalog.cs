@@ -56,6 +56,12 @@ public sealed record FrameworkContract(
     public IReadOnlyList<string> RuntimeFolders { get; init; } = [];
     /// <summary>Sub-folders of <see cref="RuntimeFolders"/> that belong to other mods and are never touched.</summary>
     public IReadOnlyList<string> RuntimeExclude { get; init; } = [];
+    /// <summary>
+    /// P115/P119: files the framework ships in its archive only as a starting copy and then rewrites itself
+    /// every time the game runs (Input Loader: the merged r6/cache XMLs and its ini). A different content there
+    /// is the framework at work, not a user edit: never reported as "changed outside", removed or replaced freely.
+    /// </summary>
+    public IReadOnlyList<string> RuntimeFiles { get; init; } = [];
 
     public string? NexusUrl => NexusModId is null ? null : $"https://www.nexusmods.com/cyberpunk2077/mods/{NexusModId}";
 }
@@ -67,7 +73,7 @@ public static class FrameworkCatalog
         new FrameworkContract(Capabilities.Cet, new[] { "bin/x64/plugins/cyber_engine_tweaks.asi" }, false, false, true,
             "Signature path to verify in M0.") { NexusModId = "107", ShortName = "CET", RuntimeFolders = ["bin/x64/plugins/cyber_engine_tweaks"], RuntimeExclude = ["bin/x64/plugins/cyber_engine_tweaks/mods"] },
         new FrameworkContract(Capabilities.Red4ext, new[] { "red4ext/RED4ext.dll" }, false, false, true,
-            "Signature path to verify in M0.") { NexusModId = "2380", ShortName = "RED4ext", RuntimeFolders = ["red4ext/logs"] },
+            "Signature path to verify in M0.") { NexusModId = "2380", ShortName = "RED4ext", RuntimeFolders = ["red4ext/logs"], RuntimeFiles = ["red4ext/config.ini"] },
         new FrameworkContract(Capabilities.Redscript, new[] { "engine/tools/scc.exe" }, false, true, true,
             "Writes r6/cache/final.redscripts(.bk/.modded); disable contract must be verified in M0.") { NexusModId = "1511", ShortName = "redscript" },
         new FrameworkContract(Capabilities.ArchiveXl, new[] { "red4ext/plugins/ArchiveXL/ArchiveXL.dll" }, false, false, true,
@@ -77,10 +83,18 @@ public static class FrameworkCatalog
         new FrameworkContract(Capabilities.Codeware, new[] { "red4ext/plugins/Codeware/Codeware.dll" }, false, false, true,
             "Signature path to verify in M0.") { NexusModId = "7780", ShortName = "Codeware", RuntimeFolders = ["red4ext/plugins/Codeware"] },
         new FrameworkContract(Capabilities.InputLoader, new[] { "red4ext/plugins/input_loader/input_loader.dll" }, false, true, true,
-            "Creates r6/cache XML and engine/config/platform/pc/input_loader.ini; managed in P2.") { NexusModId = "4575", ShortName = "Input Loader", RuntimeFolders = ["red4ext/plugins/input_loader"] },
+            "Creates r6/cache XML and engine/config/platform/pc/input_loader.ini; managed in P2.")
+        {
+            NexusModId = "4575", ShortName = "Input Loader", RuntimeFolders = ["red4ext/plugins/input_loader"],
+            RuntimeFiles = ["r6/cache/inputContexts.xml", "r6/cache/inputUserMappings.xml", "engine/config/platform/pc/input_loader.ini"],
+        },
         // P12: further common base mods. Folder layouts from their Nexus/GitHub install notes; still to verify in M0.
         new FrameworkContract(Capabilities.ModSettings, new[] { "red4ext/plugins/mod_settings/mod_settings.dll" }, false, true, true,
-            "Keeps user choices in red4ext/plugins/mod_settings/user.ini.") { NexusModId = "4885", ShortName = "Mod Settings", Optional = true, RuntimeFolders = ["red4ext/plugins/mod_settings"] },
+            "Keeps user choices in red4ext/plugins/mod_settings/user.ini.")
+        {
+            NexusModId = "4885", ShortName = "Mod Settings", Optional = true, RuntimeFolders = ["red4ext/plugins/mod_settings"],
+            RuntimeFiles = ["red4ext/plugins/mod_settings/user.ini"],
+        },
         new FrameworkContract(Capabilities.NativeSettings, new[] { "bin/x64/plugins/cyber_engine_tweaks/mods/nativeSettings/init.lua" }, false, false, true,
             "CET mod that adds the in-game Mods settings menu.") { NexusModId = "3518", ShortName = "Native Settings", Optional = true },
         new FrameworkContract(Capabilities.RedFileSystem, new[] { "red4ext/plugins/RedFileSystem/RedFileSystem.dll" }, false, false, true,
@@ -88,6 +102,13 @@ public static class FrameworkCatalog
     };
 
     public static FrameworkContract? Find(string capability) => Contracts.FirstOrDefault(c => c.Capability == capability);
+
+    /// <summary>Upper-case path keys of every <see cref="FrameworkContract.RuntimeFiles"/> entry (P115/P119).</summary>
+    public static IReadOnlySet<string> VolatilePathKeys { get; } =
+        Contracts.SelectMany(c => c.RuntimeFiles).Select(p => GamePath.Parse(p).Key).ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>True when a mod legitimately rewrites this file while the game runs (see <see cref="FrameworkContract.RuntimeFiles"/>).</summary>
+    public static bool IsVolatile(string path) => VolatilePathKeys.Contains(GamePath.Parse(path).Key);
 
     /// <summary>Capabilities proven by signature files among the given target paths.</summary>
     public static IReadOnlyList<string> DetectProvided(IEnumerable<GamePath> targets)

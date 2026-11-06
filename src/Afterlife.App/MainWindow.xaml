@@ -170,7 +170,10 @@
                 <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding OptionChecked}" Content="{Binding OptionLabel}"
                           Visibility="{Binding OptionLabel, Converter={StaticResource NullToVis}}" />
                 <StackPanel Margin="0,20,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="{Binding CancelLabel}" Margin="0,0,18,0" IsCancel="True" />
+                    <!-- P121: third button that leaves everything as it is -->
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding AbortCommand}" Content="{Binding AbortLabel}" Margin="0,0,18,0"
+                            Visibility="{Binding HasAbort, Converter={StaticResource BoolToVis}}" />
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="{Binding CancelLabel}" Margin="0,0,18,0" />
                     <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}" MinWidth="150"
                             Visibility="{Binding Danger, Converter={StaticResource InverseBoolToVis}}" />
                     <Button Style="{StaticResource DangerButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}"
@@ -352,6 +355,10 @@
                         </Grid.ColumnDefinitions>
                         <!-- P102: block icon in its colour (also the drag handle), then the arrows (P97) -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                            <!-- P110: select every mod of the block -->
+                            <CheckBox Style="{StaticResource PlainCheck}" VerticalAlignment="Center" Margin="0,0,8,0" IsThreeState="False"
+                                      IsChecked="{Binding Selection, Mode=OneWay}" Command="{Binding SelectAllCommand}" IsEnabled="{Binding CanSelect}"
+                                      ToolTip="{Binding SelectTip}" AutomationProperties.Name="{Binding SelectTip}" />
                             <Grid Width="28" Height="28" Background="Transparent" Tag="{Binding BlockKey}" ToolTip="{Binding IconTip}"
                                   MouseLeftButtonDown="OnBlockHandleDown" MouseMove="OnBlockHandleMove">
                                 <Grid.Style>
@@ -440,6 +447,10 @@
                             </Grid.ColumnDefinitions>
                             <!-- P102: block icon in its colour (also the drag handle), then the arrows (P97) -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                            <!-- P110: select every mod of the category -->
+                            <CheckBox Style="{StaticResource PlainCheck}" VerticalAlignment="Center" Margin="0,0,8,0" IsThreeState="False"
+                                      IsChecked="{Binding Selection, Mode=OneWay}" Command="{Binding SelectAllCommand}" IsEnabled="{Binding CanSelect}"
+                                      ToolTip="{Binding SelectTip}" AutomationProperties.Name="{Binding SelectTip}" />
                             <Grid Width="22" Height="22" Background="Transparent" Tag="{Binding BlockKey}" ToolTip="{Binding IconTip}"
                                   MouseLeftButtonDown="OnBlockHandleDown" MouseMove="OnBlockHandleMove">
                                 <Grid.Style>
@@ -990,6 +1001,8 @@
                     <StackPanel>
                         <TextBlock Style="{StaticResource MonoLabel}" Text="05 · DISPLAY · DIAGNOSTICS" />
                         <CheckBox Margin="0,8,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ReduceMotion}" Content="Reduce motion (stops the background, glitches, scans and breach animation)" />
+                        <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ActivityLog}" Content="Log what AFTERLIFE does (for finding problems; one file per day in the log folder)"
+                                  ToolTip="{Binding ActivityLogHint}" />
                         <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
                             <Button Style="{StaticResource LinkButton}" Command="{Binding OpenLogsCommand}" Content="Open log folder" />
                             <Button Margin="16,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding CopyDiagnosticsCommand}" Content="Copy diagnostics"
@@ -1021,7 +1034,12 @@
 
         <DataTemplate DataType="{x:Type vm:PlanPreviewVm}">
             <StackPanel Width="720">
-                <TextBlock Style="{StaticResource Body}" FontSize="14" Text="{Binding Summary}" />
+                <DockPanel LastChildFill="True">
+                    <!-- P114: the plan by mod (default) or by file -->
+                    <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" FontSize="12" VerticalAlignment="Center" Content="{Binding ByFileLabel}" Command="{Binding ToggleViewCommand}"
+                            Visibility="{Binding HasGroups, Converter={StaticResource BoolToVis}}" ToolTip="Show the same changes grouped by mod (with the reason) or file by file" />
+                    <TextBlock Style="{StaticResource Body}" FontSize="14" Text="{Binding Summary}" VerticalAlignment="Center" />
+                </DockPanel>
                 <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="{Binding SavesHint}" />
                 <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Issues}">
                     <ItemsControl.ItemTemplate>
@@ -1030,7 +1048,23 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <ListBox Margin="0,8,0,0" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}" MaxHeight="420" ItemsSource="{Binding Steps}">
+                <ListBox Margin="0,8,0,0" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}" MaxHeight="420" ItemsSource="{Binding Groups}"
+                         Visibility="{Binding ByFile, Converter={StaticResource InverseBoolToVis}}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:LineVm}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Mono}" Text="{Binding Left}" TextTrimming="CharacterEllipsis" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" ToolTip="{Binding Left}" />
+                                <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Meta}" Text="{Binding Right}" ToolTip="{Binding Right}" MaxWidth="320" TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <ListBox Margin="0,8,0,0" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}" MaxHeight="420" ItemsSource="{Binding Steps}"
+                         Visibility="{Binding ByFile, Converter={StaticResource BoolToVis}}">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:LineVm}">
                             <Grid>
@@ -1080,7 +1114,7 @@
                     <ContentControl Focusable="False" VerticalAlignment="Center">
                         <Path Fill="{StaticResource T3}" Width="6" Height="10" HorizontalAlignment="Left" Data="M0,0 H2 V2 H0 Z M4,0 H6 V2 H4 Z M0,4 H2 V6 H0 Z M4,4 H6 V6 H4 Z M0,8 H2 V10 H0 Z M4,8 H6 V10 H4 Z" />
                     </ContentControl>
-                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag a row by this handle, or a whole block by its icon, to change the load order. Higher in the list loads first and wins file conflicts." />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag a row into another category, or a whole block by its icon to change the load order. Inside MODS and categories mods are sorted by name; higher blocks load first and win file conflicts." />
                 </Grid>
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
@@ -1090,7 +1124,7 @@
                     <ContentControl Focusable="False" VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECKBOXES" />
                     </ContentControl>
-                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Select mods for bulk actions. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Select mods for bulk actions; the checkbox in a block or category header selects all of it. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
                 </Grid>
                 <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="BLOCKS" />
                 <Grid Margin="0,0,0,8">
@@ -1173,7 +1207,7 @@
                             </StackPanel>
                         </c:CutBorder>
                     </ContentControl>
-                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Newer version on Nexus. Click the mark in a block header to show the first such mod." />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Newer version on Nexus. Click the mark in a block header to show the first such mod. UPDATE replaces the old version, applies and deletes the old one." />
                 </Grid>
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
@@ -1349,7 +1383,7 @@
                     <ContentControl Focusable="False" VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECK UPDATES" />
                     </ContentControl>
-                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Asks Nexus Mods for newer versions (needs your Nexus key). UPDATE ALL needs Nexus Premium." />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Asks Nexus Mods for newer versions (needs your Nexus key). UPDATE ALL downloads directly with Nexus Premium; other accounts get the download pages one after another." />
                 </Grid>
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
@@ -1555,7 +1589,15 @@
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
-                                            <TextBlock Grid.Column="2" Style="{StaticResource Mono}" VerticalAlignment="Center" Text="{Binding Version}" Foreground="{StaticResource TagText}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Version}" />
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Style="{StaticResource Mono}" VerticalAlignment="Center" Text="{Binding Version}" Foreground="{StaticResource TagText}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Version}" MaxWidth="62" />
+                                                <!-- P118: a newer version is on Nexus: the same small arrow as in the block header, one click updates -->
+                                                <Button Style="{StaticResource MarkButton}" Margin="4,0,0,0" Padding="3,1" MinHeight="16" Foreground="{StaticResource C}" Background="{StaticResource CTint}"
+                                                        ToolTip="{Binding UpdateTip}" AutomationProperties.Name="{Binding UpdateTip}" Command="{Binding UpdateCommand}"
+                                                        Visibility="{Binding HasUpdate, Converter={StaticResource BoolToVis}}">
+                                                    <Path Style="{StaticResource MarkIcon}" Data="M5,0 L10,5.6 L6.7,5.6 L6.7,10 L3.3,10 L3.3,5.6 L0,5.6 Z" />
+                                                </Button>
+                                            </StackPanel>
                                             <TextBlock Grid.Column="3" Style="{StaticResource Mono}" FontSize="10.5" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding Source}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" />
                                             <Button Grid.Column="4" Style="{StaticResource LinkButton}" FontSize="11" Content="GET ›" HorizontalAlignment="Right" VerticalAlignment="Center"
                                                     Command="{Binding DataContext.OpenNexusPageCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding NexusUrl}"
@@ -1970,7 +2012,7 @@
                                                   IsChecked="{Binding IsChecked}" Click="OnRowCheckClick" />
                                         <StackPanel Grid.Column="1" Margin="0,0,10,0">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="⋮⋮" Foreground="{StaticResource T3}" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip="Drag to change the load order"
+                                                <TextBlock Text="⋮⋮" Foreground="{StaticResource T3}" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip="Drag into another category (inside MODS and categories mods are sorted by name), or reorder inside an unlocked collection"
                                                            Visibility="{Binding CanDrag, Converter={StaticResource BoolToVis}}" Cursor="SizeNS" />
                                                 <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
                                                            MouseLeftButtonDown="OnModNameMouseDown" ToolTip="Double-click to rename">
@@ -2103,17 +2145,22 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource M}" Text="{Binding ApplyBlockedReason}" TextWrapping="Wrap"
-                                           Visibility="{Binding ApplyBlockedReason, Converter={StaticResource NullToVis}}" />
+                                <DockPanel Visibility="{Binding ApplyBlockedReason, Converter={StaticResource NullToVis}}" LastChildFill="True">
+                                    <!-- P122: one click shows the mod the blocker belongs to -->
+                                    <Button DockPanel.Dock="Right" Margin="8,0,0,0" VerticalAlignment="Top" Style="{StaticResource LinkButton}" FontSize="11" Content="SHOW MOD ›"
+                                            Command="{Binding ShowBlockedCommand}" Visibility="{Binding CanShowBlocked, Converter={StaticResource BoolToVis}}"
+                                            ToolTip="Scroll to the mod this concerns and select it" />
+                                    <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource M}" Text="{Binding ApplyBlockedReason}" TextWrapping="Wrap" />
+                                </DockPanel>
                                 <WrapPanel Margin="0,7,0,0">
                                 <!-- P52: always visible -->
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding RefreshLibraryCommand}" Content="REFRESH"
                                         ToolTip="Read the game folder and the library again (F5)" />
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding CheckUpdatesCommand}" Content="CHECK UPDATES"
                                         ToolTip="Look for newer versions on Nexus Mods (needs your Nexus key)" />
-                                <!-- P59: Premium only, Nexus allows direct downloads only for Premium -->
+                                <!-- P59/P116: Premium downloads directly; other accounts get the download pages one after another -->
                                 <Button Style="{StaticResource SmallAccentButton}" Command="{Binding UpdateAllCommand}" Content="{Binding UpdateAllLabel}"
-                                        Visibility="{Binding CanUpdateAll, Converter={StaticResource BoolToVis}}" ToolTip="Download every newer version and put it in the profile instead of the old one" />
+                                        Visibility="{Binding CanUpdateAll, Converter={StaticResource BoolToVis}}" ToolTip="Put every newer version in the profile instead of the old one: Premium downloads directly, other accounts get the download pages one after another" />
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding ExportListCommand}" Content="EXPORT LIST"
                                         ToolTip="Active mods with versions, for finding a problem mod" />
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding ResetOrderCommand}" Content="RESET ORDER"

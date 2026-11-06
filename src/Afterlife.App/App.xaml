@@ -401,13 +401,21 @@
                         <ControlTemplate TargetType="CheckBox">
                             <StackPanel Orientation="Horizontal" Background="Transparent" MinHeight="24">
                                 <Border x:Name="Box" Width="18" Height="18" BorderBrush="{StaticResource T3}" BorderThickness="1.5" Background="{StaticResource Bg3}" VerticalAlignment="Center">
-                                    <Rectangle x:Name="Mark" Width="10" Height="10" Fill="{StaticResource Y}" Visibility="Collapsed" />
+                                    <Grid>
+                                        <Rectangle x:Name="Mark" Width="10" Height="10" Fill="{StaticResource Y}" Visibility="Collapsed" />
+                                        <!-- P110: part of the group is selected -->
+                                        <Rectangle x:Name="Dash" Width="10" Height="3" Fill="{StaticResource Y}" Visibility="Collapsed" />
+                                    </Grid>
                                 </Border>
                                 <ContentPresenter Margin="10,0,0,0" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
                             </StackPanel>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
                                     <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+                                    <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Y}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="{x:Null}">
+                                    <Setter TargetName="Dash" Property="Visibility" Value="Visible" />
                                     <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Y}" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">

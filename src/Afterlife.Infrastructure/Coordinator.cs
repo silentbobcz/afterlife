@@ -320,7 +320,8 @@ public sealed class InstallCoordinator : IDisposable
 
     public ProfileState SetEnabled(string packageId, bool enabled)
     {
-        if (Store.GetPackage(packageId) is null) throw new InvalidOperationException($"unknown package {packageId}");
+        if (Store.GetPackage(packageId) is not { } pkg) throw new InvalidOperationException($"unknown package {packageId}");
+        ActivityLog.Write("profile", $"{(enabled ? "on " : "off")} {pkg.ModName} [{packageId}] in '{SelectedProfile.Name}'");
         return UpdateSelected(p => p.WithEntry(packageId, enabled));
     }
 
@@ -332,6 +333,9 @@ public sealed class InstallCoordinator : IDisposable
     public ImportResult Import(ImportRequest request)
     {
         var r = Packages.Import(request);
+        ActivityLog.Write("import", r.Package is null
+            ? $"{Path.GetFileName(request.ArchivePath)} rejected: {string.Join("; ", r.Analysis.Problems)}"
+            : $"{Path.GetFileName(request.ArchivePath)} → {r.Package.ModName} {r.Package.Version} [{r.Package.PackageId}], {r.Package.Files.Count} file(s)");
         if (r.Package is not { } p) return r;
         var same = Store.GetPackages()
             .Where(x => x.PackageId != p.PackageId && x.LayerOfModId is null && x.ManifestDigest == p.ManifestDigest)
@@ -374,6 +378,43 @@ public sealed class InstallCoordinator : IDisposable
                 var map = r.PackageOf.ToDictionary(kv => kv.Key, kv => others.Contains(kv.Value) ? keepId : kv.Value);
                 CollectionStore.Save(Store, r with { PackageOf = map });
             }
+        });
+    }
+
+    /// <summary>
+    /// P123: the new version takes the place of the old one everywhere: in every profile (same position, same on/off),
+    /// as the winner of its file conflicts, in its requirement overrides and in every collection. The old version is
+    /// then in no profile and can be deleted from the library once the game no longer has its files.
+    /// </summary>
+    public void ReplaceVersion(string oldId, string newId)
+    {
+        if (Store.GetPackage(newId) is null) throw new InvalidOperationException($"unknown package {newId}");
+        ActivityLog.Write("update", $"{Store.GetPackage(oldId)?.ModName ?? oldId} [{oldId}] → [{newId}] in every profile and collection");
+        Store.InTransaction(() =>
+        {
+            foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff))
+            {
+                var entries = p.Entries.ToList();
+                var at = entries.FindIndex(e => e.PackageId == oldId);
+                var winners = p.PathWinners.Any(kv => kv.Value == oldId);
+                var overrides = p.Overrides.Any(o => o.PackageId == oldId);
+                if (at < 0 && !winners && !overrides) continue;
+                var q = p;
+                if (at >= 0)
+                {
+                    var on = entries[at].Enabled || entries.Any(e => e.PackageId == newId && e.Enabled);
+                    entries.RemoveAll(e => e.PackageId == newId);
+                    at = entries.FindIndex(e => e.PackageId == oldId);
+                    entries[at] = new ProfileEntry(newId, on);
+                    q = q with { Entries = entries };
+                }
+                if (winners)
+                    q = q with { PathWinners = p.PathWinners.ToDictionary(kv => kv.Key, kv => kv.Value == oldId ? newId : kv.Value) };
+                if (overrides)
+                    q = q with { Overrides = p.Overrides.Select(o => o.PackageId == oldId ? o with { PackageId = newId } : o).Distinct().ToList() };
+                Store.SaveProfile(q with { Revision = p.Revision + 1 });
+            }
+            ReplaceInCollections(oldId, newId);
         });
     }
 
@@ -588,13 +629,32 @@ public sealed class InstallCoordinator : IDisposable
             }
         }
         var runtimeFolders = new List<(string Folder, IReadOnlyList<string> Exclude, string Owner)>();
+        var runtimeFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var owners = ledger.Values.Select(l => l.Owner).Distinct().ToList();
-        foreach (var c in FrameworkCatalog.Contracts.Where(c => c.RuntimeFolders.Count > 0))
+        var library = Store.GetPackages();
+        foreach (var c in FrameworkCatalog.Contracts.Where(c => c.RuntimeFolders.Count > 0 || c.RuntimeFiles.Count > 0))
         {
-            var owner = owners.Select(Store.GetPackage).FirstOrDefault(p => p is not null && p.Provides.Contains(c.Capability));
+            // the deployed copy first; P125: else a copy in the library (its files stay its settings, P55)
+            var owner = owners.Select(Store.GetPackage).FirstOrDefault(p => p is not null && p.Provides.Contains(c.Capability))
+                        ?? library.FirstOrDefault(p => p.Provides.Contains(c.Capability));
             if (owner is null) continue;
             foreach (var f in c.RuntimeFolders) runtimeFolders.Add((f, c.RuntimeExclude, owner.PackageId));
+            foreach (var f in c.RuntimeFiles) runtimeFiles[GamePath.Parse(f).Value] = owner.PackageId; // P125: e.g. red4ext/config.ini
         }
+        // P125: own folders of every mod in the library (not only the deployed ones): a lock file or cache a CET mod
+        // wrote into its folder belongs to it even when it is switched off right now
+        var libSubtree = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        var modIdOf = library.ToDictionary(p => p.PackageId, p => p.ModId, StringComparer.Ordinal);
+        foreach (var p in library)
+            foreach (var f in p.Files)
+            {
+                if (!GamePath.TryCreate(f.Target, out var gp, out _)) continue;
+                for (var x = ParentOf(gp.Value); !SharedFolders.Contains(x); x = ParentOf(x))
+                {
+                    if (!libSubtree.TryGetValue(x, out var t)) libSubtree[x] = t = new HashSet<string>(StringComparer.Ordinal);
+                    t.Add(p.PackageId);
+                }
+            }
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var path in paths)
         {
@@ -606,8 +666,17 @@ public sealed class InstallCoordinator : IDisposable
                 else if (direct.TryGetValue(x, out var d) && d.Count == 1) owner = d.First();
                 break;
             }
+            owner ??= runtimeFiles.TryGetValue(path, out var rf) ? rf : null;
             owner ??= runtimeFolders.FirstOrDefault(r => path.StartsWith(r.Folder + "/", StringComparison.OrdinalIgnoreCase)
                 && !r.Exclude.Any(e => path.StartsWith(e + "/", StringComparison.OrdinalIgnoreCase))).Owner;
+            if (owner is null)
+                for (var x = ParentOf(path); !SharedFolders.Contains(x); x = ParentOf(x))
+                {
+                    if (!libSubtree.TryGetValue(x, out var t)) continue;
+                    // one mod, or several versions of the same mod
+                    if (t.Select(id => modIdOf[id]).Distinct(StringComparer.Ordinal).Count() == 1) owner = t.First();
+                    break;
+                }
             if (owner is not null) result[path] = owner;
         }
         return result;
@@ -720,6 +789,7 @@ public sealed class InstallCoordinator : IDisposable
             list.Add(gp);
         }
         var r = Removed.Remove(GameRoot, list, label);
+        ActivityLog.Write("removed", $"'{label}': moved {r.Moved} file(s) aside (batch {r.BatchId ?? "-"}, {r.Skipped.Count} skipped)\n" + string.Join("\n", list.Select(g => g.Value)));
         Scan();
         return r;
     }
@@ -729,6 +799,7 @@ public sealed class InstallCoordinator : IDisposable
         using var _ = InstallLock.Acquire(Library, GameRoot);
         EnsureQuiet();
         var r = Removed.Restore(GameRoot, batchId);
+        ActivityLog.Write("removed", $"restored batch {batchId}: {r.Moved} file(s) back, {r.Skipped.Count} skipped");
         Scan();
         return r;
     }
@@ -783,6 +854,7 @@ public sealed class InstallCoordinator : IDisposable
             if (Store.GetPackage(id) is null) throw new InvalidOperationException($"unknown package {id}");
             p = p.WithEntry(id, enabled);
         }
+        ActivityLog.Write("profile", $"{(enabled ? "on " : "off")} {packageIds.Count} mod(s) in '{p.Name}': {string.Join(", ", packageIds)}");
         Store.SaveProfile(p);
         return p;
     }
@@ -825,6 +897,7 @@ public sealed class InstallCoordinator : IDisposable
         EnsureQuiet();
         var ids = packageIds.ToHashSet();
         var names = ids.ToDictionary(id => id, id => Store.GetPackage(id)?.ModName ?? id);
+        ActivityLog.Write("delete", $"delete everywhere: {string.Join(", ", names.Values)}");
         Store.InTransaction(() =>
         {
             foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff && p.Entries.Any(e => ids.Contains(e.PackageId))))
@@ -996,6 +1069,7 @@ public sealed class InstallCoordinator : IDisposable
             }
         if (list.Count == 0) return null;
         var r = Removed.Remove(GameRoot, list, $"Leftovers of {Capabilities.DisplayName(capability)}");
+        ActivityLog.Write("removed", $"leftovers of {Capabilities.DisplayName(capability)}: moved {r.Moved} file(s) aside (batch {r.BatchId ?? "-"})\n" + string.Join("\n", list.Select(g => g.Value)));
         Scan();
         return r;
     }
@@ -1198,11 +1272,17 @@ public sealed class InstallCoordinator : IDisposable
         using var _ = InstallLock.Acquire(Library, GameRoot);
         progress?.Report(new DeployProgress(DeployPhase.Preparing, 0, 0));
         var preview = Preview(profileId, decisions);
+        ActivityLog.Plan($"apply profile {preview.Snapshot.ProfileId} ({preview.Snapshot.IncludedPackages.Count} mod(s) included, {preview.Snapshot.ExcludedPackages.Count} held back)", preview.Plan);
         if (!preview.CanApply)
-            return new ApplyResult(preview, null, "blocked: " + string.Join("; ", preview.Plan.Blockers.Concat(preview.EnvironmentIssues.Where(i => i.Severity == Severity.Blocking)).Select(i => i.Message)));
+        {
+            var reason = "blocked: " + string.Join("; ", preview.Plan.Blockers.Concat(preview.EnvironmentIssues.Where(i => i.Severity == Severity.Blocking)).Select(i => i.Message));
+            ActivityLog.Write("apply", reason);
+            return new ApplyResult(preview, null, reason);
+        }
         if (preview.Plan.IsNoop && preview.Snapshot.ProfileId == Store.GetLastGeneration()?.ProfileId)
             return new ApplyResult(preview, null, "already deployed");
         var exec = Run(preview.Snapshot, preview.Plan, progress);
+        ActivityLog.Write("apply", $"{exec.Status} after {exec.StepsApplied} step(s){(exec.Error is null ? "" : ": " + exec.Error)}");
         return new ApplyResult(preview, exec, exec.Status == OperationStatus.Verified ? "deployed" : exec.Error ?? exec.Status.ToString());
     }
 

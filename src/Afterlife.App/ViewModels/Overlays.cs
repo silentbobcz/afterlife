@@ -174,12 +174,18 @@ public sealed partial class ConfirmVm : OverlayVm
         LinesTitle = linesTitle;
         OptionLabel = optionLabel;
         _optionChecked = optionChecked;
+        // Escape: with a third button it means "leave everything as it is" (P121), otherwise the second button.
+        CloseCommand = new RelayCommand(() => { if (AbortLabel is not null) Aborted = true; _tcs.TrySetResult(false); });
     }
 
     public string TitleText { get; }
     public override string Title => TitleText;
     public string Message { get; }
     public string ConfirmLabel { get; }
+    /// <summary>P121: optional third button that changes nothing (the other two both do something). Sets <see cref="Aborted"/>.</summary>
+    public string? AbortLabel { get; init; }
+    public bool HasAbort => AbortLabel is not null;
+    public bool Aborted { get; private set; }
     public bool Danger { get; }
     /// <summary>One item per line (P18/P21): what exactly will happen.</summary>
     public IReadOnlyList<string> Lines { get; }
@@ -194,6 +200,7 @@ public sealed partial class ConfirmVm : OverlayVm
 
     [RelayCommand] private void Confirm() => _tcs.TrySetResult(true);
     [RelayCommand] private void Cancel() => _tcs.TrySetResult(false);
+    [RelayCommand] private void Abort() { Aborted = true; _tcs.TrySetResult(false); }
 }
 
 public sealed partial class TextPromptVm : OverlayVm
@@ -456,6 +463,7 @@ public sealed partial class InboxVm : OverlayVm
 public sealed record SettingsActions(
     Func<SettingsVm, string, Task> ChangeGame,
     Action<bool> SetReduceMotion,
+    Action<bool> SetActivityLog,
     Func<SettingsVm, string, Task> SaveNexusKey,
     Action ForgetNexusKey,
     Func<SettingsVm, Task> CheckNexus,
@@ -473,12 +481,13 @@ public sealed partial class SettingsVm : OverlayVm
     private readonly SettingsActions _a;
     private bool _loading = true;
 
-    public SettingsVm(string gameFolder, string gameVersion, string library, bool reduceMotion, bool hasKey, bool nxmRegistered, string? otherNxmHandler, SettingsActions actions)
+    public SettingsVm(string gameFolder, string gameVersion, string library, bool reduceMotion, bool activityLog, bool hasKey, bool nxmRegistered, string? otherNxmHandler, SettingsActions actions)
     {
         _gameFolder = gameFolder;
         GameVersion = gameVersion;
         Library = library;
         _reduceMotion = reduceMotion;
+        _activityLog = activityLog;
         _hasNexusKey = hasKey;
         _nxmHandler = nxmRegistered;
         OtherNxmHandler = otherNxmHandler;
@@ -501,6 +510,7 @@ public sealed partial class SettingsVm : OverlayVm
     [ObservableProperty] private string? _message;
     [ObservableProperty] private Tone _messageTone;
     [ObservableProperty] private bool _reduceMotion;
+    [ObservableProperty] private bool _activityLog;
     [ObservableProperty] private bool _busy;
 
     [ObservableProperty] private string _nexusKeyInput = "";
@@ -511,6 +521,10 @@ public sealed partial class SettingsVm : OverlayVm
     [ObservableProperty] private bool _nxmHandler;
 
     partial void OnReduceMotionChanged(bool value) => _a.SetReduceMotion(value);
+
+    /// <summary>P113</summary>
+    partial void OnActivityLogChanged(bool value) => _a.SetActivityLog(value);
+    public string ActivityLogHint => "Writes what AFTERLIFE does (switches, imports, every planned file change with its reason, results) into the log folder, one file per day. Switch it on when something looks wrong, then send the file with your report.";
 
     partial void OnNxmHandlerChanged(bool value)
     {
@@ -648,16 +662,20 @@ public sealed partial class ProfilePickerVm : OverlayVm
     [RelayCommand] private void Cancel() => _tcs.TrySetResult(null);
 }
 
-public sealed class PlanPreviewVm : OverlayVm
+public sealed partial class PlanPreviewVm : OverlayVm
 {
-    public PlanPreviewVm(string profile, PreviewResult r)
+    public PlanPreviewVm(string profile, PreviewResult r, Func<string, string?>? nameOf = null)
     {
         Profile = profile;
-        Summary = r.Plan.IsNoop ? "Nothing to change. The game already matches this profile." : $"{r.Plan.Steps.Count} file change(s)";
+        Summary = r.Plan.IsNoop ? "Nothing to change. The game already matches this profile." : OverviewBuilder.Summary(r.Plan, r.Snapshot);
+        nameOf ??= _ => null;
         Steps = r.Plan.Steps.Select(s => new LineVm($"{s.Kind.ToString().ToUpperInvariant(),-8} {s.Path}", s.Reason,
             s.Kind == StepKind.Remove ? Tone.Warn : Tone.Info)).ToList();
         Issues = r.EnvironmentIssues.Concat(r.Plan.Blockers).Concat(r.Plan.Warnings)
             .Select(i => new LineVm(i.Message, i.Path ?? "", i.Severity == Severity.Blocking ? Tone.Block : Tone.Warn)).ToList();
+        // P114: the same plan by mod, with the reason, so a long remove list can be checked at a glance
+        Groups = OverviewBuilder.GroupPlan(r, nameOf)
+            .Select(g => new LineVm($"{g.Name}   {g.Counts}", g.Why, g.Why.StartsWith("held back", StringComparison.Ordinal) ? Tone.Warn : g.Remove > 0 && g.Add == 0 ? Tone.Warn : Tone.Info)).ToList();
     }
 
     public override string Title => "PREVIEW · " + Profile.ToUpperInvariant();
@@ -666,6 +684,13 @@ public sealed class PlanPreviewVm : OverlayVm
     public string SavesHint => "Saves made with a mod may not load without it. Switching profiles never touches your saves.";
     public IReadOnlyList<LineVm> Steps { get; }
     public IReadOnlyList<LineVm> Issues { get; }
+    /// <summary>P114: by mod: counts and why.</summary>
+    public IReadOnlyList<LineVm> Groups { get; }
+    public bool HasGroups => Groups.Count > 0;
+    [ObservableProperty] private bool _byFile;
+    public string ByFileLabel => ByFile ? "BY MOD ›" : "BY FILE ›";
+    partial void OnByFileChanged(bool value) => OnPropertyChanged(nameof(ByFileLabel));
+    [RelayCommand] private void ToggleView() => ByFile = !ByFile;
 }
 
 public sealed class AboutVm : OverlayVm
@@ -1186,6 +1211,6 @@ public static class AppInfo
 {
     public static string Version { get; } =
         (System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(typeof(AppInfo).Assembly)?.InformationalVersion
-         ?? typeof(AppInfo).Assembly.GetName().Version?.ToString(3) ?? "1.0.0-alpha").Split('+')[0];
+         ?? typeof(AppInfo).Assembly.GetName().Version?.ToString(3) ?? "1.0.0-alpha.2").Split('+')[0];
     public static string DisplayVersion => Version.Replace('-', ' ');
 }

@@ -73,9 +73,13 @@ public static class Planner
         IReadOnlyDictionary<string, LedgerEntry> ledger,
         IStateObserver observer,
         BaselineInfo? modlistBaseline,
-        PlanDecisions? decisions = null)
+        PlanDecisions? decisions = null,
+        IReadOnlySet<string>? volatilePathKeys = null)
     {
         decisions ??= PlanDecisions.None;
+        // P115/P119: files a framework rewrites itself while the game runs (Input Loader's r6/cache XMLs, its ini).
+        // Their content on disk is expected to drift from what the archive shipped; that is not a user edit.
+        volatilePathKeys ??= FrameworkCatalog.VolatilePathKeys;
         var removes = new List<PlanStep>();
         var replaces = new List<PlanStep>();
         var adds = new List<PlanStep>();
@@ -118,6 +122,13 @@ public static class Planner
                     retags.Add(Step(StepKind.Retag, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, null, null, "content already as desired"));
                 else if (decisions.DiscardChangesPathKeys.Contains(gp.Key))
                     replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, f.StoredPath, null, "discard user changes"));
+                else if (volatilePathKeys.Contains(gp.Key))
+                {
+                    // P115/P119: the mod rewrote its own runtime file. Nothing new to deploy → leave it alone;
+                    // a new version of the mod → put its copy there (the plugin rebuilds it on the next start anyway).
+                    if (le.Hash != f.Hash)
+                        replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, f.StoredPath, null, "new content for runtime file (rewritten by its mod while the game runs)"));
+                }
                 else
                     blockers.Add(new Issue(IssueKind.ModifiedManagedFile, Severity.Blocking,
                         $"{f.Path} was changed outside AFTERLIFE; capture the changes as a local mod or discard them", le.Owner, f.Path));
@@ -129,6 +140,9 @@ public static class Planner
                 else if (obs.Size == f.Size && observer.FullHash(gp) == f.Hash)
                     // P31: the very same file is already there (left from a manual install): adopt it instead of blocking.
                     retags.Add(Step(StepKind.Retag, f.Path, ArtifactKind.Payload, f.OwnerPackageId, f.Hash, f.Hash, f.Size, null, null, "identical file already in game; adopted"));
+                else if (volatilePathKeys.Contains(gp.Key))
+                    // P115/P119: a runtime file left by an earlier (manual) install of the same framework: take it over.
+                    replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, observer.FullHash(gp), f.Hash, f.Size, f.StoredPath, null, "take over runtime file of its own mod"));
                 else
                     blockers.Add(new Issue(IssueKind.ForeignFileAtTarget, Severity.Blocking,
                         $"{f.Path} is already in the game (not written by AFTERLIFE, different content)", f.OwnerPackageId, f.Path));
@@ -150,6 +164,8 @@ public static class Planner
                 removes.Add(Step(StepKind.Remove, le.Path, ArtifactKind.Payload, le.Owner, le.Hash, null, 0, null, null, "no longer in profile"));
             else if (decisions.DiscardChangesPathKeys.Contains(gp.Key))
                 removes.Add(Step(StepKind.Remove, le.Path, ArtifactKind.Payload, le.Owner, current, null, 0, null, null, "discard user changes"));
+            else if (volatilePathKeys.Contains(gp.Key))
+                removes.Add(Step(StepKind.Remove, le.Path, ArtifactKind.Payload, le.Owner, current, null, 0, null, null, "no longer in profile (runtime file rewritten by its mod)"));
             else
                 blockers.Add(new Issue(IssueKind.ModifiedManagedFile, Severity.Blocking,
                     $"{le.Path} was changed outside AFTERLIFE; capture the changes as a local mod or discard them", le.Owner, le.Path));

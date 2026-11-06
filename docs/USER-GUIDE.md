@@ -61,6 +61,7 @@ If the game already contains mods installed by hand, the *Scan manual mods* card
 
 Each block header has:
 
+- a **checkbox** that selects every mod of the block or category for the bulk actions below (it shows a dash when only some are selected),
 - an **arrow** to fold the block (the state is remembered; a search unfolds everything),
 - small **marks** when something inside needs you: **▲** updates, **⚠** conflicts, **✕** missing requirements. Click a mark to jump to the first such mod,
 - the number of mods switched on, for example `7 / 7 ON`,
@@ -70,15 +71,15 @@ Each row has:
 
 - a checkbox for selecting several mods (Shift and Ctrl work like in Explorer),
 - the name (double-click to rename it, see [section 8](#8-mod-details)), tags and a pink line under the name when a requirement is missing,
-- the version, with **UPDATE vX** when Nexus has a newer one,
+- the version, with **UPDATE vX** when Nexus has a newer one (core mods also show a small cyan arrow next to their version in the CORE MODS table at the top; one click updates),
 - the **DEPLOYED** column: what is really in the game (**DEPLOYED**, **+ PENDING · APPLY**, **− PENDING · APPLY**, **! CONFLICT · DECIDE** and so on),
 - the **IN PROFILE** switch: whether the mod is on in the selected profile.
 
 When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
-The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order.
+The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order. Inside MODS and every category the mods are sorted by name (local edits stay right below their mod); collections keep the curator's order. Profiles are sorted by name too, with *Mods off* first.
 
-Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (Premium, see section 11), **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **RESET ORDER**, **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
+Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **RESET ORDER**, **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
 ## 4. Adding mods
 
@@ -95,9 +96,9 @@ What you may see after an import:
 - **Imported** · the mod is in the library and switched on in the selected profile. Apply to put it in the game.
 - **Choose a variant** · the archive contains several variants (for example different colours). Pick one and **INSTALL THIS VARIANT**.
 - **FOMOD wizard** · the archive has an installer with options ([section 13](#13-fomod-installers-and-redmods)).
-- **Newer version of a mod you have?** · the file is a newer download of a mod already in the library. **REPLACE OLD VERSION** puts it in the profile instead of the old one; the old version stays in the library, switched off. Cancel adds it as a separate mod.
-- **New version of a collection mod** · when the old version is part of a collection, choose: put the new one into the collection and switch the old one off, replace the old one (deleted from the library), or keep the new one outside the collection.
-- **Another version is on** · switching on a second version of a mod offers to switch the other one off; rows show **2 VERSIONS ON** while both are on.
+- **Newer version of a mod you have?** · the file is a newer download of a mod already in the library. **REPLACE OLD VERSION** puts it in place of the old one (see *Updates* in [section 11](#11-nexus-mods-key-downloads-updates)); **Add as a separate mod** keeps both. Several such files dropped at once are shown as one list: **REPLACE ALL** or **Add all as separate mods**.
+- **Another version is on** · switching on a second version of a mod offers to switch the other one off (**SWITCH THE OTHER OFF**), to **Keep both**, or to **Cancel** (the new one stays off; Escape does the same). Rows show **2 VERSIONS ON** while both are on.
+- **Old versions in the library** · older versions left from updates made before 1.0.0-alpha.2, switched off everywhere, are offered for deletion once after start.
 - **Duplicate mods in the library** · copies with exactly the same files (made by older AFTERLIFE versions) are found after start; **MERGE** keeps one with its place in profiles, collections, categories and the load order.
 - **Already in the library** · the archive has exactly the same files as a mod you have; no second copy is made, the existing mod is used.
 - **Not accepted** · the archive is damaged, empty, or its layout is unknown. The message says why.
@@ -109,11 +110,13 @@ A profile is a list of which mods are on, which mod wins each conflict and the a
 - **+ New profile** creates one as a copy of the selected profile (an empty one when *Mods off* is selected).
 - Clicking a profile **selects** it. Selecting changes nothing in the game; the list just shows that profile. Applying makes it the one in the game.
 - **Mods off** is built in: applying it takes out every file AFTERLIFE put in the game. Manually installed mods stay. Handy to test whether a problem comes from a mod at all.
-- **Delete profile** appears for profiles you can delete. You cannot delete *Mods off* or the profile that is in the game (switch to another one and apply first). The mods stay in the library.
+- **Rename** and **Delete profile** are under the list for every own profile (double-click a name also renames it). *Mods off* cannot be renamed or deleted. Deleting the profile that is in the game first switches the game to *Mods off* (**MODS OFF, THEN DELETE**), then deletes the profile. The mods stay in the library.
 
 ## 6. Apply changes: load to the deck
 
-**APPLY CHANGES** (or **Preview changes** to just look) shows what will happen: how many mods go in and out, the load order, and files that need a decision. **LOAD TO DECK** writes it.
+**APPLY CHANGES** (or **Preview changes** to just look) shows what will happen: how many mods go in and out, mods held back because a core mod they need is off, the load order, and files that need a decision. **LOAD TO DECK** writes it.
+
+**Preview changes** lists the changes **by mod** (how many files each mod adds, replaces or removes, and why: switched off, held back because ArchiveXL or another core mod is off, new content); **BY FILE ›** shows every file. When something blocks the apply, the reason is shown above APPLY CHANGES and **SHOW MOD ›** jumps to the mod it concerns.
 
 How the write works:
 
@@ -163,7 +166,7 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 - **USE THIS MOD** makes the selected mod win one file.
 - **USE THIS MOD FOR ALL n FILES** makes it win every conflict it has, in one click.
 
-Archive mods (`archive/pc/mod`) are loaded by the game in an order. Drag rows by the **⋮⋮** handle to change it; mods higher in the list load first and win. AFTERLIFE writes the order to `modlist.txt` when you apply. **Reset order** returns to the default. Mods of a collection keep the curator's order unless you unlock it (section 12).
+Archive mods (`archive/pc/mod`) are loaded by the game in an order: mods higher in the list load first and win. Inside MODS and every category the mods are sorted by name, so to load a mod earlier put it into a category and move that category up. Inside an unlocked collection you can drag rows by the **⋮⋮** handle. AFTERLIFE writes the order to `modlist.txt` when you apply. **Reset order** returns to the game's default (alphabetical by archive name). Mods of a collection keep the curator's order unless you unlock it (section 12).
 
 The blocks are part of the order: CORE MODS load first, then the blocks from top to bottom. Inside MODS the mods without a category load first, then the categories from top to bottom. Moving a block, a category, or a mod into another category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. Mods of a collection stay in their collection; CORE MODS cannot be moved.
 
@@ -187,10 +190,10 @@ With a key, AFTERLIFE looks for newer versions when it starts and then every hou
 
 A mod with a newer version shows **UPDATE vX** in the list and an UPDATE line in its details.
 
-- **Premium accounts**: **UPDATE** downloads the new file directly and puts it in the profile instead of the old one. **Update all (n)** does it for every mod with an update, after one question.
-- **Free accounts**: Nexus allows downloads only through the website. **UPDATE** opens the file page; click *Mod Manager Download* there (or drop the downloaded file into the window) and AFTERLIFE replaces the old version in the profile.
+- **Premium accounts**: **UPDATE** downloads the new file directly. **UPDATE ALL (n)** does it for every mod with an update, after one question.
+- **Free accounts**: Nexus allows downloads only through the website. **UPDATE** opens the mod-manager download page of the new file; click *Slow download* there and the file comes straight into AFTERLIFE (needs *Mod Manager Download* links on, see above; without them the files page opens and you can drop the downloaded file into the window). **UPDATE ALL (n)** opens these pages one after another: the next one opens when the previous file has arrived. The button then shows **UPDATES · n LEFT**; click it to skip one or stop.
 
-The old version always stays in the library, switched off, so you can go back.
+An update replaces the old version completely: the new one takes its place in every profile (same position, on or off as before), in its collections and category and as the winner of its file conflicts. When the profile is the one in the game, AFTERLIFE applies right away, then deletes the old version from the library. UPDATE ALL and REPLACE ALL apply once at the end. If the game cannot be changed at that moment (for example it is running), the old version is kept until you apply.
 
 ## 12. Collections
 
@@ -238,11 +241,11 @@ The card on the left shows how many files in the mod folders AFTERLIFE does not 
 - tick mods and **REMOVE SELECTED FROM GAME** moves their files into the library (into *Removed*), so they can always be restored,
 - **Removed earlier · kept in the library** lists what was moved out before, with **RESTORE**.
 
-Files that mods installed by AFTERLIFE create on their own (logs, settings, caches) are not reported, and identical leftovers from an earlier manual install of the same mod are ignored.
+Files that mods in the library create on their own (logs, settings, caches, lock files in their own folder, `red4ext/config.ini`) are not reported, also while the mod is switched off, and identical leftovers from an earlier manual install of the same mod are ignored. A core-mod group that holds only such files says so instead of *installed manually*. The **Address Library** database (`bin/x64/plugins/address_library/version-….bin`) is named and explained; keep it while a plugin needs it.
 
 ## 15. Files changed outside AFTERLIFE
 
-Mods often change their own settings files after you play. When AFTERLIFE is about to replace or remove such a file, it asks once **per mod**:
+Mods often change their own settings files after you play. Files a core mod rewrites by design every time the game runs (Input Loader's `r6/cache/inputContexts.xml`, `inputUserMappings.xml` and `input_loader.ini`, Mod Settings' `user.ini`) are not reported: they are removed with their mod and replaced by an update. For other files, when AFTERLIFE is about to replace or remove a changed one, it asks once **per mod**:
 
 - **Keep my edits** · the changed files are saved in the library as *my edits* and stay with the mod,
 - **Discard** · they are replaced or removed as planned.
@@ -267,6 +270,7 @@ Attach it to bug reports, or use it to find the mod that breaks something (switc
 | **03 · NEXUS MODS** | Key, account type, `nxm://` links. |
 | **04 · KEPT FILES** | Space used by *Removed* files, downloaded archives and temporary files, each with **Delete**, plus **DELETE ALL KEPT FILES**. Deleted kept files can no longer be restored. |
 | **Copy diagnostics** | Copies versions, paths and the state of the install to the clipboard for a bug report. Nothing is sent anywhere. |
+| **Log what AFTERLIFE does** | Off by default. Writes switches, imports, every planned file change with its reason, blockers and results into `activity-YYYYMMDD.log`, one file per day. Switch it on when something looks wrong and attach the file to your report. |
 | **Open log folder** | Logs are in `%LOCALAPPDATA%\AFTERLIFE\logs`. |
 | **Remove AFTERLIFE from this PC…** | See [section 21](#21-removing-afterlife). |
 
@@ -312,4 +316,4 @@ More in the [FAQ](FAQ.md).
 | F5 | Refresh |
 | Double-click a mod, profile or category name | Rename |
 | Shift+click, Ctrl+click | Select several mods |
-| Drag ⋮⋮ | Change the load order (a row, a block or a category) |
+| Drag ⋮⋮ | Move a block or category (load order), move mods into a category, reorder inside an unlocked collection |

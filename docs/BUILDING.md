@@ -41,7 +41,7 @@ The version lives in `Directory.Build.props` (`<Version>`). It is shown in About
 
 ## Continuous integration
 
-`.github/workflows/build.yml` builds, tests and publishes on every push and pull request. Pushing a tag `v*` (for example `v0.5.0`) also creates a draft GitHub release with the zip and its SHA-256.
+`.github/workflows/build.yml` builds, tests and publishes on every push and pull request. Pushing a tag `v*` (for example `v1.0.0-alpha.2`) also publishes a GitHub release with the zip, its SHA-256 and the matching `## <version>` section of `CHANGELOG.md` as notes; a suffix (alpha, beta, rc) makes it a pre-release. The tag must match the version in `Directory.Build.props`.
 
 ## Project layout
 

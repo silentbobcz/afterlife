@@ -9,6 +9,8 @@
 - [The power went out while it was applying](#the-power-went-out-while-it-was-applying)
 - [Mod Manager Download opens Vortex instead of AFTERLIFE](#mod-manager-download-opens-vortex-instead-of-afterlife)
 - [UPDATE only opens a web page](#update-only-opens-a-web-page)
+- [Input Loader shows CHANGED OUTSIDE](#input-loader-shows-changed-outside)
+- [How do I report a problem?](#how-do-i-report-a-problem)
 - [A mod says a requirement is missing, but I have it](#a-mod-says-a-requirement-is-missing-but-i-have-it)
 - [My REDmods do nothing](#my-redmods-do-nothing)
 - [The library takes a lot of space](#the-library-takes-a-lot-of-space)
@@ -24,8 +26,8 @@
 
 AFTERLIFE is free and open source (MIT). Everything works with a free Nexus Mods account. Nexus allows direct downloads through its API only for Premium members, so:
 
-- **Premium**: UPDATE, Update all and collections download files directly.
-- **Free**: AFTERLIFE opens the right Nexus page and you click *Mod Manager Download*; the file then goes straight into the library. For collections, AFTERLIFE opens the next page by itself.
+- **Premium**: UPDATE, UPDATE ALL and collections download files directly.
+- **Free**: AFTERLIFE opens the right Nexus download page and you click *Slow download* (or *Mod Manager Download*); the file then goes straight into the library. For UPDATE ALL and collections, AFTERLIFE opens the next page by itself when the previous file has arrived.
 
 Without any Nexus key AFTERLIFE still works with archives you drop into the window, it just cannot show mod pages, requirements from Nexus or updates.
 
@@ -60,7 +62,15 @@ Turn on *Open Mod Manager Download links in AFTERLIFE* in **Settings → 03 · N
 
 ## UPDATE only opens a web page
 
-That is how it works on a free Nexus account: Nexus does not allow direct API downloads without Premium. Click *Mod Manager Download* on the page that opened; AFTERLIFE puts the new version in your profile instead of the old one. See [Is it free?](#is-it-free-what-do-i-need-nexus-premium-for).
+That is how it works on a free Nexus account: Nexus does not allow direct API downloads without Premium. Click *Slow download* on the page that opened; AFTERLIFE replaces the old version, applies when the profile is in the game and deletes the old version from the library. See [Is it free?](#is-it-free-what-do-i-need-nexus-premium-for).
+
+## Input Loader shows CHANGED OUTSIDE
+
+Fixed in 1.0.0-alpha.2. Input Loader ships `r6/cache/inputContexts.xml`, `inputUserMappings.xml` and `input_loader.ini` only as a starting copy and rewrites them every time the game runs. AFTERLIFE now knows these files: they are not reported as changed, they are removed with Input Loader and replaced when it is updated. The same applies to `user.ini` of Mod Settings.
+
+## How do I report a problem?
+
+Turn on **Settings → Log what AFTERLIFE does**, repeat what went wrong, then use **Open log folder** and attach `activity-YYYYMMDD.log` together with **Copy diagnostics** to your report on GitHub or the Nexus Mods page. The log contains paths in the game folder and mod names, nothing else.
 
 ## A mod says a requirement is missing, but I have it
 

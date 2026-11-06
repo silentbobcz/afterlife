@@ -309,7 +309,7 @@ public static class OverviewBuilder
             .Select(g => g.FileName).ToList();
 
         var (canLaunch, hint) = LaunchState(status, preview);
-        return new InstallOverview(status, profiles, mods, preview, frameworks, preview.Scan.Unmanaged, archiveNames, canLaunch, hint, Summary(preview.Plan))
+        return new InstallOverview(status, profiles, mods, preview, frameworks, preview.Scan.Unmanaged, archiveNames, canLaunch, hint, Summary(preview.Plan, preview.Snapshot))
         {
             RemovedBatches = c.Removed.List(),
             CoreMods = CoreMods(byId, external, ledgerOwners, preview.Scan.ExternalVersions),
@@ -495,7 +495,7 @@ public static class OverviewBuilder
         return (true, status.Selected.IsSystemModsOff ? "vanilla game, no managed mods" : $"{status.Selected.Name} is in the game");
     }
 
-    private static string Summary(Plan plan)
+    public static string Summary(Plan plan, DeploymentSnapshot? snapshot = null)
     {
         if (plan.IsNoop) return "Game matches this profile";
         var add = plan.Steps.Count(s => s.Kind == StepKind.Add);
@@ -507,6 +507,42 @@ public static class OverviewBuilder
         if (rep > 0) parts.Add($"{rep} replace");
         if (rem > 0) parts.Add($"{rem} remove");
         if (meta > 0 && parts.Count == 0) parts.Add($"{meta} bookkeeping");
+        // P114: files of mods held back (their framework is off) are removed too; say so, or the removes look like too much
+        var heldBack = snapshot is null ? 0 : snapshot.Issues.Count(i => i.Kind == IssueKind.MissingRequirement && i.Severity == Severity.Blocking
+            && plan.Steps.Any(s => s.Kind == StepKind.Remove && s.Owner == i.PackageId));
+        if (heldBack > 0) parts.Add($"{heldBack} mod{(heldBack == 1 ? "" : "s")} held back");
         return $"{plan.Steps.Count} file change{(plan.Steps.Count == 1 ? "" : "s")} ready: {string.Join(" · ", parts)}";
     }
+
+    /// <summary>
+    /// P114: the plan by mod: how many files each mod adds, replaces or loses, and why (switched off, held back because
+    /// a framework it needs is off, update, new). Makes a long remove list readable.
+    /// </summary>
+    public static IReadOnlyList<PlanGroup> GroupPlan(PreviewResult r, Func<string, string?> nameOf)
+    {
+        var held = r.Snapshot.Issues.Where(i => i.Kind == IssueKind.MissingRequirement && i.PackageId is not null)
+            .GroupBy(i => i.PackageId!).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+        var included = r.Snapshot.IncludedPackages.ToHashSet(StringComparer.Ordinal);
+        var list = new List<PlanGroup>();
+        foreach (var g in r.Plan.Steps.Where(s => s.Kind is StepKind.Add or StepKind.Replace or StepKind.Remove).GroupBy(s => s.Owner ?? "afterlife"))
+        {
+            var id = g.Key;
+            var add = g.Count(s => s.Kind == StepKind.Add);
+            var rep = g.Count(s => s.Kind == StepKind.Replace);
+            var rem = g.Count(s => s.Kind == StepKind.Remove);
+            string why;
+            if (id == "afterlife") why = "archive order (modlist.txt)";
+            else if (held.TryGetValue(id, out var issue)) why = $"held back · {issue.Message}";
+            else if (included.Contains(id)) why = add > 0 && rem == 0 && rep == 0 ? "switched on" : rep > 0 ? "new content" : "in profile";
+            else why = nameOf(id) is null ? "no longer in the library" : "switched off";
+            list.Add(new PlanGroup(id, nameOf(id) ?? id, add, rep, rem, why));
+        }
+        return list.OrderByDescending(x => x.Remove + x.Replace + x.Add).ThenBy(x => x.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+    }
+}
+
+/// <summary>P114: one mod in the plan with its counts and the reason for the changes.</summary>
+public sealed record PlanGroup(string PackageId, string Name, int Add, int Replace, int Remove, string Why)
+{
+    public string Counts => string.Join(" · ", new[] { Add > 0 ? $"{Add} add" : null, Replace > 0 ? $"{Replace} replace" : null, Remove > 0 ? $"{Remove} remove" : null }.Where(x => x is not null));
 }

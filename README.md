@@ -21,7 +21,7 @@
 
 ## Status
 
-**Alpha (1.0.0-alpha).** Feature-complete for 1.0 and being tested on real installs. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
+**Alpha (1.0.0-alpha.2).** Feature-complete for 1.0 and being tested on real installs. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
 The executable is not code-signed yet, so Windows SmartScreen shows a warning the first time (*More info → Run anyway*). See [FAQ](docs/FAQ.md#windows-says-it-protected-my-pc).
 
 ## What it does
@@ -33,11 +33,11 @@ The executable is not code-signed yet, so Windows SmartScreen shows a warning th
 | **Profiles** | Any number of profiles plus a built-in **Mods off**. Switching a profile changes nothing until you apply it. |
 | **Core mods** | CET, RED4ext, redscript, ArchiveXL, TweakXL, Codeware, Input Loader and friends are recognised, shown in their own block and tracked as requirements of the mods that need them. |
 | **Requirements** | Read from the mod files and from the Nexus Mods page. Missing ones are flagged in the list, with *Open page* to get them. Switching a mod on offers to switch on what it needs; switching it off offers to switch off what depends on it. |
-| **Conflicts and load order** | File conflicts are shown per mod; pick the winner for one file or the whole mod. Archive load order by drag and drop (`modlist.txt`). |
-| **Nexus Mods** | *Mod Manager Download* links go straight into the library. Update checks at start and every hour (one request for all mods). *Update all* for Premium accounts. |
+| **Conflicts and load order** | File conflicts are shown per mod; pick the winner for one file or the whole mod. Archive load order by blocks and categories (`modlist.txt`); inside them mods are sorted by name. |
+| **Nexus Mods** | *Mod Manager Download* links go straight into the library. Update checks at start and every hour (one request for all mods). *Update all*: Premium downloads directly, other accounts get the Nexus download pages one after another (one click on *Slow download* each). An update replaces the old version everywhere, applies and deletes the old one. |
 | **Collections** | Add a Nexus collection: AFTERLIFE compares it with your library, downloads what is missing (Premium directly, free accounts page by page), keeps the curator's load order, and lets you switch the whole collection on or off. Core mods are never touched. |
 | **REDmod and FOMOD** | REDmods are deployed with `redMod.exe` before launch; FOMOD installers get a step-by-step wizard. Installers and scripts inside archives are never run. |
-| **Scan manual mods** | Finds mods you installed by hand, groups them by name and folder, and moves them into the library on request (always reversible). |
+| **Scan manual mods** | Finds mods you installed by hand, groups them by name and folder, and moves them into the library on request (always reversible). Settings, logs and caches that mods write themselves are not listed. |
 | **Export** | Copy or save the list of active mods with versions (text or CSV), for bug reports and for hunting the mod that breaks things. |
 
 ## Download

@@ -175,6 +175,9 @@ public static class UnmanagedGrouping
                 Add("fw:redscript", "redscript", DetectedKind.Framework, f, framework: true);
             else if (lower.StartsWith("mods/") && parts.Length > 2)
                 Add("redmod:" + Normalize(parts[1]), parts[1], DetectedKind.Redmod, f);
+            else if (lower.StartsWith("bin/x64/plugins/address_library/"))
+                // P125: offset database for the exact game version (version-<packed exe version>.bin), used by ASI/RED4ext plugins
+                Add("other:addresslibrary", "Address Library (offsets for the game version)", DetectedKind.Other, f);
             else
                 Add("other:" + lower, parts[^1], DetectedKind.Other, f);
         }
@@ -209,6 +212,16 @@ public static class UnmanagedGrouping
         public List<(string Path, long Size)> Files { get; } = new();
         public HashSet<DetectedKind> Kinds { get; } = new();
 
+        /// <summary>P125: a core-mod group without the core mod itself (no signature file), only what it wrote while running.</summary>
+        private bool IsOnlyRuntime()
+        {
+            if (!FrameworkCapabilities.TryGetValue(name, out var cap) || FrameworkCatalog.Find(cap) is not { } c) return false;
+            var signatures = c.SignaturePaths.Select(p => p.ToLowerInvariant()).ToHashSet();
+            if (Files.Any(f => signatures.Contains(f.Path.ToLowerInvariant()))) return false;
+            var dlls = Files.Any(f => f.Path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || f.Path.EndsWith(".asi", StringComparison.OrdinalIgnoreCase) || f.Path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
+            return !dlls;
+        }
+
         public DetectedMod Build()
         {
             var kind = framework ? DetectedKind.Framework
@@ -217,7 +230,9 @@ public static class UnmanagedGrouping
                 : Kinds.Contains(DetectedKind.Archive) ? DetectedKind.Archive
                 : Kinds.First();
             var note = framework
-                ? "Core mod installed manually. Mods that need it stop working when it is removed."
+                ? (IsOnlyRuntime() ? $"Only files {name} created itself (settings, logs); {name} itself is not installed manually here. Safe to leave."
+                                   : "Core mod installed manually. Mods that need it stop working when it is removed.")
+                : key == "other:addresslibrary" ? "Offset database for this exact game version, used by native plugins (installed with one of them or written by it). Leave it unless no plugin needs it any more."
                 : kind == DetectedKind.Other ? "Single file that does not match a known mod layout." : null;
             return new DetectedMod(key, name, kind, Files.OrderBy(f => f.Path, StringComparer.OrdinalIgnoreCase).ToList(), true, note)
             {

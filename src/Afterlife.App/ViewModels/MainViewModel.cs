@@ -98,6 +98,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _hasChanges;
     [ObservableProperty] private bool _canApply;
     [ObservableProperty] private string _applyBlockedReason = "";
+    /// <summary>P122: the mod behind the first blocker, so one click shows it in the list.</summary>
+    [ObservableProperty] private string? _blockedPackageId;
+    public bool CanShowBlocked => BlockedPackageId is not null;
+    partial void OnBlockedPackageIdChanged(string? value) => OnPropertyChanged(nameof(CanShowBlocked));
     [ObservableProperty] private bool _canLaunch;
     [ObservableProperty] private string _launchHint = "";
     [ObservableProperty] private int _inboxCount;
@@ -140,6 +144,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public async Task StartAsync()
     {
         Controls.Fx.SetReduceMotion(AppSettings.Load().ReduceMotion);
+        ActivityLog.Directory = App.LogDirectory;
+        ActivityLog.Enabled = AppSettings.Load().ActivityLog;
+        ActivityLog.Write("app", $"start · AFTERLIFE {AppVersion}");
         var lib = AppSettings.ResolveLibrary(null);
         if (!AppSettings.IsInitialized(lib))
         {
@@ -167,6 +174,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex) when (IsExpected(ex)) { }
         await CheckDuplicatesAsync(); // P99
+        await CheckOldVersionsAsync(); // P123
         await CheckNexusAsync(null);
         await FetchNexusInfoAsync(onlyMissing: true);
         await CheckUpdatesAsync(force: false);
@@ -295,9 +303,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (key is not null && _nexusAccount is null) await CheckNexusAsync(null);
         if (key is null || _nexusAccount is not { IsPremium: true })
         {
-            AppLinks.Open(u.Url);
-            Say(SafeNxmRegistered()
-                ? "Nexus lets free accounts download only on the website: click Mod Manager Download there and AFTERLIFE replaces the old version in the profile."
+            // P117: straight to the mod-manager download page; one click there and the file lands in AFTERLIFE.
+            var viaManager = SafeNxmRegistered();
+            AppLinks.Open(viaManager ? u.Url : u.FilesUrl);
+            Say(viaManager
+                ? $"The download page of {u.Name ?? "the new version"} opened in your browser. Click Slow download there (Nexus lets free accounts download only on the website); the file comes into AFTERLIFE, replaces the old version and goes into the game."
                 : "Nexus lets free accounts download only on the website. Turn on Mod Manager Download links in Settings, or drop the downloaded file into this window: AFTERLIFE recognizes it as the update.", Tone.Info);
             return;
         }
@@ -315,35 +325,110 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         return done.Count > 0;
     }
 
-    // ---------------- P59: update all (Premium) ----------------
+    // ---------------- P59: update all (Premium) · P116: update all through the website (free) ----------------
     [ObservableProperty] private int _updateCount;
-    public bool CanUpdateAll => UpdateCount > 1 && _nexusAccount is { IsPremium: true };
-    public string UpdateAllLabel => $"UPDATE ALL ({UpdateCount})";
+    /// <summary>P116: offered to every account; Premium downloads directly, others page by page through Mod Manager Download.</summary>
+    public bool CanUpdateAll => UpdateCount > 1 || _updateQueue is not null;
+    public string UpdateAllLabel => _updateQueue is { } q ? $"UPDATES · {q.Count + (_updateWaiting is null ? 0 : 1)} LEFT" : $"UPDATE ALL ({UpdateCount})";
+
+    /// <summary>P116: pages still to open (free accounts); <see cref="_updateWaiting"/> is the update whose file is awaited.</summary>
+    private Queue<(string Name, NexusUpdate Update)>? _updateQueue;
+    private (string Name, NexusUpdate Update)? _updateWaiting;
+    private int _updateQueueTotal;
 
     [RelayCommand]
     private Task UpdateAll() => RunUiAsync(async () =>
     {
-        if (_overview is null || _nexusAccount is not { IsPremium: true }) return;
+        if (_overview is null) return;
+        if (_updateQueue is not null) { await UpdateQueueMenuAsync(); return; }
+        if (NexusKeyStore.Load() is not null && _nexusAccount is null) await CheckNexusAsync(null);
+        if (_nexusAccount is not { IsPremium: true }) { await UpdateAllViaWebsiteAsync(); return; }
         var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!)).ToList();
         if (list.Count == 0) return;
         var ok = await AskAsync(new ConfirmVm("UPDATE ALL?",
-            $"AFTERLIFE downloads {list.Count} newer version(s) from Nexus Mods and puts them in the profile instead of the old ones. The old versions stay in the library. Nothing changes in the game until you apply.",
+            $"AFTERLIFE downloads {list.Count} newer version(s) from Nexus Mods, puts them in place of the old ones (profiles, collections, categories), updates the game and deletes the old versions from the library.",
             "UPDATE ALL", false, list.Select(x => $"{x.ModName}   → {x.Update.Version ?? x.Update.Name}").ToList()));
         if (!ok) return;
-        _collectionUpdateChoice = null; // P98: asked once, "for all" remembered for this run
-        var done = new List<string>();
         var failed = new List<string>();
-        foreach (var (name, u) in list)
+        _updateBatch = true;
+        try
         {
-            Say($"Updating {name} ({done.Count + failed.Count + 1}/{list.Count})…", Tone.Info);
-            if (await UpdateOneAsync(u, quiet: true)) done.Add($"{name} → {u.Version ?? u.Name}"); else failed.Add(name);
+            var i = 0;
+            foreach (var (name, u) in list)
+            {
+                Say($"Updating {name} ({++i}/{list.Count})…", Tone.Info);
+                if (!await UpdateOneAsync(u, quiet: true)) failed.Add(name);
+            }
         }
-        await RefreshAsync();
-        var lines = new List<string> { $"Updated {done.Count} of {list.Count} · apply to put them in the game:" };
-        lines.AddRange(done.Select(d => "  · " + d));
-        if (failed.Count > 0) { lines.Add($"Not updated ({failed.Count}):"); lines.AddRange(failed.Select(f => "  · " + f)); }
-        SayLines(lines, failed.Count == 0 ? Tone.Ok : Tone.Warn);
+        finally { _updateBatch = false; }
+        await FinishUpdatesAsync(quiet: false);
+        if (failed.Count > 0) SayLines([.. NoticeLines, $"Not updated ({failed.Count}):", .. failed.Select(f => "  · " + f)], Tone.Warn);
     });
+
+    /// <summary>P116: free account: one download page after another; the next opens when the previous file has arrived.</summary>
+    private async Task UpdateAllViaWebsiteAsync()
+    {
+        if (_overview is null) return;
+        var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!)).ToList();
+        if (list.Count == 0) return;
+        if (!SafeNxmRegistered())
+        {
+            Say("Nexus lets free accounts download only on the website. Turn on Mod Manager Download links in Settings first; then UPDATE ALL opens the download pages one after another and the files come straight into AFTERLIFE.", Tone.Warn);
+            return;
+        }
+        var ok = await AskAsync(new ConfirmVm("UPDATE ALL · THROUGH THE WEBSITE",
+            $"Nexus lets free accounts download only on the website. AFTERLIFE opens the download page of each of the {list.Count} mods one after another: click Slow download there and the file comes into AFTERLIFE, replaces the old version, goes into the game and the old version is deleted. The next page opens as soon as the previous file has arrived.",
+            "OPEN THE FIRST PAGE", false, list.Select(x => $"{x.ModName}   → {x.Update.Version ?? x.Update.Name}").ToList()));
+        if (!ok) return;
+        _collectionUpdateChoice = null;
+        _updateQueue = new Queue<(string, NexusUpdate)>(list);
+        _updateQueueTotal = list.Count;
+        OpenNextUpdatePage();
+    }
+
+    private void OpenNextUpdatePage()
+    {
+        if (_updateQueue is null) return;
+        if (_updateQueue.Count == 0)
+        {
+            _updateQueue = null;
+            _updateWaiting = null;
+            OnPropertyChanged(nameof(CanUpdateAll));
+            OnPropertyChanged(nameof(UpdateAllLabel));
+            Say($"All {_updateQueueTotal} update(s) arrived · apply to put them in the game.", Tone.Ok);
+            return;
+        }
+        var next = _updateQueue.Dequeue();
+        _updateWaiting = next;
+        OnPropertyChanged(nameof(CanUpdateAll));
+        OnPropertyChanged(nameof(UpdateAllLabel));
+        AppLinks.Open(next.Update.Url);
+        var i = _updateQueueTotal - _updateQueue.Count;
+        Say($"Update {i}/{_updateQueueTotal}: {next.Name} → {next.Update.Version ?? next.Update.Name}. Click Slow download on the page that just opened; the next page follows when the file has arrived. (UPDATES in the header: skip or stop.)", Tone.Info);
+    }
+
+    /// <summary>Called when a Nexus file arrived through nxm://: if it is the update being waited for, go on with the next page.</summary>
+    private void UpdateQueueArrived(NxmLink link)
+    {
+        if (_updateQueue is null || _updateWaiting is not { } w) return;
+        if (w.Update.ModId != link.ModId) return;
+        OpenNextUpdatePage();
+    }
+
+    private async Task UpdateQueueMenuAsync()
+    {
+        if (_updateQueue is null) return;
+        var left = _updateQueue.Count + (_updateWaiting is null ? 0 : 1);
+        var skip = await AskAsync(new ConfirmVm("UPDATES THROUGH THE WEBSITE",
+            $"Waiting for {_updateWaiting?.Name ?? "the current download"}; {left} update(s) left. Skip it and open the next page, or stop here (what already arrived stays).",
+            "SKIP · NEXT PAGE", false) { CancelLabel = "Stop" });
+        if (skip) { OpenNextUpdatePage(); return; }
+        _updateQueue = null;
+        _updateWaiting = null;
+        OnPropertyChanged(nameof(CanUpdateAll));
+        OnPropertyChanged(nameof(UpdateAllLabel));
+        Say("Updates through the website stopped. What already arrived is in the library.", Tone.Neutral);
+    }
 
     // ---------------- P64: refresh ----------------
     [RelayCommand]
@@ -570,6 +655,33 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Apply(o);
         BuildCollectionChapters();
         PruneLayout();
+        await SyncSortedOrderAsync(o);
+    }
+
+    private bool _syncingOrder;
+
+    /// <summary>
+    /// P124: with a custom load order (modlist.txt) the list is the load order. MODS and categories are now sorted by
+    /// name, so the profile follows the list once: same blocks, alphabetical inside them. Apply puts it in the game.
+    /// </summary>
+    private async Task SyncSortedOrderAsync(InstallOverview o)
+    {
+        if (_syncingOrder || !o.OrderIsCustom || IsModsOff || o.Status.Unfinished is not null) return;
+        var slugOfName = SlugOfName();
+        var byId = Mods.ToDictionary(m => m.PackageId, m => m.Overview);
+        var composed = BlockLayout.Compose(CurrentOrder(), id => byId.TryGetValue(id, out var m) ? SectionOf(m, _layout, slugOfName) : BlockLayout.ModsBlock,
+            _layout.Sections(CollectionSlugs));
+        var set = composed.ToHashSet(StringComparer.Ordinal);
+        var now = o.Status.Selected.Entries.Select(e => e.PackageId).Where(set.Contains).ToList();
+        if (now.SequenceEqual(composed)) return;
+        _syncingOrder = true;
+        try
+        {
+            await _host.RunAsync(c => c.Reorder(o.Status.Selected.Id, composed));
+            await RefreshAsync();
+        }
+        catch (Exception ex) when (IsExpected(ex)) { }
+        finally { _syncingOrder = false; }
     }
 
     private void Apply(InstallOverview o)
@@ -589,7 +701,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 $"The last change to the game did not finish ({st.Unfinished.Status}, {st.Unfinished.CreatedAt.LocalDateTime:g}). Finish it, or return to the previous working state. Unknown files are never deleted.";
             IsModsOff = st.Selected.IsSystemModsOff;
 
-            Profiles.Reset(o.Profiles.Select(p => new ProfileVm(p,
+            // P124: Mods off first, then the own profiles alphabetically
+            Profiles.Reset(o.Profiles.OrderBy(p => p.IsSystem ? 0 : 1).ThenBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).Select(p => new ProfileVm(p,
                 p.IsSystem ? "no managed mods in game" : $"{p.Wanted} mod{(p.Wanted == 1 ? "" : "s")} wanted",
                 // P67: a deployed profile with changes not applied yet is not "deployed" in the green sense
                 p.IsDeployed && p.Id == st.Selected.Id && o.PendingChanges > 0 ? "PENDING" : p.IsDeployed ? "DEPLOYED" : (p.IsSystem ? "SYSTEM" : null),
@@ -601,7 +714,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             var rows = o.Mods.Select(m => new ModRowVm(m, !st.Selected.IsSystemModsOff && st.Unfinished is null, OnWantChangedAsync)).ToList();
             AssignChapters(rows);
             MarkTwins(rows, o);
-            Mods.Reset(rows.OrderBy(r => r.BlockRank)); // stable: inside a block the load order stays
+            // P124: MODS and every category alphabetically by name (a layer "└ name" stays right below its mod).
+            // Collections keep their (curator's) order and CORE MODS their fixed one: the stable sort leaves them as they are.
+            var parentName = rows.Where(r => r.Overview.Package.LayerOfModId is null)
+                .GroupBy(r => r.Overview.Package.ModId).ToDictionary(g => g.Key, g => g.First().Overview.Package.ModName, StringComparer.Ordinal);
+            string Group(ModRowVm r) => !r.InModsBlock ? "" : r.Overview.Package.LayerOfModId is { } of && parentName.TryGetValue(of, out var pn) ? pn : r.Overview.Package.ModName;
+            var byName = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, ignoreCase: true);
+            Mods.Reset(rows.OrderBy(r => r.BlockRank).ThenBy(Group, byName)
+                .ThenBy(r => !r.InModsBlock || r.Overview.Package.LayerOfModId is null ? 0 : 1)
+                .ThenBy(r => r.InModsBlock ? r.Overview.Package.ModName : "", byName)
+                .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase));
             UpdateGroupNames();
             foreach (var m in Mods)
             {
@@ -622,7 +744,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             LibrarySubtitle = $"{o.Mods.Count} mod{(o.Mods.Count == 1 ? "" : "s")} · {wanted} in profile {st.Selected.Name} · {deployed} in game"
                 + (o.OrderIsCustom ? " · custom load order" : "");
             Frameworks.Reset(o.Frameworks);
-            CoreMods.Reset(o.CoreMods.Select(c => new CoreModVm(c)));
+            CoreMods.Reset(o.CoreMods.Select(c =>
+            {
+                // P118: update of a core mod shows quietly in the header table too
+                var row = c.PackageId is null ? null : o.Mods.FirstOrDefault(m => m.Package.PackageId == c.PackageId);
+                return new CoreModVm(c, row?.Update, row?.Update is null ? null : new AsyncRelayCommand(() => UpdateModAsync(c.PackageId!)));
+            }));
             OrderIsCustom = o.OrderIsCustom;
             InboxCount = o.Unmanaged.Count;
             ScanFolders = ScanFoldersOf(o.Unmanaged.Select(u => u.Path));
@@ -635,6 +762,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             ChangesSummary = o.PendingChanges > 0 ? o.ChangesSummary : (profileSwitch ? $"Switch the game to {st.Selected.Name}" : o.ChangesSummary);
             CanApply = HasChanges && blocking.Count == 0 && !IsOperating;
             ApplyBlockedReason = blocking.Count == 0 ? "" : blocking[0].Message + (blocking.Count > 1 ? $" (+{blocking.Count - 1} more)" : "");
+            // P122: a blocker tied to a mod gets a SHOW button; environment issues (game running, ...) have none
+            var blockedId = blocking.Select(b => b.PackageId).FirstOrDefault(id => id is not null && o.Mods.Any(m => m.Package.PackageId == id));
+            BlockedPackageId = blockedId;
             CanLaunch = o.CanLaunch && !IsOperating;
             LaunchHint = o.LaunchHint;
         }
@@ -653,6 +783,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (ids is null) { row.ResetWant(!want); return; }
             // P98: another version of the same mod is on: offer to switch it off
             var twinsOff = want ? await OtherVersionsToSwitchOffAsync(row.PackageId) : [];
+            if (twinsOff is null) { row.ResetWant(!want); return; } // P121: Cancel → nothing changes
             if (twinsOff.Count > 0) await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, twinsOff, false));
             if (ids.Count == 1) await _host.RunAsync(c => c.SetEnabled(row.PackageId, want));
             else
@@ -944,8 +1075,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void OpenSettings()
     {
         var vm = new SettingsVm(GameFolder, GameVersion is null ? GameBuild : $"{GameVersion} · build {GameBuild}", AppSettings.ResolveLibrary(null),
-            AppSettings.Load().ReduceMotion, NexusKeyStore.Load() is not null, SafeNxmRegistered(), SafeOtherHandler(),
-            new SettingsActions(ChangeGameFolderAsync, SetReduceMotion, SaveNexusKeyAsync, ForgetNexusKey, CheckNexusAsync, SetNxmHandlerAsync,
+            AppSettings.Load().ReduceMotion, AppSettings.Load().ActivityLog, NexusKeyStore.Load() is not null, SafeNxmRegistered(), SafeOtherHandler(),
+            new SettingsActions(ChangeGameFolderAsync, SetReduceMotion, SetActivityLog, SaveNexusKeyAsync, ForgetNexusKey, CheckNexusAsync, SetNxmHandlerAsync,
                 () => OpenGameFolder(), () => OpenInbox(), LoadStorageAsync, PurgeAsync, CopyDiagnostics, RemoveFromPcAsync))
         { CloseCommand = new RelayCommand(() => Overlay = null) };
         Overlay = vm;
@@ -1138,6 +1269,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, info.ModName ?? older?.ModName, info.Version ?? info.ModVersion, older?.ModId),
             presetChoices ?? older?.FomodChoices, enable, quiet);
         if (older is not null && imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet);
+        if (imported.Count > 0) UpdateQueueArrived(link); // P116
         return imported;
     }
 
@@ -1148,38 +1280,60 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             .OrderByDescending(p => p.ImportedAt).FirstOrDefault();
 
     /// <summary>M4/P63: the new version takes the place of the old one in the profile; the old one stays in the library, switched off.</summary>
+    /// <summary>
+    /// P123: an update replaces the old version completely: the new one takes its place in every profile, collection
+    /// and category, the game is updated at once (when the profile is the one in the game) and the old version is
+    /// deleted from the library. In a batch (<see cref="_updateBatch"/>) the apply and the clean-up run once at the end.
+    /// </summary>
     private async Task ReplaceOlderAsync(PackageManifest older, PackageManifest newer, bool quiet)
     {
         if (_overview is null) return;
-        var wasOn = !IsModsOff && _overview.Status.Selected.IsEnabled(older.PackageId);
-        // P98: the old version is in a collection: ask what the new one does there
-        var collections = CollectionsOf(older.PackageId);
-        var choice = collections.Count == 0 ? 0 : await AskCollectionUpdateAsync(older, newer, collections, batch: quiet);
-        if (choice is null)
-        {
-            if (!quiet) Say($"{newer.ModName} {newer.Version} is in the library as a separate mod; the collection keeps {older.Version}.", Tone.Info);
-            return;
-        }
         await _host.RunAsync(c =>
         {
-            c.SetEnabled(older.PackageId, false);
-            if (wasOn) c.SetEnabled(newer.PackageId, true);
+            c.ReplaceVersion(older.PackageId, newer.PackageId);
             NexusUpdates.Save(c.Store, older.PackageId, null, DateTimeOffset.UtcNow);
-            if (collections.Count > 0 && choice is 0 or 1) c.ReplaceInCollections(older.PackageId, newer.PackageId);
         });
         // P95: the new version keeps the category of the old one
         if (_layout.CategoryIdOf(older.PackageId) is { } cat) await SaveLayoutAsync(_layout.Assign([newer.PackageId], cat));
-        var deleted = false;
-        if (choice == 1)
-        {
-            var r = await _host.RunAsync(c => c.DeleteEverywhere([older.PackageId]));
-            deleted = r.Deleted.Count > 0;
-        }
+        _replacedOld.Add((older.PackageId, $"{older.ModName} {older.Version} → {newer.Version}"));
         await RefreshAsync();
+        if (_updateBatch) return;
+        await FinishUpdatesAsync(quiet);
+    }
+
+    /// <summary>P123: old versions replaced since the last <see cref="FinishUpdatesAsync"/>.</summary>
+    private readonly List<(string OldId, string Line)> _replacedOld = [];
+    /// <summary>P123: true while Update all / Replace all runs: apply and clean-up wait for the end.</summary>
+    private bool _updateBatch;
+
+    /// <summary>P123: puts the updates in the game (no extra question) and deletes the old versions from the library.</summary>
+    private async Task FinishUpdatesAsync(bool quiet)
+    {
+        if (_replacedOld.Count == 0 || _overview is null) return;
+        var replaced = _replacedOld.ToList();
+        _replacedOld.Clear();
+        var lines = new List<string>();
+        var deployed = _overview.Profiles.FirstOrDefault(p => p.IsSelected) is { IsDeployed: true } && !IsModsOff;
+        if (deployed && _overview.PendingChanges > 0)
+        {
+            await ApplyCoreAsync(PlanDecisions.None);
+            await RefreshAsync();
+        }
+        var stillInGame = _overview?.Mods.Where(m => m.InGame).Select(m => m.Package.PackageId).ToHashSet() ?? [];
+        var drop = replaced.Select(r => r.OldId).Where(id => !stillInGame.Contains(id)).Distinct().ToList();
+        if (drop.Count > 0)
+        {
+            var r = await _host.RunAsync(c => c.DeleteFromLibrary(drop));
+            await RefreshAsync();
+            if (r.Kept.Count > 0) lines.AddRange(r.Kept.Select(k => $"  · {k.Name}: old version kept ({k.Reason})"));
+        }
+        var waiting = replaced.Count(r => stillInGame.Contains(r.OldId));
         if (quiet) return;
-        var where = collections.Count == 0 ? "" : choice == 2 ? " (outside the collection)" : $" in {string.Join(", ", collections)}";
-        var old = deleted ? "The old version was deleted from the library." : "The old version stays in the library, switched off.";
-        Say($"{older.ModName} {older.Version} → {newer.Version}{(wasOn ? " in the profile" : "")}{where}. {old} Apply to put it in the game.", Tone.Ok);
+        var head = waiting == 0
+            ? (deployed ? "Updated and in the game; the old version is deleted:" : "Updated in the profile; the old version is deleted (apply to put the profile in the game):")
+            : "Updated in the profile, but the game could not be changed now (see above). Apply again; the old version is deleted afterwards:";
+        lines.InsertRange(0, [head, .. replaced.Select(r => "  · " + r.Line)]);
+        SayLines(lines, waiting == 0 ? Tone.Ok : Tone.Warn);
     }
 
     /// <summary>
@@ -1189,20 +1343,49 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private async Task<List<string>> ImportUpdatesFromFilesAsync(IReadOnlyList<string> files)
     {
         var plain = new List<string>();
+        var updates = new List<(string File, PackageManifest Older, string NexusModId, string? Version)>();
         foreach (var file in files)
         {
             var guess = PackageLibrary.GuessFromFileName(file);
             var older = guess.NexusModId is null ? null : OlderVersionOf(guess.NexusModId, null);
             if (older is null) { plain.Add(file); continue; }
-            var version = guess.Version == "unknown" ? null : guess.Version;
-            // the same Nexus page can also have optional files: ask, do not guess
-            var replace = await AskAsync(new ConfirmVm("NEWER VERSION OF A MOD YOU HAVE?",
-                $"{Path.GetFileName(file)} is a download of {older.ModName} (Nexus mod {guess.NexusModId}). Put it in the profile instead of {older.ModName} {older.Version}? The old version stays in the library, switched off. Cancel adds it as a separate mod.",
-                "REPLACE OLD VERSION", false, [$"{older.ModName} {older.Version}   → {version ?? "new file"}"]));
-            if (!replace) { plain.Add(file); continue; }
-            var imported = await ImportFilesCoreAsync([file], new NexusSource(guess.NexusModId!, null, older.ModName, version, older.ModId), older.FomodChoices);
-            if (imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet: false);
+            updates.Add((file, older, guess.NexusModId!, guess.Version == "unknown" ? null : guess.Version));
         }
+        if (updates.Count == 0) return plain;
+
+        // the same Nexus page can also have optional files: ask, do not guess.
+        // P120: several files → one list, one answer (replace all, or add all as separate mods), not a question per file.
+        bool replaceAll;
+        if (updates.Count == 1)
+        {
+            var (file, older, nexusId, version) = updates[0];
+            replaceAll = await AskAsync(new ConfirmVm("NEWER VERSION OF A MOD YOU HAVE?",
+                $"{Path.GetFileName(file)} is a download of {older.ModName} (Nexus mod {nexusId}). Put it in place of {older.ModName} {older.Version}? The game is updated and the old version is deleted from the library.",
+                "REPLACE OLD VERSION", false, [$"{older.ModName} {older.Version}   → {version ?? "new file"}"]) { CancelLabel = "Add as a separate mod" });
+        }
+        else
+        {
+            replaceAll = await AskAsync(new ConfirmVm($"NEWER VERSIONS OF {updates.Count} MODS YOU HAVE?",
+                $"{updates.Count} of the {files.Count} files are downloads of mods already in the library. Put each in place of the old version? The game is updated and the old versions are deleted from the library. The other {plain.Count} file(s) are imported as new mods either way.",
+                $"REPLACE ALL ({updates.Count})", false,
+                updates.Select(u => $"{u.Older.ModName} {u.Older.Version}   → {u.Version ?? "new file"}   ({Path.GetFileName(u.File)})").ToList(),
+                linesTitle: "Replaced") { CancelLabel = "Add all as separate mods" });
+        }
+        if (!replaceAll) { plain.AddRange(updates.Select(u => u.File)); return plain; }
+
+        // P123: all replacements first, then one apply and one clean-up
+        _updateBatch = true;
+        try
+        {
+            foreach (var (file, older, nexusId, version) in updates)
+            {
+                var imported = await ImportFilesCoreAsync([file], new NexusSource(nexusId, null, older.ModName, version, older.ModId), older.FomodChoices, quiet: updates.Count > 1);
+                if (imported.Count == 1 && imported[0].PackageId != older.PackageId)
+                    await ReplaceOlderAsync(older, imported[0], quiet: true);
+            }
+        }
+        finally { _updateBatch = false; }
+        await FinishUpdatesAsync(quiet: false);
         return plain;
     }
 
@@ -1214,6 +1397,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Controls.Fx.SetReduceMotion(reduce);
         var current = AppSettings.Load();
         (current with { LibraryRoot = current.LibraryRoot ?? AppSettings.ResolveLibrary(null), ReduceMotion = reduce }).Save();
+    }
+
+    /// <summary>P113: activity log on/off, saved with the settings and effective at once.</summary>
+    private void SetActivityLog(bool on)
+    {
+        var current = AppSettings.Load();
+        (current with { LibraryRoot = current.LibraryRoot ?? AppSettings.ResolveLibrary(null), ActivityLog = on }).Save();
+        ActivityLog.Enabled = on;
+        ActivityLog.Write("app", $"activity log switched on · AFTERLIFE {AppVersion} · game {GameVersion ?? "?"} build {GameBuild}");
     }
 
     [RelayCommand]
@@ -1248,6 +1440,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex) when (ex is IOException or System.Net.Http.HttpRequestException or TaskCanceledException or UnauthorizedAccessException or NotSupportedException or UriFormatException or InvalidOperationException) { }
     }
 
+    // ---------------- P122: jump to the mod behind the blocker ----------------
+    [RelayCommand]
+    private void ShowBlocked()
+    {
+        if (BlockedPackageId is null) return;
+        var row = Mods.FirstOrDefault(m => m.PackageId == BlockedPackageId);
+        if (row is null) return;
+        ShowInChapter(row);
+    }
+
     // ---------------- P76: rename a mod ----------------
     public Task RenameModAsync(string packageId) => RunUiAsync(async () =>
     {
@@ -1260,9 +1462,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     });
 
     // ---------------- P72: delete a profile ----------------
-    /// <summary>P75: offered only when it can be done: not Mods off, not the profile that is in the game.</summary>
-    public bool CanDeleteProfile => SelectedProfile is { IsSystem: false } p && _overview is not null
-        && !(_overview.Profiles.FirstOrDefault(x => x.Id == p.Id) is { IsDeployed: true } && _overview.Mods.Any(m => m.InGame));
+    /// <summary>
+    /// P75/P112: Rename and Delete are offered for every own profile (not Mods off). Deleting the profile that is
+    /// in the game first switches the game to Mods off (its mods are taken out), then deletes it.
+    /// </summary>
+    public bool CanDeleteProfile => SelectedProfile is { IsSystem: false };
 
     [RelayCommand]
     private Task DeleteProfile() => RunUiAsync(async () =>
@@ -1271,7 +1475,25 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var summary = _overview.Profiles.FirstOrDefault(x => x.Id == p.Id);
         if (summary is { IsDeployed: true } && _overview.Mods.Any(m => m.InGame))
         {
-            Say($"{p.Name} is in the game now. Select another profile (or Mods off) and apply, then delete {p.Name}.", Tone.Warn);
+            // P112: in the game right now → offer the two steps as one action instead of a dead end.
+            var go = await AskAsync(new ConfirmVm($"{p.Name.ToUpperInvariant()} IS IN THE GAME",
+                $"To delete {p.Name}, AFTERLIFE first switches the game to Mods off (its mods are taken out of the game, every file verified), then deletes the profile. The mods stay in the library and in other profiles.",
+                "MODS OFF, THEN DELETE", true) { CancelLabel = "Keep it" });
+            if (!go) return;
+            var modsOff = Profiles.FirstOrDefault(x => x.IsSystem);
+            if (modsOff is null) { Say("Mods off profile not found.", Tone.Block); return; }
+            await _host.RunAsync(c => c.SelectProfile(modsOff.Id));
+            await RefreshAsync();
+            await ApplyCoreAsync(PlanDecisions.None);
+            var still = _overview?.Profiles.FirstOrDefault(x => x.Id == p.Id);
+            if (still is { IsDeployed: true } && (_overview?.Mods.Any(m => m.InGame) ?? false))
+            {
+                Say($"{p.Name} is still in the game (the switch to Mods off did not finish), so it was not deleted.", Tone.Warn);
+                return;
+            }
+            await _host.RunAsync(c => c.DeleteProfile(p.Id));
+            await RefreshAsync();
+            Say($"The game runs without mods now; profile {p.Name} deleted. The mods stay in the library.", Tone.Ok);
             return;
         }
         var ok = await AskAsync(new ConfirmVm("DELETE PROFILE?",
@@ -1395,6 +1617,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var lines = new List<string>();
         if (added > 0) lines.Add($"+ {added} mod(s) into the game");
         if (removed > 0) lines.Add($"− {removed} mod(s) out of the game");
+        // P114: mods held back because a framework they need is off lose their files too; name the reason
+        var heldBack = _overview.Preview.Snapshot.Issues
+            .Where(i => i.Kind == IssueKind.MissingRequirement && i.Severity == Severity.Blocking && i.PackageId is not null
+                        && _overview.Preview.Plan.Steps.Any(s => s.Kind == StepKind.Remove && s.Owner == i.PackageId))
+            .GroupBy(i => i.Capability ?? "?").ToList();
+        foreach (var g in heldBack)
+            lines.Add($"− {g.Count()} mod(s) held back: {Capabilities.DisplayName(g.Key)} is off, so their files leave the game too");
         if (_overview.OrderIsCustom) lines.Add("load order from the list (modlist.txt)");
         lines.AddRange(TwinWarnings()); // P98: two versions of one mod would go into the game
         foreach (var n in LeavingCore().Select(c => c.Name)) lines.Add($"{n}: files it made itself (logs, settings) go to the library, restorable");
@@ -1411,7 +1640,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private Task Preview() => RunUiAsync(async () =>
     {
         var r = await _host.RunAsync(c => c.Preview());
-        Overlay = new PlanPreviewVm(SelectedProfile?.Name ?? "", r) { CloseCommand = new RelayCommand(() => Overlay = null) };
+        Overlay = new PlanPreviewVm(SelectedProfile?.Name ?? "", r, id => _overview?.Mods.FirstOrDefault(m => m.Package.PackageId == id)?.Package.ModName)
+            { CloseCommand = new RelayCommand(() => Overlay = null) };
     });
 
     /// <summary>Core mods that the next apply takes out of the game (P37).</summary>
@@ -1637,6 +1867,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         foreach (var l in shown) NoticeLines.Add(l);
         Notice = string.Join("\n", shown);
         NoticeTone = tone;
+        ActivityLog.Write(tone == Tone.Block ? "error" : "notice", string.Join("\n", lines));
     }
 
     // ---------------- breach panel helpers ----------------

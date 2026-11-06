@@ -27,7 +27,8 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>When a mod is switched on and another version of it is on: offer to switch the other one off.</summary>
-    private async Task<IReadOnlyList<string>> OtherVersionsToSwitchOffAsync(string packageId)
+    /// <returns>Versions to switch off; empty = keep both; null = P121 Cancel, the mod is not switched on at all.</returns>
+    private async Task<IReadOnlyList<string>?> OtherVersionsToSwitchOffAsync(string packageId)
     {
         if (_overview is null) return [];
         var me = _overview.Mods.FirstOrDefault(m => m.Package.PackageId == packageId);
@@ -35,9 +36,11 @@ public sealed partial class MainViewModel
         var others = _overview.Mods.Where(m => m.Wanted && m.Package.PackageId != packageId && m.Package.LayerOfModId is null
                                                && m.Package.ModId == me.Package.ModId).ToList();
         if (others.Count == 0) return [];
-        var off = await AskAsync(new ConfirmVm("ANOTHER VERSION IS ON",
-            $"{me.Package.ModName} {me.Package.Version} is another version of a mod that is already on in this profile. Two versions of one mod in the game usually fight over the same files. Switch the other version off? (Keep both only when it is an optional add-on file from the same Nexus page.)",
-            "SWITCH THE OTHER OFF", false, others.Select(o => $"{o.Package.ModName} {o.Package.Version}   → off").ToList()) { CancelLabel = "Keep both" });
+        var vm = new ConfirmVm("ANOTHER VERSION IS ON",
+            $"{me.Package.ModName} {me.Package.Version} is another version of a mod that is already on in this profile. Two versions of one mod in the game usually fight over the same files. Switch the other version off? (Keep both only when it is an optional add-on file from the same Nexus page. Cancel leaves this one off.)",
+            "SWITCH THE OTHER OFF", false, others.Select(o => $"{o.Package.ModName} {o.Package.Version}   → off").ToList()) { CancelLabel = "Keep both", AbortLabel = "Cancel" };
+        var off = await AskAsync(vm);
+        if (vm.Aborted) return null;
         return off ? others.Select(o => o.Package.PackageId).ToList() : [];
     }
 
@@ -70,6 +73,39 @@ public sealed partial class MainViewModel
         if (batch && pick is not null && vm.OptionChecked) _collectionUpdateChoice = pick;
         return pick;
     }
+
+    // ---------------- P123: old versions left from earlier updates ----------------
+    private bool _oldVersionsAsked;
+
+    /// <summary>
+    /// Once per session: older versions of a mod that is in the library in a newer version too, switched off in every
+    /// profile, not in the game and in no collection (left from updates before P123). Offers to delete them.
+    /// </summary>
+    private Task CheckOldVersionsAsync() => RunUiAsync(async () =>
+    {
+        if (_overview is null || _oldVersionsAsked || Overlay is not null) return;
+        _oldVersionsAsked = true;
+        var profiles = await _host.RunAsync(c => c.Profiles);
+        bool OnSomewhere(string id) => profiles.Any(p => p.IsEnabled(id));
+        var old = _overview.Mods
+            .Where(m => m.Package.LayerOfModId is null)
+            .GroupBy(m => m.Package.ModId)
+            .Where(g => g.Count() > 1)
+            .SelectMany(g =>
+            {
+                var newest = g.OrderByDescending(m => m.Package.ImportedAt ?? DateTimeOffset.MinValue).First();
+                return g.Where(m => m != newest && !m.InGame && !OnSomewhere(m.Package.PackageId) && CollectionsOf(m.Package.PackageId).Count == 0)
+                        .Select(m => (Old: m, Newest: newest));
+            }).ToList();
+        if (old.Count == 0) return;
+        var ok = await AskAsync(new ConfirmVm("OLD VERSIONS IN THE LIBRARY",
+            $"{old.Count} older version(s) of mods you have in a newer version are in the library, switched off everywhere. Updates now replace the old version; delete these leftovers from the library? The game does not change.",
+            "DELETE OLD VERSIONS", false, old.Select(x => $"{x.Old.Package.ModName} {x.Old.Package.Version}   (newer: {x.Newest.Package.Version})").ToList()) { CancelLabel = "Keep them" });
+        if (!ok) return;
+        var r = await _host.RunAsync(c => c.DeleteFromLibrary(old.Select(x => x.Old.Package.PackageId).ToList()));
+        await RefreshAsync();
+        Say($"Deleted {r.Deleted.Count} old version(s) from the library.", Tone.Ok);
+    });
 
     // ---------------- P99: duplicates ----------------
     private bool _duplicatesAsked;

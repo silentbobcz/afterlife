@@ -2,6 +2,24 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## 1.0.0-alpha.2
+
+Fixes and small additions after the first alpha on a real install.
+
+- **Runtime files of core mods** (Input Loader's `r6/cache/inputContexts.xml`, `inputUserMappings.xml`, `input_loader.ini`; Mod Settings `user.ini`) are no longer reported as CHANGED OUTSIDE after the game rewrote them. Switching the mod off removes them, an update replaces them, a copy left by a manual install is taken over.
+- **Update** on a free Nexus account opens the mod-manager download page straight away (one click on *Slow download* and the file comes into AFTERLIFE). **UPDATE ALL** works for every account: Premium downloads directly, others get the pages one after another; the header button shows how many are left and can skip or stop.
+- **Core mods** show a small arrow next to the version when a newer version is on Nexus; one click updates.
+- **Rename and Delete** are offered for every own profile. Deleting the profile that is in the game first switches the game to Mods off, then deletes it.
+- **Several updates dropped at once** are confirmed as one list (REPLACE ALL or add all as separate mods), not file by file.
+- **Another version is on** has a Cancel that leaves the mod off (Escape does the same).
+- **Blocked apply** shows a SHOW MOD button that jumps to the mod the blocker belongs to.
+- **Header checkboxes** in CORE MODS, collections, MODS and categories select all mods of the block for bulk actions (three states).
+- **Preview** groups the changes by mod with the reason (switched off, held back because its framework is off, update); the summary and the Apply dialog count mods held back, so a long remove list after switching ArchiveXL off is explained.
+- **Update replaces the old version completely** (P123): the new version takes its place in every profile, collection, category and conflict rule, the game is updated at once (when the profile is the one in the game) and the old version is deleted from the library. UPDATE ALL and REPLACE ALL apply once at the end. Old versions left from earlier updates are offered for deletion once after start.
+- **Alphabetical order** (P124): mods inside MODS and every category, and the profiles, are sorted by name (a layer stays below its mod); collections keep their curator's order. With a custom load order the profile follows the sorted list (blocks and categories keep their order). Dragging inside a category no longer reorders; to load a mod earlier, put it in a category placed higher.
+- **Manual mods without noise** (P125): `red4ext/config.ini`, lock and cache files that a mod in the library wrote into its own folder (also while it is switched off) are no longer listed. A core-mod group with only its own settings or logs says so instead of "installed manually"; the Address Library database (`bin/x64/plugins/address_library`) is named and explained.
+- **Activity log** (Settings): writes switches, imports, every planned file change with its reason and the results into the log folder, one file per day.
+
 ## 1.0.0-alpha
 
 First alpha of 1.0: everything since 0.5.0 in one release.

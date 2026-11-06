@@ -27,6 +27,7 @@ Before anything is written, the plan is checked against reality:
 
 - a file in the way that AFTERLIFE did not install → the plan stops and asks (it never overwrites foreign files),
 - a deployed file that changed since (a mod saved its settings) → you decide per mod: keep your edits or discard,
+- files a core mod rewrites by design while the game runs (listed per core mod in `FrameworkCatalog`, for example Input Loader's `r6/cache` XMLs) → not a change: removed with the mod, replaced by its update,
 - the game is running, or the install is locked by another AFTERLIFE window → nothing happens.
 
 ## Apply (the journal)
