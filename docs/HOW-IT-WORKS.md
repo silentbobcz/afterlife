@@ -19,6 +19,10 @@ The game folder is never the source of truth for a mod. Mods are imported into t
 3. The layout is recognised by `ImportAnalyzer` (archive mods, CET, RED4ext, redscript, TweakXL, ArchiveXL, REDmod, `bin/x64` plugins, FOMOD and so on). Archives with several variants or with a FOMOD installer ask you first.
 4. Files are stored under `packages/<id>` with an XXH128 hash each. Executables and scripts inside archives are stored as data and never run.
 
+## Scan
+
+`InstallCoordinator.Scan` walks the mod folders of the game and compares what it finds with the ledger and the library: manual mods, files in the way of a library mod, identical copies, runtime files of core mods. The walk is the expensive part, so the coordinator keeps the last result and reuses it (`CachedScan`) while only profiles change; it walks again as soon as packages or the ledger changed (`AfterlifeStore.ScanVersion`), the game root changed, or AFTERLIFE itself touched the game folder (apply, launch, REDmod deploy). The window asks for a full scan on start, on REFRESH, in *Scan manual mods* and when it comes back to the front.
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.

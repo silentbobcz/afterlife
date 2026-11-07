@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## Unreleased
+
+- **Faster refresh**: the window no longer walks the game folder and reads every mod's Nexus rows from the database after every click. The last scan is reused while only profiles change (a full scan still runs on start, REFRESH, *Scan manual mods*, after apply or launch and when the window comes back to the front); the overview builds its per-mod data from one-time lookups.
+- **Steadier list**: rows are updated in place, so the selection, checkboxes and scroll position survive a refresh; the mod picture is not decoded again when the selected mod did not change.
+- Tests are organised by feature; comments in the sources no longer carry patch numbers.
+
 ## 1.0.0-alpha.2
 
 Fixes and small additions after the first alpha on a real install.
