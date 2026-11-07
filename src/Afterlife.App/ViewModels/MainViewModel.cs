@@ -156,7 +156,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await RunUiAsync(async () =>
         {
             await _host.OpenAsync(lib);
-            await RefreshAsync();
+            await RefreshAsync(rescan: true);
             ScanCompleted?.Invoke();
         });
         _ = AfterOpenAsync();
@@ -437,7 +437,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Say("Refreshing: reading the game folder and the library again…", Tone.Info);
         try { await _host.RunAsync(c => c.RefreshRequirements()); }
         catch (Exception ex) when (IsExpected(ex)) { }
-        await RefreshAsync();
+        await RefreshAsync(rescan: true);
         ScanCompleted?.Invoke();
         await FetchNexusInfoAsync(onlyMissing: true);
         await CheckUpdatesAsync(force: false);
@@ -606,6 +606,21 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public DetailTab? PreferredTab { get; set; }
 
     /// <summary>nxm:// link from the command line or from a second AFTERLIFE start (P24).</summary>
+    private DateTimeOffset _lastActivationScan = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// The window came back to the front: the user may have changed files by hand or the game has just closed.
+    /// A full scan, at most once in 15 seconds and never over a running operation or dialog.
+    /// </summary>
+    public async Task OnActivatedAsync()
+    {
+        if (!_host.IsOpen || IsBusy || IsOperating || Overlay is not null) return;
+        var now = DateTimeOffset.UtcNow;
+        if (now - _lastActivationScan < TimeSpan.FromSeconds(15)) return;
+        _lastActivationScan = now;
+        await RunUiAsync(() => RefreshAsync(rescan: true));
+    }
+
     public Task HandleExternalAsync(string message)
     {
         if (!message.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase)) return Task.CompletedTask;
@@ -622,7 +637,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             else await _host.InitializeAsync(vm.GameFolder, lib);
             new AppSettings(lib).Save();
             Overlay = null;
-            await RefreshAsync();
+            await RefreshAsync(rescan: true);
             ScanCompleted?.Invoke();
             if (!string.IsNullOrWhiteSpace(vm.NexusKey))
             {
@@ -647,10 +662,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     // ---------------- refresh ----------------
-    public async Task RefreshAsync()
+    /// <summary>
+    /// Rebuilds the window from the library. By default the last scan of the game folder is reused when only
+    /// profiles changed (the coordinator walks the folder again as soon as packages or the ledger changed);
+    /// <paramref name="rescan"/> forces the walk, for the moments when files may have changed outside AFTERLIFE:
+    /// start, REFRESH, Scan manual mods, the window coming back to the front.
+    /// </summary>
+    public async Task RefreshAsync(bool rescan = false)
     {
         if (!_host.IsOpen) return;
-        var o = await _host.RunAsync(OverviewBuilder.Build);
+        var o = await _host.RunAsync(c => OverviewBuilder.Build(c, rescan));
         await LoadLayoutAsync(); // P95/P97: collections and the block layout decide the groups
         Apply(o);
         BuildCollectionChapters();
@@ -711,7 +732,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
             var keep = SelectedMod?.PackageId;
             var keepMulti = Mods.Where(m => m.IsChecked).Select(m => m.PackageId).ToHashSet();
-            var rows = o.Mods.Select(m => new ModRowVm(m, !st.Selected.IsSystemModsOff && st.Unfinished is null, OnWantChangedAsync)).ToList();
+            // rows survive a refresh: the same object is updated in place, so selection, checkbox and scroll position stay
+            var existing = Mods.ToDictionary(m => m.PackageId, StringComparer.Ordinal);
+            var editable = !st.Selected.IsSystemModsOff && st.Unfinished is null;
+            var rows = o.Mods.Select(m =>
+            {
+                if (existing.TryGetValue(m.Package.PackageId, out var row)) { row.Update(m, editable); return row; }
+                row = new ModRowVm(m, editable, OnWantChangedAsync);
+                row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ModRowVm.IsChecked)) UpdateChecked(); };
+                return row;
+            }).ToList();
             AssignChapters(rows);
             MarkTwins(rows, o);
             // P124: MODS and every category alphabetically by name (a layer "└ name" stays right below its mod).
@@ -720,23 +750,28 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 .GroupBy(r => r.Overview.Package.ModId).ToDictionary(g => g.Key, g => g.First().Overview.Package.ModName, StringComparer.Ordinal);
             string Group(ModRowVm r) => !r.InModsBlock ? "" : r.Overview.Package.LayerOfModId is { } of && parentName.TryGetValue(of, out var pn) ? pn : r.Overview.Package.ModName;
             var byName = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, ignoreCase: true);
-            Mods.Reset(rows.OrderBy(r => r.BlockRank).ThenBy(Group, byName)
+            var ordered = rows.OrderBy(r => r.BlockRank).ThenBy(Group, byName)
                 .ThenBy(r => !r.InModsBlock || r.Overview.Package.LayerOfModId is null ? 0 : 1)
                 .ThenBy(r => r.InModsBlock ? r.Overview.Package.ModName : "", byName)
-                .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase));
+                .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (ordered.SequenceEqual(Mods)) ModsView.Refresh(); // same rows in the same order: regroup only
+            else Mods.Reset(ordered);
             UpdateGroupNames();
-            foreach (var m in Mods)
-            {
-                m.IsChecked = keepMulti.Contains(m.PackageId);
-                m.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ModRowVm.IsChecked)) UpdateChecked(); };
-            }
+            foreach (var m in Mods) m.IsChecked = keepMulti.Contains(m.PackageId);
             IsEmptyLibrary = Mods.Count == 0;
             UpdateCount = o.Mods.Count(m => m.Update is not null);
             OnPropertyChanged(nameof(CanUpdateAll));
             OnPropertyChanged(nameof(UpdateAllLabel));
             SelectedMod = Mods.FirstOrDefault(m => m.PackageId == keep) ?? Mods.FirstOrDefault();
+            var previous = Details;
             Details = SelectedMod is null ? null : new DetailsVm(SelectedMod.Overview, this);
-            if (Details is not null) _ = LoadImageAsync(Details, SelectedMod!.Overview);
+            if (Details is not null)
+            {
+                // same mod, same picture: keep the decoded bitmap instead of reading the file again
+                if (previous?.Image is { } img && previous.Overview.Nexus?.PictureUrl is { } url && url == SelectedMod!.Overview.Nexus?.PictureUrl) Details.Image = img;
+                else _ = LoadImageAsync(Details, SelectedMod!.Overview);
+            }
             UpdateChecked();
 
             var wanted = o.Mods.Count(m => m.Wanted);
@@ -984,7 +1019,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     // ---------------- inbox (P6) ----------------
     public Task RescanAsync() => RunUiAsync(async () =>
     {
-        await RefreshAsync();
+        await RefreshAsync(rescan: true);
         ScanCompleted?.Invoke();
     });
 
@@ -1839,7 +1874,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand] private void OpenSupport() => AppLinks.Open(AppLinks.Sponsors);
     [RelayCommand] private void OpenContact() => AppLinks.Open(AppLinks.ContactMailto);
     private void OpenGameFolder() { if (Directory.Exists(GameFolder)) AppLinks.OpenFolder(GameFolder); }
-    [RelayCommand] private Task Refresh() => RunUiAsync(RefreshAsync);
+    [RelayCommand] private Task Refresh() => RunUiAsync(() => RefreshAsync(rescan: true));
     [RelayCommand] private void DismissNotice() { Notice = null; NoticeLines.Clear(); }
 
     // ---------------- helpers ----------------

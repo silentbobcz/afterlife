@@ -31,13 +31,24 @@ public sealed partial class ModRowVm : ObservableObject
 
     public ModRowVm(ModOverview o, bool editable, Func<ModRowVm, bool, Task> onWantChanged)
     {
+        _onWantChanged = onWantChanged;
+        Overview = o;
+        Tags = [];
+        Update(o, editable);
+    }
+
+    /// <summary>
+    /// Takes over the state of a rebuilt overview so the row object (and with it the list's selection, checkbox
+    /// and scroll position) survives a refresh. Every bound property is re-read by the view afterwards.
+    /// </summary>
+    public void Update(ModOverview o, bool editable)
+    {
         Overview = o;
         _want = o.Wanted;
         CanToggle = editable;
-        _onWantChanged = onWantChanged;
         var p = o.Package;
         var tags = BuildTags(p);
-        // P51: collection label and whether the collection needs it
+        // collection label and whether the collection needs it
         if (o.Collections.Count > 0)
         {
             tags.InsertRange(0, o.Collections.Select(c => new TagVm(c, true)));
@@ -45,6 +56,7 @@ public sealed partial class ModRowVm : ObservableObject
         }
         Tags = tags;
         VersionNote = o.HasOverride ? "enabled with override" : null;
+        OnPropertyChanged(string.Empty);
     }
 
     public ModOverview Overview { get; private set; }
@@ -53,7 +65,8 @@ public sealed partial class ModRowVm : ObservableObject
     public bool IsCore => Overview.IsCore;
     /// <summary>P51: a collection is its own chapter, below CORE MODS.</summary>
     /// <summary>P51/P95: group key in the list; set by the main view model from the block layout.</summary>
-    public string Chapter { get; set; } = "";
+    public string Chapter { get => _chapter; set => SetProperty(ref _chapter, value); }
+    private string _chapter = "";
     /// <summary>P97: layout section (block or category) the mod loads in; see <see cref="Afterlife.Core.BlockLayout"/>.</summary>
     public string Section { get; set; } = "";
     /// <summary>P97: position of the section in the load order (core = -1).</summary>
@@ -68,7 +81,8 @@ public sealed partial class ModRowVm : ObservableObject
     public bool CanDrag => CanToggle && !IsCore && Overview.Package.LayerOfModId is null && !Overview.OrderLocked;
     public string Name => Overview.Package.LayerOfModId is null ? Overview.Package.ModName : "└ " + Overview.Package.ModName;
     /// <summary>P98: another version of this mod is on in the profile too.</summary>
-    public string? TwinText { get; set; }
+    public string? TwinText { get => _twinText; set => SetProperty(ref _twinText, value); }
+    private string? _twinText;
     /// <summary>M4: newer version on Nexus.</summary>
     public bool HasUpdate => Overview.Update is not null;
     public string? UpdateText => Overview.Update is { } u ? "UPDATE " + (u.Version is null ? "" : "v" + u.Version.TrimStart('v', 'V')) : null;
@@ -78,11 +92,11 @@ public sealed partial class ModRowVm : ObservableObject
     public string? MissingText => Overview.Missing.Count == 0 ? null
         : "missing: " + string.Join(", ", Overview.Missing.Take(3)) + (Overview.Missing.Count > 3 ? $" +{Overview.Missing.Count - 3}" : "");
     public string Version => Overview.Package.Version;
-    public string? VersionNote { get; }
+    public string? VersionNote { get; private set; }
     public string StateLabel => Overview.StateLabel;
     public Tone Tone => Overview.Tone;
-    public bool CanToggle { get; }
-    public IReadOnlyList<TagVm> Tags { get; }
+    public bool CanToggle { get; private set; }
+    public IReadOnlyList<TagVm> Tags { get; private set; }
     public string AccessibleName => $"{Overview.Package.ModName}, {Overview.StateLabel.TrimStart('✓', '×', '!', '+', '−', '–', '↻', ' ')}";
 
     public bool Want

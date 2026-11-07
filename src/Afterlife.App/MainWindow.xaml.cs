@@ -29,6 +29,7 @@ public partial class MainWindow : Window
             if (startLink is not null) await _vm.HandleExternalAsync(startLink);
             await _vm.StartAsync();
         };
+        Activated += async (_, _) => await _vm.OnActivatedAsync();
         Closed += (_, _) => _vm.Dispose();
         DragOver += OnDragOver;
         DragLeave += (_, _) => SetDragOver(false);

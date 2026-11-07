@@ -99,7 +99,14 @@ public sealed class AfterlifeStore : IDisposable
     {
         using var cmd = Cmd(sql, args);
         cmd.ExecuteNonQuery();
+        if (sql.Contains("packages", StringComparison.Ordinal) || sql.Contains("ledger", StringComparison.Ordinal)) ScanVersion++;
     }
+
+    /// <summary>
+    /// Grows with every write to the packages or the ledger: the two tables a scan of the game folder depends on.
+    /// Lets the coordinator reuse the last scan while only profiles, settings or caches changed.
+    /// </summary>
+    public long ScanVersion { get; private set; }
 
     private List<T> Query<T>(string sql, Func<SqliteDataReader, T> map, params (string, object?)[] args)
     {

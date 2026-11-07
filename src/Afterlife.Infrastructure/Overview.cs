@@ -225,10 +225,11 @@ public static class OverviewBuilder
         return result;
     }
 
-    public static InstallOverview Build(InstallCoordinator c)
+    /// <param name="rescan">false: only profiles changed since the last overview, reuse the last scan of the game folder.</param>
+    public static InstallOverview Build(InstallCoordinator c, bool rescan = true)
     {
         var status = c.Status();
-        var preview = c.Preview();
+        var preview = c.Preview(rescan: rescan);
         var snapshot = preview.Snapshot;
         var profile = status.Selected;
         var packages = c.Store.GetPackages();

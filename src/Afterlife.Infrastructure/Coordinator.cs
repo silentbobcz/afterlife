@@ -500,7 +500,42 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     // ---------------- inventory ----------------
+    /// <summary>
+    /// Walks the game folder and stores the result (a full scan). The part that depends on the selected profile
+    /// (identical copies hidden while their mod is on) is derived afterwards, so <see cref="CachedScan"/> can reuse
+    /// the walk when only a profile changed.
+    /// </summary>
     public ScanResult Scan()
+    {
+        var raw = ScanFiles();
+        _scanCache = (Store.ScanVersion, GameRoot, raw);
+        return Finish(raw, SelectedProfile);
+    }
+
+    private (long Version, string Root, RawScan Raw)? _scanCache;
+
+    /// <summary>
+    /// The last scan, if nothing it depends on changed (packages, ledger, game root) and nothing touched the game
+    /// folder through AFTERLIFE since; otherwise a fresh one. Changes made outside AFTERLIFE are seen on the next
+    /// full <see cref="Scan"/>, which the app runs on start, on a manual refresh and when its window is activated.
+    /// </summary>
+    public ScanResult CachedScan() =>
+        _scanCache is { } c && c.Version == Store.ScanVersion && c.Root == GameRoot ? Finish(c.Raw, SelectedProfile) : Scan();
+
+    /// <summary>Forget the last scan: something changed the game folder (apply, launch, moving files aside).</summary>
+    public void InvalidateScan() => _scanCache = null;
+
+    private sealed record RawScan(
+        List<(string Path, long Size)> Unmanaged,
+        Dictionary<string, List<string>> InTheWay,
+        Dictionary<string, List<string>> Same,
+        Dictionary<string, List<string>> SamePackages,
+        Dictionary<string, string> Runtime,
+        HashSet<string> External,
+        Dictionary<string, string?> Versions,
+        List<string> Archives);
+
+    private RawScan ScanFiles()
     {
         var ledger = Store.GetLedger();
         var unmanaged = new List<(string, long)>();
@@ -517,7 +552,7 @@ public sealed class InstallCoordinator : IDisposable
                 unmanaged.Add((gp.Value, _fs.GetMeta(file)?.Size ?? 0));
             }
         }
-        // P15: loose files of manually installed core mods outside the scanned folders, so they can be removed as a whole.
+        // loose files of manually installed core mods outside the scanned folders, so they can be removed as a whole
         foreach (var (signature, extras) in FrameworkExtras)
         {
             var sig = GamePath.Parse(signature);
@@ -530,16 +565,16 @@ public sealed class InstallCoordinator : IDisposable
                 unmanaged.Add((gp.Value, _fs.GetMeta(os)?.Size ?? 0));
             }
         }
-        // P32: every path a library package wants to write is checked too, wherever it is (bin/x64, r6/config, engine …).
+        // Every path a library package wants to write is checked too, wherever it is (bin/x64, r6/config, engine …).
         // A file there that AFTERLIFE did not write blocks that package (FILE IN THE WAY), so it must be visible and removable.
-        // P45: a file with exactly the content the package ships is not in the way: APPLY adopts it (P31).
+        // A file with exactly the content the package ships is not in the way: APPLY adopts it.
         var inTheWay = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         var same = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        var hidden = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var samePackages = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         var listed = unmanaged.Select(u => u.Item1).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var selected = SelectedProfile;
         var hashes = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pkg in Store.GetPackages())
+        var packages = Store.GetPackages();
+        foreach (var pkg in packages)
             foreach (var f in pkg.Files)
             {
                 if (!GamePath.TryCreate(f.Target, out var gp, out _) || ledger.ContainsKey(gp.Key) || IsProtectedGameFile(gp.Value)) continue;
@@ -559,15 +594,19 @@ public sealed class InstallCoordinator : IDisposable
                 var map = identical ? same : inTheWay;
                 if (!map.TryGetValue(gp.Value, out var names)) map[gp.Value] = names = new List<string>();
                 if (!names.Contains(pkg.ModName)) names.Add(pkg.ModName);
-                if (identical && selected.IsEnabled(pkg.PackageId)) hidden.Add(gp.Value);
+                if (identical)
+                {
+                    if (!samePackages.TryGetValue(gp.Value, out var ids)) samePackages[gp.Value] = ids = new List<string>();
+                    ids.Add(pkg.PackageId);
+                }
                 if (listed.Add(gp.Value)) unmanaged.Add((gp.Value, meta.Size));
             }
-        foreach (var k in inTheWay.Keys) { same.Remove(k); hidden.Remove(k); } // a differing copy for another mod still blocks
-        // P55: logs and settings that mods deployed by AFTERLIFE write into their own folders are theirs, not manual mods
-        // (kept while the mod is in the library, also when it is switched off: they are its settings; P55)
+        foreach (var k in inTheWay.Keys) { same.Remove(k); samePackages.Remove(k); } // a differing copy for another mod still blocks
+        // logs and settings that mods deployed by AFTERLIFE write into their own folders are theirs, not manual mods
+        // (kept while the mod is in the library, also when it is switched off: they are its settings)
         var candidates = unmanaged.Select(u => u.Item1).Where(u => !inTheWay.ContainsKey(u) && !same.ContainsKey(u)).ToList();
         var runtime = RuntimeOwners(candidates, ledger);
-        var known = Store.GetPackages().Select(p => p.PackageId).ToHashSet(StringComparer.Ordinal);
+        var known = packages.Select(p => p.PackageId).ToHashSet(StringComparer.Ordinal);
         foreach (var (path, owner) in LoadRuntimeOwners())
             if (!runtime.ContainsKey(path) && known.Contains(owner) && candidates.Contains(path, StringComparer.OrdinalIgnoreCase)) runtime[path] = owner;
         Store.SetMeta(RuntimeOwnersKey, Json.Serialize(runtime));
@@ -588,14 +627,23 @@ public sealed class InstallCoordinator : IDisposable
             .Select(p => p.FileName)
             .ToList();
         Store.ReplaceUnmanaged(unmanaged);
-        var blockers = inTheWay.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase);
-        return new ScanResult(unmanaged, external, archives)
+        return new RawScan(unmanaged, inTheWay, same, samePackages, runtime, external, versions, archives);
+    }
+
+    /// <summary>The profile-dependent part of a scan: identical copies of a mod that is on are hidden from the manual mods.</summary>
+    private static ScanResult Finish(RawScan raw, ProfileState selected)
+    {
+        var hidden = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (path, ids) in raw.SamePackages)
+            if (ids.Any(selected.IsEnabled)) hidden.Add(path);
+        var blockers = raw.InTheWay.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase);
+        return new ScanResult(raw.Unmanaged, raw.External, raw.Archives)
         {
-            ExternalVersions = versions,
-            Detected = UnmanagedGrouping.WithBlockers(UnmanagedGrouping.Group(unmanaged), blockers,
-                same.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase), hidden),
+            ExternalVersions = raw.Versions,
+            Detected = UnmanagedGrouping.WithBlockers(UnmanagedGrouping.Group(raw.Unmanaged), blockers,
+                raw.Same.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase), hidden),
             InTheWay = blockers,
-            RuntimeFiles = runtime,
+            RuntimeFiles = raw.Runtime,
         };
     }
 
@@ -1217,10 +1265,11 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     // ---------------- planning ----------------
-    public PreviewResult Preview(string? profileId = null, PlanDecisions? decisions = null)
+    /// <param name="rescan">false: reuse the last scan of the game folder when only profiles changed (see <see cref="CachedScan"/>).</param>
+    public PreviewResult Preview(string? profileId = null, PlanDecisions? decisions = null, bool rescan = true)
     {
         var profile = profileId is null ? SelectedProfile : Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        var scan = Scan();
+        var scan = rescan ? Scan() : CachedScan();
         var snapshot = BuildSnapshot(profile, scan);
         return MakePreview(snapshot, scan, decisions);
     }
@@ -1372,6 +1421,7 @@ public sealed class InstallCoordinator : IDisposable
         File.WriteAllLines(list, mods);
         var code = _env.RunTool(tool, ["deploy", "-reportProgress", $"-root={Path.GetFullPath(GameRoot)}", $"-modlist={list}"],
             Path.GetDirectoryName(tool)!, TimeSpan.FromMinutes(15));
+        InvalidateScan(); // redMod.exe writes r6/cache/modded
         if (code == 0)
         {
             Store.SetMeta(RedModSignatureKey, signature);
@@ -1395,6 +1445,7 @@ public sealed class InstallCoordinator : IDisposable
         if (last is null || last.ProfileId != SelectedProfile.Id)
             throw new InvalidOperationException("the selected profile is not deployed yet");
         var exe = GamePath.Parse(WindowsGameEnvironment.ExeRelativePath).ToOsPath(GameRoot);
+        InvalidateScan(); // the game and its mods write settings, logs and caches while it runs
         var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe)! };
         foreach (var a in arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries)) psi.ArgumentList.Add(a);
         return Process.Start(psi) ?? throw new InvalidOperationException("could not start the game");
