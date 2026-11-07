@@ -8,6 +8,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 - **Steadier list**: rows are updated in place, so the selection, checkboxes and scroll position survive a refresh; the mod picture is not decoded again when the selected mod did not change.
 - Tests are organised by feature; comments in the sources no longer carry patch numbers.
 - Sources split by feature: the coordinator is a facade over five services, the main view model is a set of partial files, overlay view models and their templates have their own files. No change in behaviour.
+- **Address Library** database (`bin/x64/plugins/address_library/version-….bin`), written by native plugins when the game starts, no longer shows up in *Scan manual mods*; AFTERLIFE never touches it.
 
 ## 1.0.0-alpha.2
 

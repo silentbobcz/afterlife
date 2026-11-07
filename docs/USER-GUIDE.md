@@ -241,7 +241,7 @@ The card on the left shows how many files in the mod folders AFTERLIFE does not 
 - tick mods and **REMOVE SELECTED FROM GAME** moves their files into the library (into *Removed*), so they can always be restored,
 - **Removed earlier · kept in the library** lists what was moved out before, with **RESTORE**.
 
-Files that mods in the library create on their own (logs, settings, caches, lock files in their own folder, `red4ext/config.ini`) are not reported, also while the mod is switched off, and identical leftovers from an earlier manual install of the same mod are ignored. A core-mod group that holds only such files says so instead of *installed manually*. The **Address Library** database (`bin/x64/plugins/address_library/version-….bin`) is named and explained; keep it while a plugin needs it.
+Files that mods in the library create on their own (logs, settings, caches, lock files in their own folder, `red4ext/config.ini`) are not reported, also while the mod is switched off, and identical leftovers from an earlier manual install of the same mod are ignored. A core-mod group that holds only such files says so instead of *installed manually*. The **Address Library** database (`bin/x64/plugins/address_library/version-….bin`), which native plugins write when the game starts, belongs to the game: it is never reported and never moved.
 
 ## 15. Files changed outside AFTERLIFE
 

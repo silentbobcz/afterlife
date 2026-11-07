@@ -66,6 +66,7 @@ public sealed class ScanService
                 if (!GamePath.TryCreate(rel, out var gp, out _)) { unmanaged.Add((rel, 0)); continue; }
                 if (ledger.ContainsKey(gp.Key)) continue;
                 if (gp.FileName.Contains(".afl-", StringComparison.Ordinal) && gp.FileName.EndsWith(".tmp", StringComparison.Ordinal)) continue;
+                if (UnmanagedGrouping.IsGameData(gp.Value)) continue;
                 unmanaged.Add((gp.Value, _fs.GetMeta(file)?.Size ?? 0));
             }
         }

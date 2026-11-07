@@ -124,6 +124,14 @@ public static class UnmanagedGrouping
         ["RedFileSystem"] = Capabilities.RedFileSystem,
     };
 
+    /// <summary>
+    /// Files that belong to the game and its plugins, not to any mod: the Address Library offset database for the
+    /// exact game version (bin/x64/plugins/address_library/version-<packed exe version>.bin), which native plugins
+    /// write when the game starts. Never reported, never moved.
+    /// </summary>
+    public static bool IsGameData(string path) =>
+        path.StartsWith("bin/x64/plugins/address_library/", StringComparison.OrdinalIgnoreCase);
+
     public static IReadOnlyList<DetectedMod> Group(IEnumerable<(string Path, long Size)> files)
     {
         var groups = new Dictionary<string, Builder>(StringComparer.OrdinalIgnoreCase);
@@ -175,9 +183,6 @@ public static class UnmanagedGrouping
                 Add("fw:redscript", "redscript", DetectedKind.Framework, f, framework: true);
             else if (lower.StartsWith("mods/") && parts.Length > 2)
                 Add("redmod:" + Normalize(parts[1]), parts[1], DetectedKind.Redmod, f);
-            else if (lower.StartsWith("bin/x64/plugins/address_library/"))
-                // offset database for the exact game version (version-<packed exe version>.bin), used by ASI/RED4ext plugins
-                Add("other:addresslibrary", "Address Library (offsets for the game version)", DetectedKind.Other, f);
             else
                 Add("other:" + lower, parts[^1], DetectedKind.Other, f);
         }
@@ -232,7 +237,6 @@ public static class UnmanagedGrouping
             var note = framework
                 ? (IsOnlyRuntime() ? $"Only files {name} created itself (settings, logs); {name} itself is not installed manually here. Safe to leave."
                                    : "Core mod installed manually. Mods that need it stop working when it is removed.")
-                : key == "other:addresslibrary" ? "Offset database for this exact game version, used by native plugins (installed with one of them or written by it). Leave it unless no plugin needs it any more."
                 : kind == DetectedKind.Other ? "Single file that does not match a known mod layout." : null;
             return new DetectedMod(key, name, kind, Files.OrderBy(f => f.Path, StringComparer.OrdinalIgnoreCase).ToList(), true, note)
             {

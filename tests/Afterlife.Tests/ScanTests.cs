@@ -453,16 +453,22 @@ public class ManualModsNoiseTests
     }
 
     [Fact]
-    public void Address_library_database_gets_a_name_and_a_runtime_only_core_group_says_so()
+    public void A_runtime_only_core_group_says_so()
     {
-        var g = UnmanagedGrouping.Group([("bin/x64/plugins/address_library/version-844424935945371.bin", 18_000_000L), ("red4ext/logs/red4ext.log", 10L)]);
-        var al = g.Single(d => d.Id == "other:addresslibrary");
-        Assert.StartsWith("Address Library", al.Name);
-        Assert.Contains("Offset database", al.Note);
-        var r4 = g.Single(d => d.Name == "RED4ext");
+        var r4 = UnmanagedGrouping.Group([("red4ext/logs/red4ext.log", 10L)]).Single(d => d.Name == "RED4ext");
         Assert.Contains("created itself", r4.Note);
         var real = UnmanagedGrouping.Group([("red4ext/RED4ext.dll", 1L), ("red4ext/config.ini", 1L)]).Single(d => d.Name == "RED4ext");
         Assert.Contains("installed manually", real.Note);
+    }
+
+    [Fact]
+    public void Address_library_database_written_by_the_game_is_not_a_manual_mod()
+    {
+        using var t = new TestEnv();
+        t.Write("bin/x64/plugins/address_library/version-844424935945371.bin", "offsets");
+        var s = t.C.Scan();
+        Assert.DoesNotContain(s.Detected, d => d.Files.Any(f => f.Path.Contains("address_library")));
+        Assert.DoesNotContain(s.Unmanaged, u => u.Path.Contains("address_library"));
     }
 }
 
