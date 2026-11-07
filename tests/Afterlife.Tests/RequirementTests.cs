@@ -64,6 +64,20 @@ public class RequirementSourceTests
     }
 
     [Fact]
+    public void Audioware_and_virtual_atelier_are_core_mods()
+    {
+        Assert.Equal([Capabilities.Audioware], FrameworkCatalog.DetectProvided([GamePath.Parse("red4ext/plugins/audioware/audioware.dll"), GamePath.Parse("r6/scripts/Audioware/Ext.reds")]));
+        Assert.Equal([Capabilities.VirtualAtelier], FrameworkCatalog.DetectProvided([GamePath.Parse("r6/scripts/virtual-atelier-full/virtual-store/VirtualStoreController.reds")]));
+        Assert.Equal(Capabilities.Audioware, FrameworkCatalog.CapabilityOfNexusId("12001"));
+        Assert.Equal(Capabilities.VirtualAtelier, FrameworkCatalog.CapabilityOfNexusId("2987"));
+        var reqs = FrameworkCatalog.InferFromContent([(GamePath.Parse("r6/scripts/Y/a.reds"), "import Audioware.*")], []);
+        Assert.Contains(reqs, r => r.Capability == Capabilities.Audioware);
+        var manual = UnmanagedGrouping.Group([("red4ext/plugins/audioware/audioware.dll", 1L), ("r6/scripts/Audioware/Ext.reds", 1L), ("r6/scripts/virtual-atelier-full/SetupNewSite.reds", 1L)]);
+        Assert.Contains(manual, d => d.Name == "Audioware" && d.Kind == DetectedKind.Framework);
+        Assert.Contains(manual, d => d.Name == "Virtual Atelier" && d.Kind == DetectedKind.Framework);
+    }
+
+    [Fact]
     public void Refresh_updates_requirements_of_old_packages()
     {
         using var t = new TestEnv();

@@ -362,6 +362,11 @@ public partial class MainWindow : Window
             close.Execute(null);
             e.Handled = true;
         }
+        else if (e.Key == Key.Escape && Keyboard.FocusedElement == Search && _vm.SearchText.Length > 0)
+        {
+            _vm.SearchText = "";
+            e.Handled = true;
+        }
         else if (e.Key == Key.A && Keyboard.Modifiers == ModifierKeys.Control && _vm.Overlay is null && Keyboard.FocusedElement is not TextBox)
         {
             _vm.SetAllChecked(!_vm.AllChecked);

@@ -12,6 +12,8 @@ public static class Capabilities
     public const string ModSettings = "framework:modsettings";
     public const string NativeSettings = "framework:nativesettings";
     public const string RedFileSystem = "framework:redfilesystem";
+    public const string Audioware = "framework:audioware";
+    public const string VirtualAtelier = "framework:virtualatelier";
 
     public static string DisplayName(string capability) => capability switch
     {
@@ -25,6 +27,8 @@ public static class Capabilities
         ModSettings => "Mod Settings",
         NativeSettings => "Native Settings UI",
         RedFileSystem => "RedFileSystem",
+        Audioware => "Audioware",
+        VirtualAtelier => "Virtual Atelier",
         _ when capability.StartsWith("mod:", StringComparison.Ordinal) => capability[4..],
         _ => capability,
     };
@@ -99,6 +103,12 @@ public static class FrameworkCatalog
             "CET mod that adds the in-game Mods settings menu.") { NexusModId = "3518", ShortName = "Native Settings", Optional = true },
         new FrameworkContract(Capabilities.RedFileSystem, new[] { "red4ext/plugins/RedFileSystem/RedFileSystem.dll" }, false, false, true,
             "Library for other mods; stores their data in r6/storages.") { NexusModId = "13378", ShortName = "RedFileSystem", Optional = true, RuntimeFolders = ["red4ext/plugins/RedFileSystem"] },
+        new FrameworkContract(Capabilities.Audioware, new[] { "red4ext/plugins/audioware/audioware.dll" }, false, false, true,
+            "RED4ext plugin that plays custom sounds without REDmod; sound mods keep their files in r6/audioware.")
+            { NexusModId = "12001", ShortName = "Audioware", Optional = true, RuntimeFolders = ["red4ext/plugins/audioware"] },
+        new FrameworkContract(Capabilities.VirtualAtelier, new[] { "r6/scripts/virtual-atelier-full/virtual-store/VirtualStoreController.reds" }, false, false, true,
+            "Virtual clothing stores on V's computer; store mods are redscript files in r6/scripts.")
+            { NexusModId = "2987", ShortName = "Virtual Atelier", Optional = true },
     };
 
     public static FrameworkContract? Find(string capability) => Contracts.FirstOrDefault(c => c.Capability == capability);
@@ -122,7 +132,7 @@ public static class FrameworkCatalog
 
     /// <summary>
     /// Requirements that cannot be seen from paths, read from script text: Codeware, Mod Settings,
-    /// RedFileSystem (redscript imports/annotations) and Native Settings UI (CET Lua).
+    /// RedFileSystem, Audioware (redscript imports/annotations) and Native Settings UI (CET Lua).
     /// </summary>
     public static IReadOnlyList<RequirementSpec> InferFromContent(IEnumerable<(GamePath Target, string Text)> scripts, IReadOnlyCollection<string> provided)
     {
@@ -135,6 +145,7 @@ public static class FrameworkCatalog
                 if (text.Contains("@runtimeProperty(\"ModSettings.", StringComparison.Ordinal) || text.Contains("ModSettings.RegisterListenerToClass", StringComparison.Ordinal))
                     found.TryAdd(Capabilities.ModSettings, "ModSettings properties in *.reds → Mod Settings");
                 if (text.Contains("import RedFileSystem", StringComparison.Ordinal)) found.TryAdd(Capabilities.RedFileSystem, "import RedFileSystem in *.reds → RedFileSystem");
+                if (text.Contains("import Audioware", StringComparison.Ordinal)) found.TryAdd(Capabilities.Audioware, "import Audioware in *.reds → Audioware");
             }
             else if (t.Extension == ".lua" && text.Contains("GetMod(\"nativeSettings\")", StringComparison.Ordinal))
                 found.TryAdd(Capabilities.NativeSettings, "GetMod(\"nativeSettings\") in *.lua → Native Settings UI");

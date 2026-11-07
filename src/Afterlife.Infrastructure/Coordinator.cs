@@ -186,28 +186,40 @@ public sealed record StatusReport(
 /// Application service that owns one game install: scanning, planning, applying, recovery and profile edits.
 /// Every mutation of the game folder goes through here, under the install lock.
 /// </summary>
+/// <summary>
+/// The single entry point for the app: owns the library, the store and the game root and hands the work to the
+/// services (<see cref="ProfileService"/>, <see cref="ScanService"/>, <see cref="LibraryService"/>,
+/// <see cref="DeployService"/>, <see cref="BundleService"/>). The members below only forward to them.
+/// </summary>
 public sealed class InstallCoordinator : IDisposable
 {
-    public static readonly string[] ScannedFolders = { "archive/pc/mod", "r6/scripts", "r6/tweaks", "r6/input", "red4ext", "bin/x64/plugins", "mods" };
+    private readonly InstallContext _ctx;
 
-    private readonly IFileOps _fs;
-    private readonly IGameEnvironment _env;
+    public LibraryPaths Library => _ctx.LibraryPaths;
+    public AfterlifeStore Store => _ctx.Store;
+    public PackageLibrary Packages => _ctx.Packages;
+    public string GameRoot => _ctx.GameRoot;
+    public Quarantine Removed => _ctx.Removed;
 
-    public LibraryPaths Library { get; }
-    public AfterlifeStore Store { get; }
-    public PackageLibrary Packages { get; }
-    public string GameRoot { get; private set; }
-    public Quarantine Removed { get; }
+    public ProfileService ProfileService { get; }
+    public ScanService ScanService { get; }
+    public LibraryService LibraryService { get; }
+    public DeployService DeployService { get; }
+    public BundleService BundleService { get; }
 
     private InstallCoordinator(LibraryPaths lib, AfterlifeStore store, IFileOps fs, IGameEnvironment env)
     {
-        Library = lib;
-        Store = store;
-        _fs = fs;
-        _env = env;
-        GameRoot = store.GetMeta("game.root") ?? throw new InvalidOperationException("library is not initialized");
-        Packages = new PackageLibrary(lib, store);
-        Removed = new Quarantine(lib, fs);
+        _ctx = new InstallContext(lib, store, fs, env);
+        ProfileService = new ProfileService(_ctx);
+        ScanService = new ScanService(_ctx);
+        LibraryService = new LibraryService(_ctx);
+        DeployService = new DeployService(_ctx);
+        BundleService = new BundleService(_ctx);
+        _ctx.Profiles = ProfileService;
+        _ctx.Scanner = ScanService;
+        _ctx.Library = LibraryService;
+        _ctx.Deployer = DeployService;
+        _ctx.Bundles = BundleService;
     }
 
     public static InstallCoordinator Initialize(string gameRoot, string libraryRoot, IFileOps? fs = null, IGameEnvironment? env = null)
@@ -237,7 +249,7 @@ public sealed class InstallCoordinator : IDisposable
             store.SetMeta("profile.selected", street.Id);
         }
         var c = new InstallCoordinator(lib, store, fs ?? new PhysicalFileOps(), env ?? new WindowsGameEnvironment());
-        var fp = c._env.Fingerprint(full);
+        var fp = c._ctx.Env.Fingerprint(full);
         if (fp is not null && store.GetMeta("game.fingerprint.ack") is null) store.SetMeta("game.fingerprint.ack", Json.Serialize(fp));
         return c;
     }
@@ -249,616 +261,9 @@ public sealed class InstallCoordinator : IDisposable
         return new InstallCoordinator(lib, AfterlifeStore.Open(lib.Database), fs ?? new PhysicalFileOps(), env ?? new WindowsGameEnvironment());
     }
 
-    // ---------------- profiles ----------------
     public IReadOnlyList<ProfileState> Profiles => Store.GetProfiles();
+    public ProfileState SelectedProfile => _ctx.SelectedProfile;
 
-    public ProfileState SelectedProfile =>
-        Store.GetProfile(Store.GetMeta("profile.selected") ?? ProfileState.ModsOffId) ?? Store.GetProfile(ProfileState.ModsOffId)!;
-
-    public void SelectProfile(string profileId)
-    {
-        if (Store.GetProfile(profileId) is null) throw new InvalidOperationException($"unknown profile {profileId}");
-        Store.SetMeta("profile.selected", profileId);
-    }
-
-    public ProfileState CreateProfile(string name, string? copyFromId = null)
-    {
-        var id = "p-" + Guid.NewGuid().ToString("N")[..8];
-        var baseProfile = copyFromId is null ? null : Store.GetProfile(copyFromId);
-        var p = baseProfile is null || baseProfile.IsSystemModsOff
-            ? ProfileState.Create(id, name)
-            : baseProfile with { Id = id, Name = name, Revision = 1, IsSystemModsOff = false };
-        Store.SaveProfile(p);
-        return p;
-    }
-
-    /// <summary>Shown name of a mod in AFTERLIFE; files in the game do not change. Empty = back to the original name.</summary>
-    public PackageManifest RenamePackage(string packageId, string? name)
-    {
-        var p = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
-        var key = "name.original:" + packageId;
-        var original = Store.GetMeta(key) ?? p.ModName;
-        var target = string.IsNullOrWhiteSpace(name) ? original : name.Trim();
-        if (Store.GetMeta(key) is null && target != p.ModName) Store.SetMeta(key, p.ModName);
-        var updated = p with { ModName = target };
-        Store.UpdatePackage(updated);
-        return updated;
-    }
-
-    public string OriginalName(string packageId) => Store.GetMeta("name.original:" + packageId) ?? Store.GetPackage(packageId)?.ModName ?? "";
-
-    /// <summary>
-    /// Deletes a profile. Mods off cannot be deleted, nor the profile that is in the game now (switch the game
-    /// To another profile first, so nothing in the game belongs to a missing profile). Mods stay in the library;
-    /// A collection that used the profile keeps its record.
-    /// </summary>
-    public void DeleteProfile(string profileId)
-    {
-        var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        if (p.IsSystemModsOff) throw new InvalidOperationException("Mods off cannot be deleted");
-        if (Store.GetLastGeneration()?.ProfileId == profileId && Store.GetLedger().Count > 0)
-            throw new InvalidOperationException($"{p.Name} is in the game now: select another profile and apply first");
-        if (SelectedProfile.Id == profileId)
-        {
-            var next = Store.GetLastGeneration()?.ProfileId is { } d && d != profileId && Store.GetProfile(d) is not null ? d : ProfileState.ModsOffId;
-            Store.SetMeta("profile.selected", next);
-        }
-        foreach (var r in CollectionStore.List(Store).Where(r => r.ProfileId == profileId))
-            CollectionStore.Save(Store, r with { ProfileId = null });
-        Store.DeleteProfile(profileId);
-    }
-
-    public ProfileState UpdateSelected(Func<ProfileState, ProfileState> change)
-    {
-        var p = SelectedProfile;
-        if (p.IsSystemModsOff)
-            throw new InvalidOperationException("Mods off cannot be edited; select or create another profile");
-        var updated = change(p);
-        Store.SaveProfile(updated);
-        return updated;
-    }
-
-    public ProfileState SetEnabled(string packageId, bool enabled)
-    {
-        if (Store.GetPackage(packageId) is not { } pkg) throw new InvalidOperationException($"unknown package {packageId}");
-        ActivityLog.Write("profile", $"{(enabled ? "on " : "off")} {pkg.ModName} [{packageId}] in '{SelectedProfile.Name}'");
-        return UpdateSelected(p => p.WithEntry(packageId, enabled));
-    }
-
-    // ---------------- library ----------------
-    /// <summary>
-    /// An archive whose files are exactly those of a package already in the library (same digest:
-    /// Paths, hashes and sizes) does not become a second copy; the existing package is returned instead.
-    /// </summary>
-    public ImportResult Import(ImportRequest request)
-    {
-        var r = Packages.Import(request);
-        ActivityLog.Write("import", r.Package is null
-            ? $"{Path.GetFileName(request.ArchivePath)} rejected: {string.Join("; ", r.Analysis.Problems)}"
-            : $"{Path.GetFileName(request.ArchivePath)} → {r.Package.ModName} {r.Package.Version} [{r.Package.PackageId}], {r.Package.Files.Count} file(s)");
-        if (r.Package is not { } p) return r;
-        var same = Store.GetPackages()
-            .Where(x => x.PackageId != p.PackageId && x.LayerOfModId is null && x.ManifestDigest == p.ManifestDigest)
-            .OrderBy(x => x.ImportedAt ?? DateTimeOffset.MinValue).FirstOrDefault();
-        if (same is null) return r;
-        Packages.Delete(p.PackageId);
-        return r with { Package = same, AlreadyInLibrary = true };
-    }
-
-    /// <summary>Groups of packages with exactly the same files (duplicates made before 0.5.3).</summary>
-    public IReadOnlyList<IReadOnlyList<PackageManifest>> DuplicateGroups() =>
-        Store.GetPackages().Where(p => p.LayerOfModId is null && p.Files.Count > 0)
-            .GroupBy(p => p.ManifestDigest)
-            .Where(g => g.Count() > 1)
-            .Select(g => (IReadOnlyList<PackageManifest>)g.OrderBy(p => p.ImportedAt ?? DateTimeOffset.MinValue).ToList())
-            .ToList();
-
-    /// <summary>
-    /// The kept package takes the place of its duplicates: in every profile (on when any copy was on,
-    /// At the position of the first copy) and in every collection. The duplicates are then free to delete.
-    /// </summary>
-    public void AdoptDuplicates(string keepId, IReadOnlyCollection<string> others)
-    {
-        var all = others.Append(keepId).ToHashSet(StringComparer.Ordinal);
-        Store.InTransaction(() =>
-        {
-            foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff))
-            {
-                var entries = p.Entries.ToList();
-                var first = entries.FindIndex(e => all.Contains(e.PackageId));
-                if (first < 0) continue;
-                var on = entries.Any(e => all.Contains(e.PackageId) && e.Enabled);
-                entries.RemoveAll(e => all.Contains(e.PackageId));
-                entries.Insert(Math.Min(first, entries.Count), new ProfileEntry(keepId, on));
-                Store.SaveProfile(p with { Entries = entries });
-            }
-            foreach (var r in CollectionStore.List(Store))
-            {
-                if (!r.PackageOf.Values.Any(others.Contains)) continue;
-                var map = r.PackageOf.ToDictionary(kv => kv.Key, kv => others.Contains(kv.Value) ? keepId : kv.Value);
-                CollectionStore.Save(Store, r with { PackageOf = map });
-            }
-        });
-    }
-
-    /// <summary>
-    /// The new version takes the place of the old one everywhere: in every profile (same position, same on/off),
-    /// As the winner of its file conflicts, in its requirement overrides and in every collection. The old version is
-    /// Then in no profile and can be deleted from the library once the game no longer has its files.
-    /// </summary>
-    public void ReplaceVersion(string oldId, string newId)
-    {
-        if (Store.GetPackage(newId) is null) throw new InvalidOperationException($"unknown package {newId}");
-        ActivityLog.Write("update", $"{Store.GetPackage(oldId)?.ModName ?? oldId} [{oldId}] → [{newId}] in every profile and collection");
-        Store.InTransaction(() =>
-        {
-            foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff))
-            {
-                var entries = p.Entries.ToList();
-                var at = entries.FindIndex(e => e.PackageId == oldId);
-                var winners = p.PathWinners.Any(kv => kv.Value == oldId);
-                var overrides = p.Overrides.Any(o => o.PackageId == oldId);
-                if (at < 0 && !winners && !overrides) continue;
-                var q = p;
-                if (at >= 0)
-                {
-                    var on = entries[at].Enabled || entries.Any(e => e.PackageId == newId && e.Enabled);
-                    entries.RemoveAll(e => e.PackageId == newId);
-                    at = entries.FindIndex(e => e.PackageId == oldId);
-                    entries[at] = new ProfileEntry(newId, on);
-                    q = q with { Entries = entries };
-                }
-                if (winners)
-                    q = q with { PathWinners = p.PathWinners.ToDictionary(kv => kv.Key, kv => kv.Value == oldId ? newId : kv.Value) };
-                if (overrides)
-                    q = q with { Overrides = p.Overrides.Select(o => o.PackageId == oldId ? o with { PackageId = newId } : o).Distinct().ToList() };
-                Store.SaveProfile(q with { Revision = p.Revision + 1 });
-            }
-            ReplaceInCollections(oldId, newId);
-        });
-    }
-
-    /// <summary>The new version of a mod takes the place of the old one in every collection.</summary>
-    public void ReplaceInCollections(string oldId, string newId)
-    {
-        foreach (var r in CollectionStore.List(Store))
-        {
-            if (!r.PackageOf.Values.Contains(oldId)) continue;
-            var map = r.PackageOf.ToDictionary(kv => kv.Key, kv => kv.Value == oldId ? newId : kv.Value);
-            CollectionStore.Save(Store, r with { PackageOf = map });
-        }
-    }
-
-    /// <summary>A new name for a profile; Mods off keeps its name, two profiles cannot share one.</summary>
-    public ProfileState RenameProfile(string profileId, string name)
-    {
-        var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        if (p.IsSystemModsOff) throw new InvalidOperationException("Mods off cannot be renamed");
-        name = name.Trim();
-        if (name.Length == 0) throw new InvalidOperationException("the name cannot be empty");
-        if (Store.GetProfiles().Any(x => x.Id != profileId && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException($"a profile {name} already exists");
-        var q = p with { Name = name };
-        Store.SaveProfile(q);
-        return q;
-    }
-
-    /// <summary>Removes a package that no profile wants: drops its disabled entries, then deletes it from the library.</summary>
-    public void RemoveFromLibrary(string packageId)
-    {
-        var wanted = Store.GetProfiles().Where(p => p.IsEnabled(packageId)).Select(p => p.Name).ToList();
-        if (wanted.Count > 0) throw new InvalidOperationException($"switch it off first in: {string.Join(", ", wanted)}");
-        foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff && p.Entries.Any(e => e.PackageId == packageId)))
-            Store.SaveProfile(p.WithoutEntry(packageId));
-        Packages.Delete(packageId);
-    }
-
-    /// <summary>Stores changed managed files as a user layer of their mod and makes the layer win those paths.</summary>
-    /// <summary>
-    /// Keeps the user's edits of managed files as a layer package. The layer is enabled in the selected profile
-    /// (or, when Mods off is selected, in the profile that is deployed) and takes over the ledger entries,
-    /// Because the files on disk are now exactly the layer's content.
-    /// </summary>
-    public PackageManifest CaptureChanges(IReadOnlyCollection<string> paths)
-    {
-        var target = SelectedProfile;
-        if (target.IsSystemModsOff)
-        {
-            var deployedId = Store.GetLastGeneration()?.ProfileId;
-            target = (deployedId is null ? null : Store.GetProfile(deployedId)) ?? target;
-            if (target.IsSystemModsOff) throw new InvalidOperationException("select the profile these edits belong to, then capture them");
-        }
-        var ledger = Store.GetLedger();
-        var byOwner = paths.Select(p => GamePath.Parse(p))
-            .GroupBy(p => ledger.TryGetValue(p.Key, out var le) ? le.Owner : throw new InvalidOperationException($"{p} is not managed"));
-        PackageManifest? last = null;
-        foreach (var g in byOwner)
-        {
-            var layer = Packages.CaptureLayer(GameRoot, g.Key, g.Select(p => p.Value), _fs);
-            var q = (Store.GetProfile(target.Id) ?? target).WithEntry(layer.PackageId, true);
-            foreach (var f in layer.Files) q = q.WithWinner(f.Target.ToUpperInvariant(), layer.PackageId);
-            SaveLayerAndRetag(q, layer);
-            last = layer;
-        }
-        return last ?? throw new InvalidOperationException("nothing to capture");
-    }
-
-    private void SaveLayerAndRetag(ProfileState profile, PackageManifest layer)
-    {
-        Store.InTransaction(() =>
-        {
-            Store.SaveProfile(profile);
-            foreach (var f in layer.Files)
-            {
-                var gp = GamePath.Parse(f.Target);
-                var os = gp.ToOsPath(GameRoot);
-                var meta = _fs.GetMeta(os);
-                if (meta is null || _fs.Hash(os) != f.Hash) continue; // changed again since capture: leave it to the planner
-                Store.UpsertLedger(new LedgerEntry(gp.Value, ArtifactKind.Payload, layer.PackageId, f.Hash, meta.Size, meta.MTimeTicks));
-            }
-        });
-    }
-
-    // ---------------- inventory ----------------
-    /// <summary>
-    /// Walks the game folder and stores the result (a full scan). The part that depends on the selected profile
-    /// (identical copies hidden while their mod is on) is derived afterwards, so <see cref="CachedScan"/> can reuse
-    /// The walk when only a profile changed.
-    /// </summary>
-    public ScanResult Scan()
-    {
-        var raw = ScanFiles();
-        _scanCache = (Store.ScanVersion, GameRoot, raw);
-        return Finish(raw, SelectedProfile);
-    }
-
-    private (long Version, string Root, RawScan Raw)? _scanCache;
-
-    /// <summary>
-    /// The last scan, if nothing it depends on changed (packages, ledger, game root) and nothing touched the game
-    /// Folder through AFTERLIFE since; otherwise a fresh one. Changes made outside AFTERLIFE are seen on the next
-    /// Full <see cref="Scan"/>, which the app runs on start, on a manual refresh and when its window is activated.
-    /// </summary>
-    public ScanResult CachedScan() =>
-        _scanCache is { } c && c.Version == Store.ScanVersion && c.Root == GameRoot ? Finish(c.Raw, SelectedProfile) : Scan();
-
-    /// <summary>Forget the last scan: something changed the game folder (apply, launch, moving files aside).</summary>
-    public void InvalidateScan() => _scanCache = null;
-
-    private sealed record RawScan(
-        List<(string Path, long Size)> Unmanaged,
-        Dictionary<string, List<string>> InTheWay,
-        Dictionary<string, List<string>> Same,
-        Dictionary<string, List<string>> SamePackages,
-        Dictionary<string, string> Runtime,
-        HashSet<string> External,
-        Dictionary<string, string?> Versions,
-        List<string> Archives);
-
-    private RawScan ScanFiles()
-    {
-        var ledger = Store.GetLedger();
-        var unmanaged = new List<(string, long)>();
-        var rootFull = Path.GetFullPath(GameRoot);
-        foreach (var folder in ScannedFolders)
-        {
-            var dir = GamePath.Parse(folder).ToOsPath(GameRoot);
-            foreach (var file in _fs.EnumerateFiles(dir))
-            {
-                var rel = Path.GetRelativePath(rootFull, file).Replace(Path.DirectorySeparatorChar, '/');
-                if (!GamePath.TryCreate(rel, out var gp, out _)) { unmanaged.Add((rel, 0)); continue; }
-                if (ledger.ContainsKey(gp.Key)) continue;
-                if (gp.FileName.Contains(".afl-", StringComparison.Ordinal) && gp.FileName.EndsWith(".tmp", StringComparison.Ordinal)) continue;
-                unmanaged.Add((gp.Value, _fs.GetMeta(file)?.Size ?? 0));
-            }
-        }
-        // loose files of manually installed core mods outside the scanned folders, so they can be removed as a whole
-        foreach (var (signature, extras) in FrameworkExtras)
-        {
-            var sig = GamePath.Parse(signature);
-            if (ledger.ContainsKey(sig.Key) || !_fs.FileExists(sig.ToOsPath(GameRoot))) continue;
-            foreach (var extra in extras)
-            {
-                var gp = GamePath.Parse(extra);
-                var os = gp.ToOsPath(GameRoot);
-                if (ledger.ContainsKey(gp.Key) || !_fs.FileExists(os) || unmanaged.Any(u => string.Equals(u.Item1, gp.Value, StringComparison.OrdinalIgnoreCase))) continue;
-                unmanaged.Add((gp.Value, _fs.GetMeta(os)?.Size ?? 0));
-            }
-        }
-        // Every path a library package wants to write is checked too, wherever it is (bin/x64, r6/config, engine …).
-        // A file there that AFTERLIFE did not write blocks that package (FILE IN THE WAY), so it must be visible and removable.
-        // A file with exactly the content the package ships is not in the way: APPLY adopts it.
-        var inTheWay = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        var same = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        var samePackages = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        var listed = unmanaged.Select(u => u.Item1).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var hashes = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        var packages = Store.GetPackages();
-        foreach (var pkg in packages)
-            foreach (var f in pkg.Files)
-            {
-                if (!GamePath.TryCreate(f.Target, out var gp, out _) || ledger.ContainsKey(gp.Key) || IsProtectedGameFile(gp.Value)) continue;
-                var os = gp.ToOsPath(GameRoot);
-                var meta = _fs.GetMeta(os);
-                if (meta is null) continue;
-                var identical = false;
-                if (meta.Size == f.Size)
-                {
-                    if (!hashes.TryGetValue(gp.Value, out var h))
-                    {
-                        try { h = _fs.Hash(os); } catch (IOException) { h = null; }
-                        hashes[gp.Value] = h;
-                    }
-                    identical = h == f.Hash;
-                }
-                var map = identical ? same : inTheWay;
-                if (!map.TryGetValue(gp.Value, out var names)) map[gp.Value] = names = new List<string>();
-                if (!names.Contains(pkg.ModName)) names.Add(pkg.ModName);
-                if (identical)
-                {
-                    if (!samePackages.TryGetValue(gp.Value, out var ids)) samePackages[gp.Value] = ids = new List<string>();
-                    ids.Add(pkg.PackageId);
-                }
-                if (listed.Add(gp.Value)) unmanaged.Add((gp.Value, meta.Size));
-            }
-        foreach (var k in inTheWay.Keys) { same.Remove(k); samePackages.Remove(k); } // a differing copy for another mod still blocks
-        // logs and settings that mods deployed by AFTERLIFE write into their own folders are theirs, not manual mods
-        // (kept while the mod is in the library, also when it is switched off: they are its settings)
-        var candidates = unmanaged.Select(u => u.Item1).Where(u => !inTheWay.ContainsKey(u) && !same.ContainsKey(u)).ToList();
-        var runtime = RuntimeOwners(candidates, ledger);
-        var known = packages.Select(p => p.PackageId).ToHashSet(StringComparer.Ordinal);
-        foreach (var (path, owner) in LoadRuntimeOwners())
-            if (!runtime.ContainsKey(path) && known.Contains(owner) && candidates.Contains(path, StringComparer.OrdinalIgnoreCase)) runtime[path] = owner;
-        Store.SetMeta(RuntimeOwnersKey, Json.Serialize(runtime));
-        if (runtime.Count > 0) unmanaged = unmanaged.Where(u => !runtime.ContainsKey(u.Item1)).ToList();
-        var external = new HashSet<string>(StringComparer.Ordinal);
-        var versions = new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var c in FrameworkCatalog.Contracts)
-            foreach (var sig in c.SignaturePaths)
-            {
-                var gp = GamePath.Parse(sig);
-                if (ledger.ContainsKey(gp.Key) || !_fs.FileExists(gp.ToOsPath(GameRoot))) continue;
-                external.Add(c.Capability);
-                versions[c.Capability] = VersionFiles(c.Capability, sig).Select(v => WindowsGameEnvironment.FileVersionOf(GamePath.Parse(v).ToOsPath(GameRoot))).FirstOrDefault(v => v is not null);
-            }
-        var archives = unmanaged
-            .Select(u => GamePath.Parse(u.Item1))
-            .Where(p => string.Equals(p.ParentValue, "archive/pc/mod", StringComparison.OrdinalIgnoreCase) && p.Extension == ".archive")
-            .Select(p => p.FileName)
-            .ToList();
-        Store.ReplaceUnmanaged(unmanaged);
-        return new RawScan(unmanaged, inTheWay, same, samePackages, runtime, external, versions, archives);
-    }
-
-    /// <summary>The profile-dependent part of a scan: identical copies of a mod that is on are hidden from the manual mods.</summary>
-    private static ScanResult Finish(RawScan raw, ProfileState selected)
-    {
-        var hidden = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (path, ids) in raw.SamePackages)
-            if (ids.Any(selected.IsEnabled)) hidden.Add(path);
-        var blockers = raw.InTheWay.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase);
-        return new ScanResult(raw.Unmanaged, raw.External, raw.Archives)
-        {
-            ExternalVersions = raw.Versions,
-            Detected = UnmanagedGrouping.WithBlockers(UnmanagedGrouping.Group(raw.Unmanaged), blockers,
-                raw.Same.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase), hidden),
-            InTheWay = blockers,
-            RuntimeFiles = raw.Runtime,
-        };
-    }
-
-    /// <summary>Folders many mods share: a file directly in them belongs to nobody in particular.</summary>
-    private static readonly HashSet<string> SharedFolders = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "", "archive", "archive/pc", "archive/pc/mod", "bin", "bin/x64", "bin/x64/plugins", "bin/x64/plugins/cyber_engine_tweaks/mods",
-        "r6", "r6/scripts", "r6/tweaks", "r6/config", "r6/config/redsUserHints", "r6/config/settings", "r6/input", "r6/cache", "r6/cache/modded",
-        "r6/audioware", "r6/logs", "red4ext", "red4ext/plugins", "red4ext/logs", "mods", "engine", "engine/config", "engine/config/platform",
-        "engine/config/platform/pc", "engine/tools",
-    };
-
-    /// <summary>
-    /// Which deployed package a file AFTERLIFE did not write belongs to: the nearest own (not shared) folder of
-    /// One deployed package, or a runtime folder of a core mod deployed by AFTERLIFE.
-    /// </summary>
-    private Dictionary<string, string> RuntimeOwners(IEnumerable<string> paths, Dictionary<string, LedgerEntry> ledger)
-    {
-        var subtree = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        var direct = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var e in ledger.Values)
-        {
-            if (e.Owner == "afterlife") continue;
-            var dir = ParentOf(e.Path);
-            if (!direct.TryGetValue(dir, out var d)) direct[dir] = d = new HashSet<string>(StringComparer.Ordinal);
-            d.Add(e.Owner);
-            for (var x = dir; !SharedFolders.Contains(x); x = ParentOf(x))
-            {
-                if (!subtree.TryGetValue(x, out var t)) subtree[x] = t = new HashSet<string>(StringComparer.Ordinal);
-                t.Add(e.Owner);
-            }
-        }
-        var runtimeFolders = new List<(string Folder, IReadOnlyList<string> Exclude, string Owner)>();
-        var runtimeFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var owners = ledger.Values.Select(l => l.Owner).Distinct().ToList();
-        var library = Store.GetPackages();
-        foreach (var c in FrameworkCatalog.Contracts.Where(c => c.RuntimeFolders.Count > 0 || c.RuntimeFiles.Count > 0))
-        {
-            // the deployed copy first; else a copy in the library (its files stay its settings)
-            var owner = owners.Select(Store.GetPackage).FirstOrDefault(p => p is not null && p.Provides.Contains(c.Capability))
-                        ?? library.FirstOrDefault(p => p.Provides.Contains(c.Capability));
-            if (owner is null) continue;
-            foreach (var f in c.RuntimeFolders) runtimeFolders.Add((f, c.RuntimeExclude, owner.PackageId));
-            foreach (var f in c.RuntimeFiles) runtimeFiles[GamePath.Parse(f).Value] = owner.PackageId; // e.g. red4ext/config.ini
-        }
-        // own folders of every mod in the library (not only the deployed ones): a lock file or cache a CET mod
-        // wrote into its folder belongs to it even when it is switched off right now
-        var libSubtree = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        var modIdOf = library.ToDictionary(p => p.PackageId, p => p.ModId, StringComparer.Ordinal);
-        foreach (var p in library)
-            foreach (var f in p.Files)
-            {
-                if (!GamePath.TryCreate(f.Target, out var gp, out _)) continue;
-                for (var x = ParentOf(gp.Value); !SharedFolders.Contains(x); x = ParentOf(x))
-                {
-                    if (!libSubtree.TryGetValue(x, out var t)) libSubtree[x] = t = new HashSet<string>(StringComparer.Ordinal);
-                    t.Add(p.PackageId);
-                }
-            }
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var path in paths)
-        {
-            string? owner = null;
-            for (var x = ParentOf(path); !SharedFolders.Contains(x); x = ParentOf(x))
-            {
-                if (!subtree.TryGetValue(x, out var t)) continue;
-                if (t.Count == 1) owner = t.First();
-                else if (direct.TryGetValue(x, out var d) && d.Count == 1) owner = d.First();
-                break;
-            }
-            owner ??= runtimeFiles.TryGetValue(path, out var rf) ? rf : null;
-            owner ??= runtimeFolders.FirstOrDefault(r => path.StartsWith(r.Folder + "/", StringComparison.OrdinalIgnoreCase)
-                && !r.Exclude.Any(e => path.StartsWith(e + "/", StringComparison.OrdinalIgnoreCase))).Owner;
-            if (owner is null)
-                for (var x = ParentOf(path); !SharedFolders.Contains(x); x = ParentOf(x))
-                {
-                    if (!libSubtree.TryGetValue(x, out var t)) continue;
-                    // one mod, or several versions of the same mod
-                    if (t.Select(id => modIdOf[id]).Distinct(StringComparer.Ordinal).Count() == 1) owner = t.First();
-                    break;
-                }
-            if (owner is not null) result[path] = owner;
-        }
-        return result;
-    }
-
-    private static string ParentOf(string path)
-    {
-        var i = path.LastIndexOf('/');
-        return i < 0 ? "" : path[..i];
-    }
-
-    private const string RuntimeOwnersKey = "runtime.owners";
-
-    private Dictionary<string, string> LoadRuntimeOwners()
-    {
-        var json = Store.GetMeta(RuntimeOwnersKey);
-        if (json is null) return new(StringComparer.OrdinalIgnoreCase);
-        try { return new Dictionary<string, string>(Json.Deserialize<Dictionary<string, string>>(json) ?? [], StringComparer.OrdinalIgnoreCase); }
-        catch (System.Text.Json.JsonException) { return new(StringComparer.OrdinalIgnoreCase); }
-    }
-
-    /// <summary>When a package is deleted from the library, the files it created itself go to Removed as "Leftovers of X" (can be restored).</summary>
-    private List<RemovalResult> MoveRuntimeLeftovers(IReadOnlyCollection<string> deletedPackages, IReadOnlyDictionary<string, string> names)
-    {
-        var results = new List<RemovalResult>();
-        var map = LoadRuntimeOwners();
-        if (map.Count == 0 || deletedPackages.Count == 0) return results;
-        var ledger = Store.GetLedger();
-        foreach (var group in map.Where(r => deletedPackages.Contains(r.Value)).GroupBy(r => r.Value))
-        {
-            var files = group.Select(g => GamePath.Parse(g.Key))
-                .Where(gp => !ledger.ContainsKey(gp.Key) && _fs.FileExists(gp.ToOsPath(GameRoot))).ToList();
-            if (files.Count == 0) continue;
-            var name = names.TryGetValue(group.Key, out var n) ? n : group.Key;
-            try { results.Add(Removed.Remove(GameRoot, files, $"Leftovers of {name}")); }
-            catch (IOException) { } // a log still open: it stays and shows in Scan manual mods
-        }
-        return results;
-    }
-
-    /// <summary>Base game files AFTERLIFE never moves, even when a mod ships a file with the same path.</summary>
-    public static bool IsProtectedGameFile(string path) =>
-        string.Equals(path, "bin/x64/Cyberpunk2077.exe", StringComparison.OrdinalIgnoreCase)
-        || path.StartsWith("archive/pc/content/", StringComparison.OrdinalIgnoreCase)
-        || path.StartsWith("archive/pc/ep1/", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>Files in the game at this package's paths that AFTERLIFE did not write.</summary>
-    public IReadOnlyList<string> ForeignFilesOf(string packageId)
-    {
-        var pkg = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
-        var ledger = Store.GetLedger();
-        return pkg.Files.Select(f => GamePath.Parse(f.Target))
-            .Where(g => !ledger.ContainsKey(g.Key) && _fs.FileExists(g.ToOsPath(GameRoot)))
-            .Select(g => g.Value).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(v => v, StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    /// <summary>
-    /// REPLACE: moves the files that block a package out of the game into the library ("removed", restorable),
-    /// So the next apply can install the package. Protected base game files are refused.
-    /// </summary>
-    public RemovalResult MoveAsideFor(string packageId)
-    {
-        var pkg = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
-        var files = ForeignFilesOf(packageId);
-        if (files.Count == 0) return new RemovalResult(null, 0, []);
-        var prot = files.Where(IsProtectedGameFile).ToList();
-        if (prot.Count > 0) throw new InvalidOperationException($"{prot[0]} is a base game file; AFTERLIFE does not move it");
-        return RemoveUnmanaged(files, $"Replaced by {pkg.ModName}");
-    }
-
-    /// <summary>Signature file → loose files that belong to the same core mod (only collected when the signature exists).</summary>
-    public static readonly (string Signature, string[] Extras)[] FrameworkExtras =
-    {
-        ("bin/x64/plugins/cyber_engine_tweaks.asi", new[] { "bin/x64/version.dll", "bin/x64/global.ini" }),
-        ("red4ext/RED4ext.dll", new[] { "bin/x64/winmm.dll" }),
-        ("engine/tools/scc.exe", new[] { "engine/tools/scc.exe", "engine/tools/scc_lib.dll", "engine/config/base/scripts.ini", "r6/config/cybercmd/scc.toml" }),
-    };
-
-    public static bool IsRemovablePath(string path) =>
-        ScannedFolders.Any(f => path.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase))
-        || FrameworkExtras.Any(x => x.Extras.Any(e => string.Equals(e, path, StringComparison.OrdinalIgnoreCase)));
-
-    private static IEnumerable<string> VersionFiles(string capability, string signature) => capability switch
-    {
-        Capabilities.Redscript => new[] { "engine/tools/scc_lib.dll", signature },
-        _ => new[] { signature },
-    };
-
-    // ---------------- unmanaged files ----------------
-    /// <summary>
-    /// Moves files AFTERLIFE did not install out of the game into the library's "removed" folder (reversible).
-    /// Refuses managed files, files outside the mod folders and anything while the game runs or an operation is unfinished.
-    /// Core mods can be removed too; the window warns about mods that need them first.
-    /// </summary>
-    public RemovalResult RemoveUnmanaged(IReadOnlyCollection<string> paths, string label)
-    {
-        using var _ = InstallLock.Acquire(Library, GameRoot);
-        EnsureQuiet();
-        var ledger = Store.GetLedger();
-        var found = Scan().Unmanaged.Select(u => GamePath.Parse(u.Path).Key).ToHashSet(StringComparer.Ordinal);
-        var list = new List<GamePath>();
-        foreach (var raw in paths)
-        {
-            var gp = GamePath.Parse(raw);
-            if (ledger.ContainsKey(gp.Key)) throw new InvalidOperationException($"{gp.Value} is managed by AFTERLIFE; switch the mod off instead");
-            if (IsProtectedGameFile(gp.Value)) throw new InvalidOperationException($"{gp.Value} is a base game file; AFTERLIFE does not move it");
-            // in a mod folder, or found by the scan (loose core-mod files, files in the way of a library mod)
-            if (!found.Contains(gp.Key) && !ScannedFolders.Any(f => gp.Value.StartsWith(f + "/", StringComparison.OrdinalIgnoreCase)))
-                throw new InvalidOperationException($"{gp.Value} is outside the mod folders and was not found by the scan");
-            list.Add(gp);
-        }
-        var r = Removed.Remove(GameRoot, list, label);
-        ActivityLog.Write("removed", $"'{label}': moved {r.Moved} file(s) aside (batch {r.BatchId ?? "-"}, {r.Skipped.Count} skipped)\n" + string.Join("\n", list.Select(g => g.Value)));
-        Scan();
-        return r;
-    }
-
-    public RemovalResult RestoreRemoved(string batchId)
-    {
-        using var _ = InstallLock.Acquire(Library, GameRoot);
-        EnsureQuiet();
-        var r = Removed.Restore(GameRoot, batchId);
-        ActivityLog.Write("removed", $"restored batch {batchId}: {r.Moved} file(s) back, {r.Skipped.Count} skipped");
-        Scan();
-        return r;
-    }
-
-    private void EnsureQuiet()
-    {
-        if (_env.IsGameRunning()) throw new InvalidOperationException("Cyberpunk 2077 is running; close it first");
-        if (Store.GetUnfinishedOperation() is not null) throw new InvalidOperationException("an operation did not finish; run recovery first");
-    }
-
-    // ---------------- game folder ----------------
     /// <summary>
     /// Points the library at another game folder. Allowed when nothing is deployed (apply Mods off first),
     /// Or when the same install was moved and every managed file is found unchanged at the new place.
@@ -874,589 +279,129 @@ public sealed class InstallCoordinator : IDisposable
             throw new InvalidOperationException("the library must not be inside the game folder");
         using var _ = InstallLock.Acquire(Library, GameRoot);
         if (Store.GetUnfinishedOperation() is not null) throw new InvalidOperationException("an operation did not finish; run recovery first");
-        if (_env.IsGameRunning()) throw new InvalidOperationException("Cyberpunk 2077 is running; close it first");
+        if (_ctx.Env.IsGameRunning()) throw new InvalidOperationException("Cyberpunk 2077 is running; close it first");
         var ledger = Store.GetLedger();
         var moved = ledger.Count > 0 && ledger.Values.All(l =>
         {
             var os = GamePath.Parse(l.Path).ToOsPath(full);
-            return _fs.FileExists(os) && _fs.Hash(os) == l.Hash;
+            return _ctx.Fs.FileExists(os) && _ctx.Fs.Hash(os) == l.Hash;
         });
         if (ledger.Count > 0 && !moved)
             throw new InvalidOperationException("mods are deployed in the current folder; select Mods off and apply first, then change the folder");
         if (Store.GetBaseline(ModlistFormat.RelativePath) is not null && !moved)
             throw new InvalidOperationException("AFTERLIFE still keeps modlist.txt of the current folder; select Mods off and apply first");
         Store.SetMeta("game.root", full);
-        GameRoot = full;
-        var fp = _env.Fingerprint(full);
+        _ctx.GameRoot = full;
+        var fp = _ctx.Env.Fingerprint(full);
         if (fp is not null && !moved) Store.SetMeta("game.fingerprint.ack", Json.Serialize(fp));
-        Scan();
+        ScanService.Scan();
     }
 
-    // ---------------- bulk profile edits ----------------
-    public ProfileState SetEnabledMany(string profileId, IReadOnlyCollection<string> packageIds, bool enabled)
-    {
-        var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        if (p.IsSystemModsOff) throw new InvalidOperationException("Mods off cannot be edited; select or create another profile");
-        foreach (var id in packageIds)
-        {
-            if (Store.GetPackage(id) is null) throw new InvalidOperationException($"unknown package {id}");
-            p = p.WithEntry(id, enabled);
-        }
-        ActivityLog.Write("profile", $"{(enabled ? "on " : "off")} {packageIds.Count} mod(s) in '{p.Name}': {string.Join(", ", packageIds)}");
-        Store.SaveProfile(p);
-        return p;
-    }
+    // ---- ProfileService ----
+    public void SelectProfile(string profileId) => ProfileService.SelectProfile(profileId);
+    public ProfileState CreateProfile(string name, string? copyFromId = null) => ProfileService.CreateProfile(name, copyFromId);
+    public void DeleteProfile(string profileId) => ProfileService.DeleteProfile(profileId);
+    public ProfileState UpdateSelected(Func<ProfileState, ProfileState> change) => ProfileService.UpdateSelected(change);
+    public ProfileState SetEnabled(string packageId, bool enabled) => ProfileService.SetEnabled(packageId, enabled);
+    public ProfileState RenameProfile(string profileId, string name) => ProfileService.RenameProfile(profileId, name);
+    public ProfileState SetEnabledMany(string profileId, IReadOnlyCollection<string> packageIds, bool enabled) => ProfileService.SetEnabledMany(profileId, packageIds, enabled);
+    public ProfileState Reorder(string profileId, IReadOnlyList<string> orderedPackageIds) => ProfileService.Reorder(profileId, orderedPackageIds);
+    public ProfileState ResetOrder(string profileId) => ProfileService.ResetOrder(profileId);
 
-    /// <summary>
-    /// Switches packages off in every profile and deletes those that are no longer needed. Packages whose files are
-    /// Still in the game are kept and reported (the window uses <see cref="DeleteEverywhere"/> instead).
-    /// </summary>
-    public (IReadOnlyList<string> Deleted, IReadOnlyList<(string Name, string Reason)> Kept) DeleteFromLibrary(IReadOnlyCollection<string> packageIds)
-    {
-        var ids = packageIds.ToHashSet();
-        foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff && p.Entries.Any(e => ids.Contains(e.PackageId))))
-        {
-            var q = p;
-            foreach (var id in ids) q = q.WithoutEntry(id);
-            Store.SaveProfile(q);
-        }
-        var deleted = new List<string>();
-        var kept = new List<(string, string)>();
-        foreach (var id in ids)
-        {
-            var name = Store.GetPackage(id)?.ModName ?? id;
-            try { Packages.Delete(id); deleted.Add(name); }
-            catch (InvalidOperationException ex)
-            {
-                kept.Add((name, ex.Message.Contains("deployed") ? "still in the game; apply first, then delete" : ex.Message));
-            }
-        }
-        return (deleted, kept);
-    }
+    // ---- ScanService ----
+    public static string[] ScannedFolders => ScanService.ScannedFolders;
+    public ScanResult Scan() => ScanService.Scan();
+    public ScanResult CachedScan() => ScanService.CachedScan();
+    public void InvalidateScan() => ScanService.InvalidateScan();
+    public static bool IsProtectedGameFile(string path) => ScanService.IsProtectedGameFile(path);
+    public IReadOnlyList<string> ForeignFilesOf(string packageId) => ScanService.ForeignFilesOf(packageId);
+    public RemovalResult MoveAsideFor(string packageId) => ScanService.MoveAsideFor(packageId);
+    public static (string Signature, string[] Extras)[] FrameworkExtras => ScanService.FrameworkExtras;
+    public static bool IsRemovablePath(string path) => ScanService.IsRemovablePath(path);
+    public RemovalResult RemoveUnmanaged(IReadOnlyCollection<string> paths, string label) => ScanService.RemoveUnmanaged(paths, label);
+    public RemovalResult RestoreRemoved(string batchId) => ScanService.RestoreRemoved(batchId);
+    public RemovalResult? CleanLeftovers(string capability) => ScanService.CleanLeftovers(capability);
 
-    /// <summary>
-    /// One confirmed action. Switches the packages off in every profile, takes their files out of the game
-    /// (re-deploying exactly what is in the game now minus these packages, so other pending edits stay pending)
-    /// And deletes them from the library.
-    /// </summary>
-    public DeleteOutcome DeleteEverywhere(IReadOnlyCollection<string> packageIds, IProgress<DeployProgress>? progress = null)
-    {
-        using var _ = InstallLock.Acquire(Library, GameRoot);
-        EnsureQuiet();
-        var ids = packageIds.ToHashSet();
-        var names = ids.ToDictionary(id => id, id => Store.GetPackage(id)?.ModName ?? id);
-        ActivityLog.Write("delete", $"delete everywhere: {string.Join(", ", names.Values)}");
-        Store.InTransaction(() =>
-        {
-            foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff && p.Entries.Any(e => ids.Contains(e.PackageId))))
-            {
-                var q = p;
-                foreach (var id in ids) q = q.WithoutEntry(id);
-                Store.SaveProfile(q);
-            }
-        });
+    // ---- LibraryService ----
+    public PackageManifest RenamePackage(string packageId, string? name) => LibraryService.RenamePackage(packageId, name);
+    public string OriginalName(string packageId) => LibraryService.OriginalName(packageId);
+    public ImportResult Import(ImportRequest request) => LibraryService.Import(request);
+    public IReadOnlyList<IReadOnlyList<PackageManifest>> DuplicateGroups() => LibraryService.DuplicateGroups();
+    public void AdoptDuplicates(string keepId, IReadOnlyCollection<string> others) => LibraryService.AdoptDuplicates(keepId, others);
+    public void ReplaceVersion(string oldId, string newId) => LibraryService.ReplaceVersion(oldId, newId);
+    public void ReplaceInCollections(string oldId, string newId) => LibraryService.ReplaceInCollections(oldId, newId);
+    public void RemoveFromLibrary(string packageId) => LibraryService.RemoveFromLibrary(packageId);
+    public PackageManifest CaptureChanges(IReadOnlyCollection<string> paths) => LibraryService.CaptureChanges(paths);
+    public (IReadOnlyList<string> Deleted, IReadOnlyList<(string Name, string Reason)> Kept) DeleteFromLibrary(IReadOnlyCollection<string> packageIds) => LibraryService.DeleteFromLibrary(packageIds);
+    public DeleteOutcome DeleteEverywhere(IReadOnlyCollection<string> packageIds, IProgress<DeployProgress>? progress = null) => LibraryService.DeleteEverywhere(packageIds, progress);
+    public IReadOnlyList<Dependent> DependentsOf(IReadOnlyCollection<string> capabilities, IReadOnlyCollection<string>? exceptPackages = null) => LibraryService.DependentsOf(capabilities, exceptPackages);
+    public void DeactivateEverywhere(IReadOnlyCollection<string> packageIds) => LibraryService.DeactivateEverywhere(packageIds);
+    public int RefreshRequirements() => LibraryService.RefreshRequirements();
+    public PackageManifest LinkToNexus(string packageId, string nexusModId) => LibraryService.LinkToNexus(packageId, nexusModId);
+    public StorageInfo StorageInfo() => LibraryService.StorageInfo();
+    public long PurgeStorage(bool removed, bool downloads, bool temp) => LibraryService.PurgeStorage(removed, downloads, temp);
 
-        ExecutionResult? exec = null;
-        var last = Store.GetLastGeneration();
-        var deployedSnap = last is null ? null : Json.Deserialize<DeploymentSnapshot>(last.SnapshotJson);
-        var inGame = Store.GetLedger().Values.Any(l => ids.Contains(l.Owner)) || (deployedSnap?.IncludedPackages.Any(ids.Contains) ?? false);
-        if (inGame && last is not null && deployedSnap is not null)
-        {
-            var deployedProfile = Store.GetProfile(last.ProfileId);
-            var keep = deployedSnap.IncludedPackages.Where(id => !ids.Contains(id)).ToHashSet();
-            var target = deployedProfile is null || deployedProfile.IsSystemModsOff
-                ? ProfileState.CreateModsOff()
-                : deployedProfile with
-                {
-                    Entries = deployedProfile.Entries.Where(e => keep.Contains(e.PackageId)).Select(e => e with { Enabled = true }).ToList(),
-                };
-            var scan = Scan();
-            var preview = MakePreview(BuildSnapshot(target, scan), scan, null);
-            // A mod being deleted changed its own files (settings, saves): keep the changed copies in Removed and go on.
-            var changed = preview.Plan.Blockers.Where(b => b.Kind == IssueKind.ModifiedManagedFile && b.Path is not null && b.PackageId is not null && ids.Contains(b.PackageId)).ToList();
-            if (!preview.CanApply && changed.Count > 0
-                && preview.Plan.Blockers.Count == changed.Count && !preview.EnvironmentIssues.Any(i => i.Severity == Severity.Blocking))
-            {
-                foreach (var g in changed.GroupBy(b => b.PackageId!))
-                {
-                    try { Removed.Remove(GameRoot, g.Select(b => GamePath.Parse(b.Path!)).ToList(), $"Changed files of {names[g.Key]}"); }
-                    catch (IOException) { }
-                }
-                scan = Scan();
-                preview = MakePreview(BuildSnapshot(target, scan), scan, null);
-            }
-            if (!preview.CanApply)
-                return new DeleteOutcome([], ids.Select(id => (names[id], "could not be taken out of the game: " +
-                    string.Join("; ", preview.Plan.Blockers.Concat(preview.EnvironmentIssues.Where(i => i.Severity == Severity.Blocking)).Select(i => i.Message)))).ToList(), null);
-            if (!preview.Plan.IsNoop)
-            {
-                exec = Run(preview.Snapshot, preview.Plan, progress);
-                if (exec.Status != OperationStatus.Verified)
-                    return new DeleteOutcome([], ids.Select(id => (names[id], "taking it out of the game did not finish; run recovery")).ToList(), exec);
-            }
-        }
+    // ---- DeployService ----
+    public PreviewResult Preview(string? profileId = null, PlanDecisions? decisions = null, bool rescan = true) => DeployService.Preview(profileId, decisions, rescan);
+    public List<Issue> EnvironmentIssues() => DeployService.EnvironmentIssues();
+    public bool BuildChanged(out GameFingerprint? current) => DeployService.BuildChanged(out current);
+    public void AcknowledgeBuild() => DeployService.AcknowledgeBuild();
+    public ApplyResult Apply(string? profileId = null, PlanDecisions? decisions = null, IProgress<DeployProgress>? progress = null) => DeployService.Apply(profileId, decisions, progress);
+    public OperationRecord? PendingRecovery => DeployService.PendingRecovery;
+    public (RecoveryOutcome Outcome, ApplyResult Followup) Recover(RecoveryChoice choice, IProgress<DeployProgress>? progress = null) => DeployService.Recover(choice, progress);
+    public const string RedModTool = DeployService.RedModTool;
+    public const string RedModLog = DeployService.RedModLog;
+    public IReadOnlyList<string> DeployedRedMods() => DeployService.DeployedRedMods();
+    public RedModResult DeployRedMods(bool force = false) => DeployService.DeployRedMods(force);
+    public Process LaunchGame(string arguments = "--launcher-skip", bool allowChangedBuild = false) => DeployService.LaunchGame(arguments, allowChangedBuild);
+    public StatusReport Status() => DeployService.Status();
 
-        var deleted = new List<string>();
-        var kept = new List<(string, string)>();
-        foreach (var id in ids)
-        {
-            try { Packages.Delete(id); deleted.Add(names[id]); }
-            catch (InvalidOperationException ex) { kept.Add((names[id], ex.Message)); }
-        }
-        var gone = ids.Where(id => Store.GetPackage(id) is null).ToList();
-        var leftovers = MoveRuntimeLeftovers(gone, names);
-        return new DeleteOutcome(deleted, kept, exec) { Leftovers = leftovers.Sum(l => l.Moved) };
-    }
-
-    /// <summary>Managed mods that need one of these capabilities and are wanted somewhere or in the game.</summary>
-    public IReadOnlyList<Dependent> DependentsOf(IReadOnlyCollection<string> capabilities, IReadOnlyCollection<string>? exceptPackages = null)
-    {
-        var caps = capabilities.ToHashSet(StringComparer.Ordinal);
-        var except = exceptPackages?.ToHashSet() ?? [];
-        var profiles = Store.GetProfiles().Where(p => !p.IsSystemModsOff).ToList();
-        var owners = Store.GetLedger().Values.Select(l => l.Owner).ToHashSet();
-        var list = new List<Dependent>();
-        foreach (var p in Store.GetPackages())
-        {
-            if (except.Contains(p.PackageId)) continue;
-            var needs = p.Requirements.Where(r => r.Mandatory && caps.Contains(r.Capability)).Select(r => r.Capability).Distinct().ToList();
-            if (needs.Count == 0) continue;
-            var inProfiles = profiles.Where(q => q.IsEnabled(p.PackageId)).Select(q => q.Name).ToList();
-            var inGame = owners.Contains(p.PackageId);
-            if (inProfiles.Count == 0 && !inGame) continue;
-            list.Add(new Dependent(p.PackageId, p.ModName, needs, inProfiles, inGame));
-        }
-        return list.OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    /// <summary>Switches packages off in every profile (entries stay, so their place in the order is kept).</summary>
-    public void DeactivateEverywhere(IReadOnlyCollection<string> packageIds)
-    {
-        var ids = packageIds.ToHashSet();
-        Store.InTransaction(() =>
-        {
-            foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff && p.Entries.Any(e => ids.Contains(e.PackageId) && e.Enabled)))
-            {
-                var q = p;
-                foreach (var id in ids.Where(p.IsEnabled)) q = q.WithEntry(id, false);
-                Store.SaveProfile(q);
-            }
-        });
-    }
-
-    // ---------------- requirements ----------------
-    /// <summary>
-    /// Recomputes what every library package provides and needs with the current rules: paths, script content
-    /// (Codeware, Mod Settings, RedFileSystem, Native Settings UI) and the mod's Nexus page when it is known.
-    /// Old packages get new rules too. Returns the number of packages whose requirements changed.
-    /// </summary>
-    public int RefreshRequirements()
-    {
-        var changed = 0;
-        foreach (var p in Store.GetPackages())
-        {
-            var targets = p.Files.Select(f => GamePath.Parse(f.Target)).ToList();
-            var provides = FrameworkCatalog.DetectProvided(targets).Union(p.Provides.Where(c => !c.StartsWith("framework:", StringComparison.Ordinal))).ToList();
-            var reqs = FrameworkCatalog.InferRequirements(targets, provides).ToList();
-            var scripts = p.Files.Where(f => f.Size < 1_000_000 && (f.Target.EndsWith(".reds", StringComparison.OrdinalIgnoreCase) || f.Target.EndsWith(".lua", StringComparison.OrdinalIgnoreCase)))
-                .Select(f =>
-                {
-                    var path = Library.PackageFile(p.PackageId, f.StoredPath);
-                    try { return (GamePath.Parse(f.Target), File.Exists(path) ? File.ReadAllText(path) : ""); }
-                    catch (IOException) { return (GamePath.Parse(f.Target), ""); }
-                });
-            foreach (var r in FrameworkCatalog.InferFromContent(scripts, provides))
-                if (reqs.All(x => x.Capability != r.Capability)) reqs.Add(r);
-            if (NexusInfo.Load(Store, p.NexusModId) is { } info)
-                foreach (var nr in info.Requirements)
-                    if (FrameworkCatalog.CapabilityOfNexusId(nr.ModId) is { } cap && !provides.Contains(cap) && reqs.All(x => x.Capability != cap))
-                        reqs.Add(new RequirementSpec(cap, !NexusInfo.IsOptionalNote(nr.Notes), "nexus", $"listed on the Nexus page → {Capabilities.DisplayName(cap)}"));
-            reqs = reqs.OrderBy(r => r.Capability, StringComparer.Ordinal).ToList();
-            var same = reqs.Select(r => r.Capability + r.Origin).SequenceEqual(p.Requirements.Select(r => r.Capability + r.Origin))
-                && provides.OrderBy(x => x).SequenceEqual(p.Provides.OrderBy(x => x));
-            if (same) continue;
-            Store.UpdatePackage(p with { Requirements = reqs, Provides = provides });
-            changed++;
-        }
-        return changed;
-    }
-
-    /// <summary>Links a library package to a mod on Nexus (id typed by the user or taken from a link).</summary>
-    public PackageManifest LinkToNexus(string packageId, string nexusModId)
-    {
-        var p = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
-        if (nexusModId.Length == 0 || !nexusModId.All(char.IsDigit)) throw new InvalidOperationException("a Nexus mod id is a number, for example 107");
-        var q = p with { NexusModId = nexusModId, Origin = p.Origin == PackageOrigin.Captured ? p.Origin : PackageOrigin.Nexus };
-        Store.UpdatePackage(q);
-        return q;
-    }
-
-    // ---------------- framework leftovers ----------------
-    /// <summary>
-    /// After a framework was switched off: files it created itself while the game ran (logs, settings, caches)
-    /// Are moved into the library ("removed", restorable). Only when the framework is really gone from the game,
-    /// Never inside folders of other mods (CET mods), never files AFTERLIFE manages.
-    /// </summary>
-    public RemovalResult? CleanLeftovers(string capability)
-    {
-        var c = FrameworkCatalog.Find(capability);
-        if (c is null || c.RuntimeFolders.Count == 0) return null;
-        using var lockHandle = InstallLock.Acquire(Library, GameRoot);
-        EnsureQuiet();
-        var ledger = Store.GetLedger();
-        if (c.SignaturePaths.Any(sig => _fs.FileExists(GamePath.Parse(sig).ToOsPath(GameRoot)))) return null; // still installed
-        var rootFull = Path.GetFullPath(GameRoot);
-        var list = new List<GamePath>();
-        foreach (var folder in c.RuntimeFolders)
-            foreach (var file in _fs.EnumerateFiles(GamePath.Parse(folder).ToOsPath(GameRoot)))
-            {
-                var rel = Path.GetRelativePath(rootFull, file).Replace(Path.DirectorySeparatorChar, '/');
-                if (!GamePath.TryCreate(rel, out var gp, out _) || ledger.ContainsKey(gp.Key)) continue;
-                if (c.RuntimeExclude.Any(x => gp.Value.StartsWith(x + "/", StringComparison.OrdinalIgnoreCase))) continue;
-                list.Add(gp);
-            }
-        if (list.Count == 0) return null;
-        var r = Removed.Remove(GameRoot, list, $"Leftovers of {Capabilities.DisplayName(capability)}");
-        ActivityLog.Write("removed", $"leftovers of {Capabilities.DisplayName(capability)}: moved {r.Moved} file(s) aside (batch {r.BatchId ?? "-"})\n" + string.Join("\n", list.Select(g => g.Value)));
-        Scan();
-        return r;
-    }
-
-    // ---------------- collections ----------------
-    public IReadOnlyList<CollectionRecord> Collections() => CollectionStore.List(Store);
-
-    /// <summary>Reads collection.json from a downloaded collection bundle and merges it with the API revision.</summary>
-    public CollectionRevisionInfo ReadCollectionBundle(CollectionRevisionInfo api, string bundleFile)
-    {
-        var entries = PackageLibrary.ListEntries(bundleFile);
-        var manifest = entries.FirstOrDefault(e => e.Equals("collection.json", StringComparison.OrdinalIgnoreCase))
-            ?? entries.Where(e => e.EndsWith("/collection.json", StringComparison.OrdinalIgnoreCase)).OrderBy(e => e.Length).FirstOrDefault();
-        if (manifest is null) return api;
-        var bytes = PackageLibrary.ReadEntry(bundleFile, manifest);
-        if (bytes is null) return api;
-        try { return CollectionLogic.FromManifest(api, System.Text.Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF')); }
-        catch (System.Text.Json.JsonException) { return api; }
-    }
-
-    /// <summary>A load order the collection ships as archive/pc/mod/modlist.txt inside one of its mods (archive names, first wins).</summary>
-    public static IReadOnlyList<string> ModlistInArchive(string archiveFile)
-    {
-        try
-        {
-            var path = PackageLibrary.ListEntries(archiveFile).FirstOrDefault(e => e.EndsWith("archive/pc/mod/modlist.txt", StringComparison.OrdinalIgnoreCase));
-            if (path is null) return [];
-            var bytes = PackageLibrary.ReadEntry(archiveFile, path);
-            return bytes is null ? [] : System.Text.Encoding.UTF8.GetString(bytes).Split('\n')
-                .Select(l => l.Trim().TrimStart('\uFEFF')).Where(l => l.Length > 0 && !l.StartsWith('#') && l.EndsWith(".archive", StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-        catch (ImportException) { return []; }
-    }
-
-    /// <summary>A mod that came inside the collection bundle, as a file to import (null when not found).</summary>
-    public string? ExtractBundled(string bundleFile, CollectionItem item)
-    {
-        var name = item.LogicalFileName ?? item.Name;
-        var entries = PackageLibrary.ListEntries(bundleFile);
-        Directory.CreateDirectory(Library.Downloads);
-        var file = entries.FirstOrDefault(e => e.StartsWith("bundled/", StringComparison.OrdinalIgnoreCase)
-            && Path.GetFileName(e).Equals(name, StringComparison.OrdinalIgnoreCase) && Path.GetExtension(e).ToLowerInvariant() is ".zip" or ".7z" or ".rar");
-        if (file is not null)
-        {
-            var bytes = PackageLibrary.ReadEntry(bundleFile, file);
-            if (bytes is null) return null;
-            var dest = Path.Combine(Library.Downloads, NexusClient.SafeFileName(Path.GetFileName(file)));
-            File.WriteAllBytes(dest, bytes);
-            return dest;
-        }
-        var folder = "bundled/" + name;
-        if (!entries.Any(e => e.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase))) return null;
-        var zip = Path.Combine(Library.Downloads, NexusClient.SafeFileName(name) + ".zip");
-        if (File.Exists(zip)) File.Delete(zip);
-        return PackageLibrary.RepackFolder(bundleFile, folder, zip) > 0 ? zip : null;
-    }
-
-    // ---------------- FOMOD ----------------
-    public FomodConfig ReadFomod(string archiveFile, string configPath)
-    {
-        var bytes = PackageLibrary.ReadEntry(archiveFile, configPath) ?? throw new ImportException("the installer description is missing in the archive");
-        var text = DecodeXml(bytes);
-        try { return Fomod.Parse(text); }
-        catch (System.Xml.XmlException ex) { throw new ImportException("the installer description cannot be read: " + ex.Message); }
-    }
-
-    /// <summary>FOMOD texts are often UTF-16 with a BOM; otherwise UTF-8.</summary>
-    private static string DecodeXml(byte[] b)
-    {
-        if (b.Length >= 2 && b[0] == 0xFF && b[1] == 0xFE) return System.Text.Encoding.Unicode.GetString(b, 2, b.Length - 2);
-        if (b.Length >= 2 && b[0] == 0xFE && b[1] == 0xFF) return System.Text.Encoding.BigEndianUnicode.GetString(b, 2, b.Length - 2);
-        if (b.Length >= 3 && b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF) return System.Text.Encoding.UTF8.GetString(b, 3, b.Length - 3);
-        if (b.Length >= 2 && b[1] == 0) return System.Text.Encoding.Unicode.GetString(b);
-        return System.Text.Encoding.UTF8.GetString(b);
-    }
-
-    public static byte[]? ReadFomodImage(string archiveFile, string configPath, string imagePath)
-    {
-        var root = Fomod.RootOf(configPath);
-        var path = (root.Length == 0 ? "" : root + "/") + imagePath.Replace('\\', '/');
-        try { return PackageLibrary.ReadEntry(archiveFile, path); }
-        catch (ImportException) { return null; }
-    }
-
-    // ---------------- storage ----------------
-    public StorageInfo StorageInfo()
-    {
-        var removed = Directory.Exists(Removed.Root) ? Directory.EnumerateDirectories(Removed.Root).Count() : 0;
-        var (dl, dlBytes) = Afterlife.Infrastructure.Storage.FilesIn(Library.Downloads);
-        return new StorageInfo(removed, Afterlife.Infrastructure.Storage.SizeOf(Removed.Root), dl, dlBytes,
-            Afterlife.Infrastructure.Storage.SizeOf(Library.Staging) + Afterlife.Infrastructure.Storage.SizeOf(Library.Backups));
-    }
-
-    /// <summary>Deletes kept files for good. Never touches the game, the mods in the library or an unfinished change.</summary>
-    public long PurgeStorage(bool removed, bool downloads, bool temp)
-    {
-        using var _ = InstallLock.Acquire(Library, GameRoot);
-        if (Store.GetUnfinishedOperation() is not null) throw new InvalidOperationException("finish or undo the interrupted change first");
-        long freed = 0;
-        if (removed) freed += Removed.PurgeAll();
-        if (downloads) freed += Afterlife.Infrastructure.Storage.Empty(Library.Downloads);
-        if (temp) freed += Afterlife.Infrastructure.Storage.Empty(Library.Staging) + Afterlife.Infrastructure.Storage.Empty(Library.Backups);
-        return freed;
-    }
-
-    // ---------------- load order ----------------
-    /// <summary>
-    /// Drag-and-drop order of a profile: top loads first and wins archive conflicts. The order of the profile entries
-    /// Follows the list and AFTERLIFE writes archive/pc/mod/modlist.txt from it. Archives installed outside AFTERLIFE
-    /// Load after the listed ones; an existing modlist.txt is kept as a baseline and restored later.
-    /// </summary>
-    public ProfileState Reorder(string profileId, IReadOnlyList<string> orderedPackageIds)
-    {
-        var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        if (p.IsSystemModsOff) throw new InvalidOperationException("Mods off cannot be edited; select or create another profile");
-        var packages = Store.GetPackages().ToDictionary(x => x.PackageId);
-        var ordered = orderedPackageIds.Where(packages.ContainsKey).Distinct().ToList();
-        var byId = p.Entries.ToDictionary(e => e.PackageId);
-        var entries = ordered.Select(id => byId.TryGetValue(id, out var e) ? e : new ProfileEntry(id, false)).ToList();
-        entries.AddRange(p.Entries.Where(e => !ordered.Contains(e.PackageId)));
-        var archives = ordered
-            .SelectMany(id => packages[id].Files.Select(f => GamePath.Parse(f.Target))
-                .Where(g => string.Equals(g.ParentValue, "archive/pc/mod", StringComparison.OrdinalIgnoreCase) && g.Extension == ".archive")
-                .Select(g => g.FileName).OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        var q = p with
-        {
-            Entries = entries,
-            ArchiveOrder = new ArchiveOrderSettings(true, archives, true, true),
-            Revision = p.Revision + 1,
-        };
-        Store.SaveProfile(q);
-        return q;
-    }
-
-    /// <summary>Back to the game's default (alphabetical) archive order.</summary>
-    public ProfileState ResetOrder(string profileId)
-    {
-        var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        if (p.IsSystemModsOff) throw new InvalidOperationException("Mods off cannot be edited; select or create another profile");
-        var q = p.WithArchiveOrder(ArchiveOrderSettings.Default);
-        Store.SaveProfile(q);
-        return q;
-    }
-
-    // ---------------- planning ----------------
-    /// <param name="rescan">false: reuse the last scan of the game folder when only profiles changed (see <see cref="CachedScan"/>).</param>
-    public PreviewResult Preview(string? profileId = null, PlanDecisions? decisions = null, bool rescan = true)
-    {
-        var profile = profileId is null ? SelectedProfile : Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
-        var scan = rescan ? Scan() : CachedScan();
-        var snapshot = BuildSnapshot(profile, scan);
-        return MakePreview(snapshot, scan, decisions);
-    }
-
-    private PreviewResult MakePreview(DeploymentSnapshot snapshot, ScanResult scan, PlanDecisions? decisions)
-    {
-        var ledger = Store.GetLedger();
-        var observer = new GameStateObserver(GameRoot, _fs);
-        var plan = Planner.Create(snapshot, ledger, observer, Store.GetBaseline(ModlistFormat.RelativePath), decisions);
-        return new PreviewResult(snapshot, plan, scan, EnvironmentIssues());
-    }
-
-    private DeploymentSnapshot BuildSnapshot(ProfileState profile, ScanResult scan)
-    {
-        var packages = Store.GetPackages().ToDictionary(p => p.PackageId);
-        var incumbents = Store.GetLedger().Values.Where(l => l.Kind == ArtifactKind.Payload)
-            .ToDictionary(l => l.Path.ToUpperInvariant(), l => l.Owner, StringComparer.Ordinal);
-        return SnapshotBuilder.Build(new SnapshotInputs(profile, packages, scan.ExternalCapabilities, incumbents, scan.UnmanagedArchiveNames),
-            "snap-" + Guid.NewGuid().ToString("N")[..12]);
-    }
-
-    public List<Issue> EnvironmentIssues()
-    {
-        var list = new List<Issue>();
-        if (_env.IsGameRunning()) list.Add(new Issue(IssueKind.GameRunning, Severity.Blocking, "Cyberpunk 2077 is running; close it before changing mods"));
-        var unfinished = Store.GetUnfinishedOperation();
-        if (unfinished is not null) list.Add(new Issue(IssueKind.RecoveryRequired, Severity.Blocking, $"an operation did not finish ({unfinished.Status}); run recovery first"));
-        if (BuildChanged(out var fp)) list.Add(new Issue(IssueKind.BuildChanged, Severity.Warning, $"game updated to {fp?.Display ?? "unknown"}; review before modded launch"));
-        return list;
-    }
-
-    public bool BuildChanged(out GameFingerprint? current)
-    {
-        current = _env.Fingerprint(GameRoot);
-        var ackJson = Store.GetMeta("game.fingerprint.ack");
-        if (current is null || ackJson is null) return false;
-        return !Json.Deserialize<GameFingerprint>(ackJson).SameExecutable(current);
-    }
-
-    public void AcknowledgeBuild()
-    {
-        var fp = _env.Fingerprint(GameRoot);
-        if (fp is not null) Store.SetMeta("game.fingerprint.ack", Json.Serialize(fp));
-    }
-
-    // ---------------- apply ----------------
-    public ApplyResult Apply(string? profileId = null, PlanDecisions? decisions = null, IProgress<DeployProgress>? progress = null)
-    {
-        using var _ = InstallLock.Acquire(Library, GameRoot);
-        progress?.Report(new DeployProgress(DeployPhase.Preparing, 0, 0));
-        var preview = Preview(profileId, decisions);
-        ActivityLog.Plan($"apply profile {preview.Snapshot.ProfileId} ({preview.Snapshot.IncludedPackages.Count} mod(s) included, {preview.Snapshot.ExcludedPackages.Count} held back)", preview.Plan);
-        if (!preview.CanApply)
-        {
-            var reason = "blocked: " + string.Join("; ", preview.Plan.Blockers.Concat(preview.EnvironmentIssues.Where(i => i.Severity == Severity.Blocking)).Select(i => i.Message));
-            ActivityLog.Write("apply", reason);
-            return new ApplyResult(preview, null, reason);
-        }
-        if (preview.Plan.IsNoop && preview.Snapshot.ProfileId == Store.GetLastGeneration()?.ProfileId)
-            return new ApplyResult(preview, null, "already deployed");
-        var exec = Run(preview.Snapshot, preview.Plan, progress);
-        ActivityLog.Write("apply", $"{exec.Status} after {exec.StepsApplied} step(s){(exec.Error is null ? "" : ": " + exec.Error)}");
-        return new ApplyResult(preview, exec, exec.Status == OperationStatus.Verified ? "deployed" : exec.Error ?? exec.Status.ToString());
-    }
-
-    private ExecutionResult Run(DeploymentSnapshot snapshot, Plan plan, IProgress<DeployProgress>? progress = null)
-    {
-        var opId = "op-" + Guid.NewGuid().ToString("N");
-        var fpBefore = _env.Fingerprint(GameRoot);
-        var steps = plan.Steps.Select(s => new StepRecord(opId, s,
-            s.Kind is StepKind.Add or StepKind.Replace ? DeploymentExecutor.TempPathFor(GamePath.Parse(s.Path).ToOsPath(GameRoot), opId, s.Index) : null,
-            StepState.Planned, null)).ToList();
-        Store.CreateOperation(new OperationRecord(opId, DateTimeOffset.UtcNow, OperationStatus.Planned, snapshot.ProfileId, snapshot.ProfileRevision,
-            Json.Serialize(snapshot), Store.GetLastGeneration()?.Id, fpBefore is null ? null : Json.Serialize(fpBefore), null), steps);
-        var executor = new DeploymentExecutor(Store, Library, GameRoot, _fs, () =>
-        {
-            if (_env.IsGameRunning()) return "the game was started during deployment";
-            var fp = _env.Fingerprint(GameRoot);
-            if (fp != fpBefore) return "the game files changed during deployment";
-            return null;
-        });
-        return executor.Execute(opId, progress);
-    }
-
-    // ---------------- recovery ----------------
-    public OperationRecord? PendingRecovery => Store.GetUnfinishedOperation();
-
-    public (RecoveryOutcome Outcome, ApplyResult Followup) Recover(RecoveryChoice choice, IProgress<DeployProgress>? progress = null)
-    {
-        using var _ = InstallLock.Acquire(Library, GameRoot);
-        var op = Store.GetUnfinishedOperation() ?? throw new InvalidOperationException("nothing to recover");
-        var executor = new DeploymentExecutor(Store, Library, GameRoot, _fs);
-        var outcome = executor.Recover(op.Id);
-
-        DeploymentSnapshot target;
-        if (choice == RecoveryChoice.Finish) target = Json.Deserialize<DeploymentSnapshot>(op.TargetSnapshotJson);
-        else
-        {
-            var prev = op.PreviousGenerationId is null ? null : Store.GetGeneration(op.PreviousGenerationId);
-            target = prev is null
-                ? SnapshotBuilder.Build(new SnapshotInputs(ProfileState.CreateModsOff(), new Dictionary<string, PackageManifest>(), new HashSet<string>(),
-                    new Dictionary<string, string>(), []), "snap-" + Guid.NewGuid().ToString("N")[..12])
-                : Json.Deserialize<DeploymentSnapshot>(prev.SnapshotJson);
-        }
-        var scan = Scan();
-        var preview = MakePreview(target with { Id = "snap-" + Guid.NewGuid().ToString("N")[..12] }, scan, null);
-        if (!preview.CanApply)
-            return (outcome, new ApplyResult(preview, null, "the record of what is in the game was repaired, but the game could not be brought back yet: " +
-                string.Join("; ", preview.Plan.Blockers.Concat(preview.EnvironmentIssues.Where(i => i.Severity == Severity.Blocking)).Select(i => i.Message))));
-        var exec = Run(preview.Snapshot, preview.Plan, progress);
-        return (outcome, new ApplyResult(preview, exec, exec.Status == OperationStatus.Verified ? "recovered" : exec.Error ?? exec.Status.ToString()));
-    }
-
-    // ---------------- launch ----------------
-    // ---------------- REDmod ----------------
-    public const string RedModTool = "tools/redmod/bin/redMod.exe";
-    public const string RedModLog = "tools/redmod/bin/REDmodLog.txt";
-    private const string RedModSignatureKey = "redmod.signature";
-
-    /// <summary>REDmods in the game (folders under mods/ written by AFTERLIFE), in the profile's load order: first wins.</summary>
-    public IReadOnlyList<string> DeployedRedMods()
-    {
-        var ledger = Store.GetLedger().Values.Where(l => l.Path.StartsWith("mods/", StringComparison.OrdinalIgnoreCase)).ToList();
-        if (ledger.Count == 0) return [];
-        var byOwner = ledger.GroupBy(l => l.Owner).ToDictionary(g => g.Key, g => g.Select(l => l.Path.Split('/')[1]).Distinct(StringComparer.OrdinalIgnoreCase).ToList());
-        var order = SelectedProfile.Entries.Select(e => e.PackageId).Concat(byOwner.Keys).Distinct().ToList();
-        return order.Where(byOwner.ContainsKey).SelectMany(id => byOwner[id]).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    /// <summary>
-    /// REDmods only work after redMod.exe compiled them and the game starts with -modded. Runs the deploy when
-    /// The REDmods or their files changed since the last successful run (like Vortex does on launch).
-    /// </summary>
-    public RedModResult DeployRedMods(bool force = false)
-    {
-        var mods = DeployedRedMods();
-        if (mods.Count == 0) return new RedModResult(RedModOutcome.NoRedMods, mods, "no REDmods in the game");
-        var tool = GamePath.Parse(RedModTool).ToOsPath(GameRoot);
-        if (!_fs.FileExists(tool))
-            return new RedModResult(RedModOutcome.ToolMissing, mods,
-                "REDmod is not installed: add the free REDmod DLC (Steam: DLC page, GOG: Galaxy → Manage installation, Epic: add-ons). The game starts without the REDmods.");
-        var ledger = Store.GetLedger().Values.Where(l => l.Path.StartsWith("mods/", StringComparison.OrdinalIgnoreCase)).OrderBy(l => l.Path, StringComparer.OrdinalIgnoreCase);
-        var signature = ContentHash.Of(string.Join("\n", mods) + "|" + string.Join("\n", ledger.Select(l => l.Path + ":" + l.Hash)) + "|" + (_env.Fingerprint(GameRoot)?.FileVersion ?? ""));
-        var cache = GamePath.Parse("r6/cache/modded").ToOsPath(GameRoot);
-        if (!force && Store.GetMeta(RedModSignatureKey) == signature && Directory.Exists(cache))
-            return new RedModResult(RedModOutcome.UpToDate, mods, "REDmods already deployed");
-        Directory.CreateDirectory(Library.Staging);
-        var list = Path.Combine(Library.Staging, "redmod-load-order.txt");
-        File.WriteAllLines(list, mods);
-        var code = _env.RunTool(tool, ["deploy", "-reportProgress", $"-root={Path.GetFullPath(GameRoot)}", $"-modlist={list}"],
-            Path.GetDirectoryName(tool)!, TimeSpan.FromMinutes(15));
-        InvalidateScan(); // redMod.exe writes r6/cache/modded
-        if (code == 0)
-        {
-            Store.SetMeta(RedModSignatureKey, signature);
-            return new RedModResult(RedModOutcome.Deployed, mods, $"REDmod deployed {mods.Count} mod(s)");
-        }
-        Store.SetMeta(RedModSignatureKey, "");
-        var logPath = GamePath.Parse(RedModLog).ToOsPath(GameRoot);
-        string tail = "";
-        try { if (File.Exists(logPath)) tail = string.Join(" ", File.ReadLines(logPath).TakeLast(3)); } catch (IOException) { }
-        return new RedModResult(RedModOutcome.Failed, mods,
-            (code is null ? "REDmod did not finish in 15 minutes" : $"REDmod failed (exit code {code})") + (tail.Length == 0 ? "" : ": " + tail));
-    }
-
-    public Process LaunchGame(string arguments = "--launcher-skip", bool allowChangedBuild = false)
-    {
-        var issues = EnvironmentIssues();
-        if (issues.Any(i => i.Severity == Severity.Blocking)) throw new InvalidOperationException(string.Join("; ", issues.Select(i => i.Message)));
-        if (!allowChangedBuild && issues.Any(i => i.Kind == IssueKind.BuildChanged))
-            throw new InvalidOperationException("the game was updated; review and acknowledge the build before a modded launch");
-        var last = Store.GetLastGeneration();
-        if (last is null || last.ProfileId != SelectedProfile.Id)
-            throw new InvalidOperationException("the selected profile is not deployed yet");
-        var exe = GamePath.Parse(WindowsGameEnvironment.ExeRelativePath).ToOsPath(GameRoot);
-        InvalidateScan(); // the game and its mods write settings, logs and caches while it runs
-        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe)! };
-        foreach (var a in arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries)) psi.ArgumentList.Add(a);
-        return Process.Start(psi) ?? throw new InvalidOperationException("could not start the game");
-    }
-
-    public StatusReport Status()
-    {
-        var changed = BuildChanged(out var fp);
-        return new StatusReport(GameRoot, SelectedProfile, Store.GetLastGeneration(), Store.GetUnfinishedOperation(), fp, changed,
-            Store.GetLedger().Count, Store.GetPackages().Count);
-    }
+    // ---- BundleService ----
+    public IReadOnlyList<CollectionRecord> Collections() => BundleService.Collections();
+    public CollectionRevisionInfo ReadCollectionBundle(CollectionRevisionInfo api, string bundleFile) => BundleService.ReadCollectionBundle(api, bundleFile);
+    public static IReadOnlyList<string> ModlistInArchive(string archiveFile) => BundleService.ModlistInArchive(archiveFile);
+    public string? ExtractBundled(string bundleFile, CollectionItem item) => BundleService.ExtractBundled(bundleFile, item);
+    public FomodConfig ReadFomod(string archiveFile, string configPath) => BundleService.ReadFomod(archiveFile, configPath);
+    public static byte[]? ReadFomodImage(string archiveFile, string configPath, string imagePath) => BundleService.ReadFomodImage(archiveFile, configPath, imagePath);
 
     public void Dispose() => Store.Dispose();
+}
+
+/// <summary>What every service shares: paths, store, file system, environment, the current game root and the other services.</summary>
+public sealed class InstallContext
+{
+    internal InstallContext(LibraryPaths lib, AfterlifeStore store, IFileOps fs, IGameEnvironment env)
+    {
+        LibraryPaths = lib;
+        Store = store;
+        Fs = fs;
+        Env = env;
+        GameRoot = store.GetMeta("game.root") ?? throw new InvalidOperationException("library is not initialized");
+        Packages = new PackageLibrary(lib, store);
+        Removed = new Quarantine(lib, fs);
+    }
+
+    public LibraryPaths LibraryPaths { get; }
+    public AfterlifeStore Store { get; }
+    public IFileOps Fs { get; }
+    public IGameEnvironment Env { get; }
+    public PackageLibrary Packages { get; }
+    public Quarantine Removed { get; }
+    public string GameRoot { get; internal set; }
+
+    public ProfileService Profiles { get; internal set; } = null!;
+    public ScanService Scanner { get; internal set; } = null!;
+    public LibraryService Library { get; internal set; } = null!;
+    public DeployService Deployer { get; internal set; } = null!;
+    public BundleService Bundles { get; internal set; } = null!;
+
+    public ProfileState SelectedProfile =>
+        Store.GetProfile(Store.GetMeta("profile.selected") ?? ProfileState.ModsOffId) ?? Store.GetProfile(ProfileState.ModsOffId)!;
+
+    /// <summary>Nothing may change the game while it runs or while an operation waits for recovery.</summary>
+    internal void EnsureQuiet()
+    {
+        if (Env.IsGameRunning()) throw new InvalidOperationException("Cyberpunk 2077 is running; close it first");
+        if (Store.GetUnfinishedOperation() is not null) throw new InvalidOperationException("an operation did not finish; run recovery first");
+    }
 }

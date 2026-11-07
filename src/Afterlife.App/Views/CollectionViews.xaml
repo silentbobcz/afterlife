@@ -1,0 +1,197 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Afterlife.App.Controls"
+                    xmlns:vm="clr-namespace:Afterlife.App.ViewModels"
+                    xmlns:fx="clr-namespace:Afterlife.App.Controls">
+    <!-- Overlays for Nexus collections and FOMOD installers. -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Blocks.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <DataTemplate DataType="{x:Type vm:CollectionPreviewVm}">
+        <StackPanel Width="780">
+            <TextBlock Style="{StaticResource Body}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource T}" Text="{Binding Header}" TextWrapping="Wrap" />
+            <TextBlock Margin="0,4,0,0" Style="{StaticResource Body}" FontSize="12.5" Foreground="{StaticResource T2}" Text="{Binding Summary}" TextWrapping="Wrap"
+                       Visibility="{Binding Summary, Converter={StaticResource NullToVis}}" />
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource O}" Text="{Binding Warning}" TextWrapping="Wrap"
+                       Visibility="{Binding Warning, Converter={StaticResource NullToVis}}" />
+            <TextBlock Margin="0,4,0,0" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource M}" Text="Contains adult content."
+                       Visibility="{Binding Adult, Converter={StaticResource BoolToVis}}" />
+            <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource LinkButton}" FontSize="12" Command="{Binding ToggleInstructionsCommand}"
+                    Content="Curator's instructions" Visibility="{Binding HasInstructions, Converter={StaticResource BoolToVis}}" />
+            <Border Margin="0,6,0,0" Padding="10,8" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1" MaxHeight="140"
+                    Visibility="{Binding ShowInstructions, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource T2}" Text="{Binding Instructions}" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </Border>
+            <ScrollViewer Margin="0,12,0,0" MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MonoLabel}" Text="REQUIRED" Margin="0,0,0,6" />
+                    <ItemsControl ItemsSource="{Binding Required}" ItemTemplate="{StaticResource CollectionItemTemplate}" Focusable="False" />
+                    <TextBlock Style="{StaticResource MonoLabel}" Text="OPTIONAL · TICK WHAT YOU WANT" Margin="0,12,0,6" Visibility="{Binding HasOptional, Converter={StaticResource BoolToVis}}" />
+                    <ItemsControl ItemsSource="{Binding Optional}" ItemTemplate="{StaticResource CollectionItemTemplate}" Focusable="False" />
+                </StackPanel>
+            </ScrollViewer>
+            <TextBlock Margin="0,10,0,0" Style="{StaticResource Meta}" Text="{Binding DownloadNote}" TextWrapping="Wrap" />
+            <StackPanel Margin="0,10,0,0" Visibility="{Binding ShowTarget, Converter={StaticResource BoolToVis}}">
+                <RadioButton Style="{StaticResource PlainRadio}" GroupName="ctarget" Content="{Binding ProfileLabel}" IsChecked="{Binding NewProfile}" />
+                <RadioButton Style="{StaticResource PlainRadio}" GroupName="ctarget" Content="Add to the current profile (mix with your own mods)" IsChecked="{Binding NewProfile, Converter={StaticResource Not}}" />
+            </StackPanel>
+            <StackPanel Margin="0,14,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" IsCancel="True" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="ADD COLLECTION" MinWidth="150" IsDefault="True" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ManageCollectionVm}">
+        <StackPanel Width="760">
+            <Grid>
+                <TextBlock Style="{StaticResource Meta}" Text="{Binding Header}" TextWrapping="Wrap" Margin="0,0,140,0" />
+                <Button HorizontalAlignment="Right" Style="{StaticResource LinkButton}" FontSize="12" Command="{Binding OpenPageCommand}" Content="Open on Nexus ↗" />
+            </Grid>
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource C}" Text="{Binding LockState}" />
+            <!-- download of the collection -->
+            <c:CutBorder Margin="0,12,0,0" Background="{StaticResource Bg}" BorderBrush="{Binding Progress.Tone, Converter={StaticResource ToneBrush}}" AccentBrush="{Binding Progress.Tone, Converter={StaticResource ToneBrush}}"
+                         CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="14,10" Visibility="{Binding HasProgress, Converter={StaticResource BoolToVis}}">
+                <StackPanel DataContext="{Binding Progress}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" Text="{Binding StateLabel}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Margin="12,0" Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource T}" Text="{Binding CountText}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button Style="{StaticResource AccentButton}" Command="{Binding PauseCommand}" Content="PAUSE" Margin="0,0,8,0"
+                                    Visibility="{Binding CanPause, Converter={StaticResource BoolToVis}}" />
+                            <Button Style="{StaticResource PrimaryButton}" Command="{Binding ResumeCommand}" Content="RESUME"
+                                    Visibility="{Binding CanResume, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </Grid>
+                    <ProgressBar Margin="0,10,0,0" Style="{StaticResource NeonBar}" Height="16" Value="{Binding OverallPercent, Mode=OneWay}"
+                                 Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" AutomationProperties.Name="Collection progress" />
+                    <!-- one bar is enough; the file in progress is a line of text -->
+                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource T2}" Text="{Binding CurrentLine}" TextTrimming="CharacterEllipsis"
+                               Visibility="{Binding CurrentLine, Converter={StaticResource NullToVis}}" />
+                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource C}" Text="{Binding StatusText}" TextWrapping="Wrap" />
+                    <ScrollViewer Margin="0,8,0,0" MaxHeight="150" VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:CollectionProgressItemVm}">
+                                    <Grid Margin="0,1,6,1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource T}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Mono}" FontSize="11" Text="{Binding Status}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </c:CutBorder>
+            <ScrollViewer Margin="0,10,0,0" MaxHeight="300" VerticalScrollBarVisibility="Auto" Visibility="{Binding HasProgress, Converter={StaticResource InverseBoolToVis}}">
+                <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource CollectionItemTemplate}" Focusable="False" />
+            </ScrollViewer>
+            <Border Margin="0,10,0,0" Padding="10,8" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1" MaxHeight="120"
+                    Visibility="{Binding HasInstructions, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource T2}" Text="{Binding Instructions}" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </Border>
+            <Grid Margin="0,14,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource DangerButton}" Command="{Binding RemoveCommand}" Content="REMOVE…" Margin="0,0,18,0" />
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding LockCommand}" Content="{Binding LockLabel}" Margin="0,0,18,0" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding ResetOrderCommand}" Content="Reset to collection order" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource LinkButton}" Command="{Binding UpdateCommand}" Content="Check for new revision" Margin="0,0,18,0" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding ContinueCommand}" Content="{Binding ContinueLabel}"
+                            Visibility="{Binding ShowContinue, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- FOMOD installer -->
+    <DataTemplate DataType="{x:Type vm:FomodVm}">
+        <Grid Width="820">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Body}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource T}" Text="{Binding ModName}" />
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource T3}" Text="{Binding FileName}" />
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource MonoLabel}" Foreground="{StaticResource Y}" Text="{Binding StepCounter}" />
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,12,0,0" Height="400">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="320" />
+                </Grid.ColumnDefinitions>
+                <c:CutBorder Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource Y}" CutTopLeft="True" CutTopRight="False" Cut="8" Padding="14,10">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource MonoLabel}" Text="{Binding StepName}" Margin="0,0,0,8" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Groups}" Focusable="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:FomodGroupVm}">
+                                        <StackPanel Margin="0,0,0,12">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <TextBlock Style="{StaticResource Body}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource T}" Text="{Binding Name}" />
+                                                <TextBlock Margin="8,0,0,0" Style="{StaticResource Meta}" FontSize="11" VerticalAlignment="Center" Text="{Binding Rule}" />
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding Options}" Focusable="False">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate DataType="{x:Type vm:FomodOptionVm}">
+                                                        <StackPanel Orientation="Horizontal" Margin="0,1">
+                                                            <RadioButton Style="{StaticResource PlainRadio}" GroupName="{Binding GroupKey}" Content="{Binding Name}" IsChecked="{Binding IsChecked}"
+                                                                         IsEnabled="{Binding IsEnabled}" Visibility="{Binding IsRadio, Converter={StaticResource BoolToVis}}" />
+                                                            <CheckBox Style="{StaticResource PlainCheck}" Content="{Binding Name}" IsChecked="{Binding IsChecked}"
+                                                                      IsEnabled="{Binding IsEnabled}" Visibility="{Binding IsCheck, Converter={StaticResource BoolToVis}}" />
+                                                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource Mono}" FontSize="10" Foreground="{StaticResource C}"
+                                                                       Text="{Binding Badge}" Visibility="{Binding Badge, Converter={StaticResource NullToVis}}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </c:CutBorder>
+                <c:CutBorder Grid.Column="2" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" CutTopLeft="False" CutTopRight="True" Cut="8" Padding="12,10">
+                    <DockPanel>
+                        <Image DockPanel.Dock="Top" Source="{Binding Picture}" MaxHeight="190" Stretch="Uniform" Margin="0,0,0,10"
+                               Visibility="{Binding Picture, Converter={StaticResource NullToVis}}" RenderOptions.BitmapScalingMode="HighQuality" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock Style="{StaticResource Body}" FontSize="12.5" Foreground="{StaticResource T2}" Text="{Binding Description}" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </DockPanel>
+                </c:CutBorder>
+            </Grid>
+            <Grid Grid.Row="2" Margin="0,14,0,0">
+                <TextBlock Style="{StaticResource Meta}" Foreground="{StaticResource M}" Text="{Binding Problem}" VerticalAlignment="Center"
+                           Visibility="{Binding Problem, Converter={StaticResource NullToVis}}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" IsCancel="True" />
+                    <Button Style="{StaticResource LinkButton}" Command="{Binding BackCommand}" Content="Back" Margin="0,0,18,0" Visibility="{Binding CanBack, Converter={StaticResource BoolToVis}}" />
+                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding NextCommand}" Content="{Binding NextLabel}" MinWidth="130" IsDefault="True" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

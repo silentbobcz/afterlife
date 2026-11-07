@@ -1,0 +1,402 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Afterlife.App.Controls"
+                    xmlns:vm="clr-namespace:Afterlife.App.ViewModels"
+                    xmlns:fx="clr-namespace:Afterlife.App.Controls">
+    <!-- Overlays that ask one question: first run, choices, confirmations, text prompts, decisions, priority, export, downloads, profile picker, plan preview, about. -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Blocks.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ===== Overlay templates ===== -->
+    <DataTemplate DataType="{x:Type vm:FirstRunVm}">
+        <StackPanel Width="620">
+            <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource T2}" Text="AFTERLIFE keeps every mod in its own library and puts only verified files into the game. Files already in the game are scanned and left untouched." />
+            <TextBlock Margin="0,18,0,6" Style="{StaticResource MonoLabel}" Text="GAME FOLDER" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding GameFolder, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Game folder" />
+                <Button Grid.Column="1" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Command="{Binding BrowseGameCommand}" Content="BROWSE" />
+            </Grid>
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Body}" FontSize="12" Text="{Binding GameStatus}" Foreground="{Binding GameTone, Converter={StaticResource ToneBrush}}" />
+            <TextBlock Margin="0,16,0,6" Style="{StaticResource MonoLabel}" Text="LIBRARY FOLDER" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding LibraryFolder, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Library folder" />
+                <Button Grid.Column="1" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Command="{Binding BrowseLibraryCommand}" Content="BROWSE" />
+            </Grid>
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding LibraryNote}" TextWrapping="Wrap" />
+            <!-- Nexus key right away (optional) -->
+            <Grid Margin="0,16,0,6">
+                <TextBlock Style="{StaticResource MonoLabel}" Text="NEXUS MODS API KEY · OPTIONAL" />
+                <Button HorizontalAlignment="Right" Style="{StaticResource LinkButton}" FontSize="11.5" Command="{Binding OpenKeyPageCommand}" Content="Get my key ↗" />
+            </Grid>
+            <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding NexusKey, UpdateSourceTrigger=PropertyChanged}" FontFamily="{StaticResource MonoFont}" AutomationProperties.Name="Nexus Mods API key" />
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding NexusHint}" TextWrapping="Wrap" />
+            <Border Margin="0,14,0,0" Padding="12,9" BorderBrush="{StaticResource O}" BorderThickness="1" Background="{StaticResource OTint}"
+                    Visibility="{Binding Warning, Converter={StaticResource NullToVis}}">
+                <TextBlock Style="{StaticResource Body}" FontSize="12.5" Text="{Binding Warning}" />
+            </Border>
+            <Button Margin="0,22,0,0" HorizontalAlignment="Left" MinWidth="220" MinHeight="40" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" FontSize="15" Content="START AFTERLIFE" />
+            <TextBlock Margin="0,18,0,0" Style="{StaticResource Meta}" FontSize="11" Text="This is an unofficial fan work and is not approved/endorsed by CD PROJEKT RED." />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:VariantChoiceVm}">
+        <StackPanel Width="560">
+            <TextBlock Style="{StaticResource Mono}" Text="{Binding FileName}" />
+            <TextBlock Margin="0,8,0,12" Style="{StaticResource Body}" Foreground="{StaticResource T2}" Text="{Binding Hint}" />
+            <ListBox Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource CardItem}" MaxHeight="320"
+                     ItemsSource="{Binding Variants}" SelectedItem="{Binding Selected}" AutomationProperties.Name="Variants">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Style="{StaticResource Body}" FontSize="14" Text="{Binding}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="INSTALL THIS VARIANT" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ConfirmVm}">
+        <StackPanel Width="560">
+            <TextBlock Style="{StaticResource Body}" FontSize="13.5" Text="{Binding Message}" TextWrapping="Wrap" />
+            <StackPanel Visibility="{Binding HasLines, Converter={StaticResource BoolToVis}}">
+                <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Text="{Binding LinesTitle}" Visibility="{Binding LinesTitle, Converter={StaticResource NullToVis}}" />
+                <c:CutBorder Margin="0,8,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" CutTopLeft="False" CutTopRight="False" CutBottomRight="True" Cut="8" Padding="12,8">
+                    <ScrollViewer MaxHeight="240" VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding Lines}" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Style="{StaticResource Mono}" FontSize="12" Text="{Binding}" Margin="0,1" TextTrimming="CharacterEllipsis" ToolTip="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </c:CutBorder>
+            </StackPanel>
+            <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding OptionChecked}" Content="{Binding OptionLabel}"
+                      Visibility="{Binding OptionLabel, Converter={StaticResource NullToVis}}" />
+            <StackPanel Margin="0,20,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <!-- third button that leaves everything as it is -->
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding AbortCommand}" Content="{Binding AbortLabel}" Margin="0,0,18,0"
+                        Visibility="{Binding HasAbort, Converter={StaticResource BoolToVis}}" />
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="{Binding CancelLabel}" Margin="0,0,18,0" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}" MinWidth="150"
+                        Visibility="{Binding Danger, Converter={StaticResource InverseBoolToVis}}" />
+                <Button Style="{StaticResource DangerButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}"
+                        Visibility="{Binding Danger, Converter={StaticResource BoolToVis}}" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:TextPromptVm}">
+        <StackPanel Width="420">
+            <TextBlock Margin="0,0,0,6" Style="{StaticResource MonoLabel}" Text="{Binding Label}" />
+            <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}" />
+            <StackPanel Margin="0,18,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" IsCancel="True" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}" IsDefault="True" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:DecisionsVm}">
+        <StackPanel Width="640">
+            <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource T2}" Text="{Binding Hint}" TextWrapping="Wrap" />
+            <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding KeepAllCommand}" Content="Keep all" Margin="0,0,16,0" />
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding DiscardAllCommand}" Content="Discard all" />
+            </StackPanel>
+            <ItemsControl Margin="0,10,0,0" ItemsSource="{Binding Groups}" MaxHeight="340">
+                <ItemsControl.Template>
+                    <ControlTemplate>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"><ItemsPresenter /></ScrollViewer>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:DecisionGroupVm}">
+                        <Border Margin="0,0,0,6" Padding="12,8" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Body}" FontWeight="SemiBold" Text="{Binding Mod}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Margin="0,2,0,0" Style="{StaticResource Mono}" Foreground="{StaticResource T2}" Text="{Binding Summary}" TextTrimming="CharacterEllipsis" ToolTip="{Binding AllFiles}" />
+                                </StackPanel>
+                                <CheckBox Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Style="{StaticResource PlainCheck}" IsChecked="{Binding Keep}" Content="Keep my edits" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="Unchecked mods: their changed files are discarded." />
+            <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="CONTINUE" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:PriorityVm}">
+        <StackPanel Width="640">
+            <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource T2}" Text="{Binding Honest}" />
+            <CheckBox Margin="0,14,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding Custom}" IsEnabled="{Binding Editable}"
+                      Content="Custom archive order (AFTERLIFE writes archive\pc\mod\modlist.txt)" />
+            <Grid Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ListBox Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}" Height="220"
+                         ItemsSource="{Binding Archives}" SelectedItem="{Binding Selected}" IsEnabled="{Binding Custom}"
+                         Background="{StaticResource Bg3}" AutomationProperties.Name="Archive order">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Style="{StaticResource Mono}" Text="{Binding}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <Button Style="{StaticResource AccentButton}" Command="{Binding MoveUpCommand}" Content="UP" Margin="0,0,0,8" ToolTip="Load earlier (wins over later archives)" />
+                    <Button Style="{StaticResource AccentButton}" Command="{Binding MoveDownCommand}" Content="DOWN" />
+                </StackPanel>
+            </Grid>
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="Top loads first. Archives not listed load after these, alphabetically." />
+            <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding IncludeUnmanaged}" IsEnabled="{Binding Editable}">
+                <TextBlock Style="{StaticResource Body}">
+                    <Run Text="Include archives installed outside AFTERLIFE (" /><Run Text="{Binding UnmanagedCount, Mode=OneWay}" /><Run Text=")" />
+                </TextBlock>
+            </CheckBox>
+            <CheckBox Margin="0,8,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding AllowTakeover}" IsEnabled="{Binding Editable}"
+                      Content="Take over an existing modlist.txt (the original is kept and restored later)" />
+            <TextBlock Margin="0,16,0,6" Style="{StaticResource MonoLabel}" Text="DIRECT FILE CONFLICTS" />
+            <TextBlock Style="{StaticResource Meta}" Text="None. Same-path conflicts are decided per file on a mod's Conflicts tab."
+                       Visibility="{Binding HasConflicts, Converter={StaticResource InverseBoolToVis}}" />
+            <ItemsControl ItemsSource="{Binding ConflictLines}" MaxHeight="120">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Text="{Binding}" TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Margin="0,18,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Style="{StaticResource Meta}" VerticalAlignment="Center" Margin="0,0,16,0" Text="Mods off cannot be edited."
+                           Visibility="{Binding Editable, Converter={StaticResource InverseBoolToVis}}" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" IsEnabled="{Binding Editable}" Content="SAVE ORDER" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ExportVm}">
+        <StackPanel Width="760">
+            <TextBlock Style="{StaticResource Meta}" Text="{Binding Hint}" TextWrapping="Wrap" />
+            <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                <RadioButton Style="{StaticResource PlainRadio}" GroupName="scope" Content="In game now" IsChecked="{Binding AfterApply, Converter={StaticResource Not}}" Margin="0,0,18,0" />
+                <RadioButton Style="{StaticResource PlainRadio}" GroupName="scope" Content="Selected profile after apply" IsChecked="{Binding AfterApply}" Margin="0,0,18,0"
+                             IsEnabled="{Binding HasPending}" />
+                <CheckBox Style="{StaticResource PlainCheck}" Content="Include switched-off mods" IsChecked="{Binding IncludeOff}" />
+            </StackPanel>
+            <TextBox Margin="0,10,0,0" Style="{StaticResource DarkTextBox}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Text="{Binding Preview, Mode=OneWay}"
+                     IsReadOnly="True" Height="340" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True" />
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding Message}" Visibility="{Binding Message, Converter={StaticResource NullToVis}}" />
+            <StackPanel Margin="0,12,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding SaveCsvCommand}" Content="Save as .csv" Margin="0,0,18,0" />
+                <Button Style="{StaticResource LinkButton}" Command="{Binding SaveTextCommand}" Content="Save as .txt" Margin="0,0,18,0" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding CopyCommand}" Content="COPY TO CLIPBOARD" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:DownloadsVm}">
+        <StackPanel Width="680">
+            <Grid>
+                <TextBlock Style="{StaticResource Meta}" Text="{Binding Summary}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,200,0" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource LinkButton}" Command="{Binding OpenWebHistoryCommand}" Content="Full history on Nexus ↗" Margin="0,0,14,0"
+                            ToolTip="Everything you downloaded on nexusmods.com, also outside AFTERLIFE" />
+                    <Button Style="{StaticResource QuietLinkButton}" Command="{Binding OpenNexusCommand}" Content="Get new mods ↗" />
+                </StackPanel>
+            </Grid>
+            <!-- -->
+            <Grid Margin="0,12,0,0" Visibility="{Binding HasItems, Converter={StaticResource BoolToVis}}">
+                <TextBox x:Name="HistorySearch" Style="{StaticResource DarkTextBox}" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search downloads" />
+                <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Text="Search downloads…">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Meta}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=HistorySearch}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+            <TextBlock Margin="0,10,0,0" Style="{StaticResource Meta}" Text="Nothing matches the search." Visibility="{Binding NoMatch, Converter={StaticResource BoolToVis}}" />
+            <ScrollViewer Margin="0,10,0,0" MaxHeight="440" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsEmpty, Converter={StaticResource InverseBoolToVis}}">
+                <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:DownloadVm}">
+                            <Border Margin="0,0,0,6" Padding="12,8" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <Button HorizontalAlignment="Left" Style="{StaticResource LinkButton}" Foreground="{StaticResource T}" FontSize="13" Command="{Binding Open}" ToolTip="Open its page on Nexus Mods">
+                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                        </Button>
+                                        <TextBlock Style="{StaticResource Meta}" FontSize="11" Text="{Binding Detail}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Margin="0,0,14,0" Style="{StaticResource LinkButton}" FontSize="12" Content="Import again" Command="{Binding Reimport}"
+                                                Visibility="{Binding CanReimport, Converter={StaticResource BoolToVis}}" ToolTip="The downloaded archive is still in the library" />
+                                        <TextBlock Style="{StaticResource Mono}" FontSize="11" Text="{Binding Status}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ProfilePickerVm}">
+        <StackPanel Width="460">
+            <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource T2}" Text="{Binding Hint}" />
+            <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Profiles}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:ProfileChoiceVm}">
+                        <CheckBox Margin="0,0,0,8" Style="{StaticResource PlainCheck}" IsChecked="{Binding IsChecked}" Content="{Binding Name}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Margin="0,14,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="ADD TO PROFILES" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:PlanPreviewVm}">
+        <StackPanel Width="720">
+            <DockPanel LastChildFill="True">
+                <!-- the plan by mod (default) or by file -->
+                <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" FontSize="12" VerticalAlignment="Center" Content="{Binding ByFileLabel}" Command="{Binding ToggleViewCommand}"
+                        Visibility="{Binding HasGroups, Converter={StaticResource BoolToVis}}" ToolTip="Show the same changes grouped by mod (with the reason) or file by file" />
+                <TextBlock Style="{StaticResource Body}" FontSize="14" Text="{Binding Summary}" VerticalAlignment="Center" />
+            </DockPanel>
+            <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="{Binding SavesHint}" />
+            <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Issues}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:LineVm}">
+                        <TextBlock Margin="0,0,0,4" Style="{StaticResource Body}" FontSize="12.5" Text="{Binding Left}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ListBox Margin="0,8,0,0" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}" MaxHeight="420" ItemsSource="{Binding Groups}"
+                     Visibility="{Binding ByFile, Converter={StaticResource InverseBoolToVis}}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:LineVm}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource Mono}" Text="{Binding Left}" TextTrimming="CharacterEllipsis" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" ToolTip="{Binding Left}" />
+                            <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Meta}" Text="{Binding Right}" ToolTip="{Binding Right}" MaxWidth="320" TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ListBox Margin="0,8,0,0" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource RowItem}" MaxHeight="420" ItemsSource="{Binding Steps}"
+                     Visibility="{Binding ByFile, Converter={StaticResource BoolToVis}}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:LineVm}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource Mono}" Text="{Binding Left}" TextTrimming="CharacterEllipsis" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" ToolTip="{Binding Left}" />
+                            <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Meta}" Text="{Binding Right}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- one of several options -->
+    <DataTemplate DataType="{x:Type vm:ChoiceVm}">
+        <StackPanel Width="560">
+            <TextBlock Style="{StaticResource Body}" FontSize="13.5" Text="{Binding Message}" TextWrapping="Wrap" Margin="0,0,0,12" />
+            <ListBox Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource CardItem}" MaxHeight="320"
+                     ItemsSource="{Binding Options}" SelectedItem="{Binding Selected}" AutomationProperties.Name="Options">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Style="{StaticResource Body}" FontSize="14" Text="{Binding}" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding OptionChecked}" Content="{Binding OptionLabel}"
+                      Visibility="{Binding OptionLabel, Converter={StaticResource NullToVis}}" />
+            <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" IsCancel="True" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="{Binding ConfirmLabel}" MinWidth="120" IsDefault="True" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:AboutVm}">
+        <StackPanel Width="680">
+            <TextBlock Style="{StaticResource Mono}" Foreground="{StaticResource T2}" Text="{Binding Version}" />
+            <TextBlock Margin="0,10,0,0" Style="{StaticResource Body}" FontSize="14" FontWeight="SemiBold" Text="{Binding Copyright}" />
+            <TextBlock Margin="0,4,0,0" Style="{StaticResource Body}" Text="{Binding Disclaimer}" />
+            <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="{Binding Trademarks}" />
+            <WrapPanel Margin="0,14,0,0">
+                <Button Style="{StaticResource AccentButton}" Command="{Binding SourceCommand}" Content="SOURCE CODE" Margin="0,0,10,0" />
+                <Button Style="{StaticResource AccentButton}" Command="{Binding SupportCommand}" Content="♥ SUPPORT AFTERLIFE" Margin="0,0,10,0" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <Button Style="{StaticResource MailIconButton}" Command="{Binding ContactCommand}" AutomationProperties.Name="Contact the author by e-mail" />
+                    <Button Margin="8,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding ContactCommand}" VerticalAlignment="Center" Content="{Binding Contact}" />
+                </StackPanel>
+                <Button Style="{StaticResource LinkButton}" Command="{Binding FanContentCommand}" VerticalAlignment="Center" Content="CDPR fan content guidelines" />
+            </WrapPanel>
+            <TextBlock Margin="0,16,0,6" Style="{StaticResource MonoLabel}" Text="LIBRARIES AND FONTS" />
+            <ItemsControl ItemsSource="{Binding Libraries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:LineVm}">
+                        <Grid Margin="0,0,0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource Body}" FontSize="12.5" Text="{Binding Left}" />
+                            <TextBlock Grid.Column="1" Style="{StaticResource Mono}" Foreground="{StaticResource TagText}" Text="{Binding Right}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Margin="0,16,0,6" Style="{StaticResource MonoLabel}" Text="LICENSE" />
+            <TextBox Height="170" IsReadOnly="True" Text="{Binding License, Mode=OneWay}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                     Background="{StaticResource Bg3}" Foreground="{StaticResource T}" BorderBrush="{StaticResource Line2}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Padding="8" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

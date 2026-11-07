@@ -21,7 +21,7 @@
 
 ## Status
 
-**Alpha (1.0.0-alpha.2).** Feature-complete for 1.0 and being tested on real installs. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
+**Alpha (1.0.0-alpha.3).** Feature-complete for 1.0 and being tested on real installs. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
 The executable is not code-signed yet, so Windows SmartScreen shows a warning the first time (*More info → Run anyway*). See [FAQ](docs/FAQ.md#windows-says-it-protected-my-pc).
 
 ## What it does

@@ -107,6 +107,8 @@ public static class UnmanagedGrouping
         ["input_loader"] = "Input Loader",
         ["mod_settings"] = "Mod Settings",
         ["RedFileSystem"] = "RedFileSystem",
+        ["audioware"] = "Audioware",
+        ["virtual-atelier-full"] = "Virtual Atelier",
     };
 
     /// <summary>Group name → capability, so the window can warn about mods that need a framework before it is removed.</summary>
@@ -122,7 +124,31 @@ public static class UnmanagedGrouping
         ["Mod Settings"] = Capabilities.ModSettings,
         ["Native Settings UI"] = Capabilities.NativeSettings,
         ["RedFileSystem"] = Capabilities.RedFileSystem,
+        ["Audioware"] = Capabilities.Audioware,
+        ["Virtual Atelier"] = Capabilities.VirtualAtelier,
     };
+
+    /// <summary>
+    /// Files that belong to the game and its plugins, not to any mod: the Address Library offset database for the
+    /// exact game version (bin/x64/plugins/address_library/version-<packed exe version>.bin), which native plugins
+    /// write when the game starts. Never reported, never moved.
+    /// </summary>
+    public static bool IsGameData(string path) =>
+        path.StartsWith("bin/x64/plugins/address_library/", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Kinds whose loader needs an entry file in the mod's own folder.</summary>
+    private static readonly HashSet<DetectedKind> FolderKinds = [DetectedKind.CetMod, DetectedKind.Red4extPlugin, DetectedKind.Redscript, DetectedKind.Tweak, DetectedKind.Redmod];
+    private static readonly HashSet<string> LoadableExtensions = new(StringComparer.OrdinalIgnoreCase) { ".dll", ".asi", ".reds", ".yaml", ".yml", ".tweak", ".xl", ".archive" };
+
+    /// <summary>
+    /// A mod folder without anything its loader would load (no init.lua, .reds, .dll, tweak, archive or REDmod info.json):
+    /// only files a mod left behind while it ran (lock files, logs, saved settings). Not a mod, so not listed; never moved.
+    /// </summary>
+    public static bool IsOnlyLeftovers(DetectedMod g) =>
+        g.Kind != DetectedKind.Framework && g.Kinds.All(FolderKinds.Contains)
+        && !g.Files.Any(f => LoadableExtensions.Contains(Path.GetExtension(f.Path))
+            || Path.GetFileName(f.Path).Equals("init.lua", StringComparison.OrdinalIgnoreCase)
+            || Path.GetFileName(f.Path).Equals("info.json", StringComparison.OrdinalIgnoreCase));
 
     public static IReadOnlyList<DetectedMod> Group(IEnumerable<(string Path, long Size)> files)
     {
@@ -175,15 +201,13 @@ public static class UnmanagedGrouping
                 Add("fw:redscript", "redscript", DetectedKind.Framework, f, framework: true);
             else if (lower.StartsWith("mods/") && parts.Length > 2)
                 Add("redmod:" + Normalize(parts[1]), parts[1], DetectedKind.Redmod, f);
-            else if (lower.StartsWith("bin/x64/plugins/address_library/"))
-                // offset database for the exact game version (version-<packed exe version>.bin), used by ASI/RED4ext plugins
-                Add("other:addresslibrary", "Address Library (offsets for the game version)", DetectedKind.Other, f);
             else
                 Add("other:" + lower, parts[^1], DetectedKind.Other, f);
         }
 
         return groups.Values
             .Select(g => g.Build())
+            .Where(g => !IsOnlyLeftovers(g))
             .OrderBy(g => g.Kind == DetectedKind.Framework)
             .ThenBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -232,7 +256,6 @@ public static class UnmanagedGrouping
             var note = framework
                 ? (IsOnlyRuntime() ? $"Only files {name} created itself (settings, logs); {name} itself is not installed manually here. Safe to leave."
                                    : "Core mod installed manually. Mods that need it stop working when it is removed.")
-                : key == "other:addresslibrary" ? "Offset database for this exact game version, used by native plugins (installed with one of them or written by it). Leave it unless no plugin needs it any more."
                 : kind == DetectedKind.Other ? "Single file that does not match a known mod layout." : null;
             return new DetectedMod(key, name, kind, Files.OrderBy(f => f.Path, StringComparer.OrdinalIgnoreCase).ToList(), true, note)
             {

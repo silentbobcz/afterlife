@@ -10,7 +10,6 @@ namespace Afterlife.App.ViewModels;
 /// </summary>
 public sealed partial class MainViewModel
 {
-    // ---------------- two versions on ----------------
     /// <summary>Packages of the same mod (same AFTERLIFE mod id) that are on together in the selected profile.</summary>
     private static Dictionary<string, List<ModOverview>> TwinsOn(InstallOverview o) =>
         o.Mods.Where(m => m.Wanted && m.Package.LayerOfModId is null)
@@ -49,7 +48,6 @@ public sealed partial class MainViewModel
         _overview is null || IsModsOff ? []
             : TwinsOn(_overview).Values.Select(g => $"! {g[0].Package.ModName}: {g.Count} versions on ({string.Join(", ", g.Select(m => m.Package.Version))})");
 
-    // ---------------- new version of a mod in a collection ----------------
     private int? _collectionUpdateChoice; // "for all" during Update all
 
     private IReadOnlyList<string> CollectionsOf(string packageId) =>
@@ -74,7 +72,6 @@ public sealed partial class MainViewModel
         return pick;
     }
 
-    // ---------------- old versions left from earlier updates ----------------
     private bool _oldVersionsAsked;
 
     /// <summary>
@@ -107,7 +104,6 @@ public sealed partial class MainViewModel
         Say($"Deleted {r.Deleted.Count} old version(s) from the library.", Tone.Ok);
     });
 
-    // ---------------- duplicates ----------------
     private bool _duplicatesAsked;
 
     /// <summary>Asks once per session (and after imports) to merge packages that have exactly the same files.</summary>
@@ -148,7 +144,6 @@ public sealed partial class MainViewModel
         SayLines(report, r.Kept.Count > 0 ? Tone.Warn : Tone.Ok);
     });
 
-    // ---------------- rename a profile ----------------
     [RelayCommand]
     private Task RenameProfile() => RunUiAsync(async () =>
     {

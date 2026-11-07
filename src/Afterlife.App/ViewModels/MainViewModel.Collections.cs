@@ -109,7 +109,6 @@ public sealed partial class MainViewModel
         return rev;
     }
 
-    // ---------------- download progress ----------------
     private CollectionProgressVm? _collectionProgress;
 
     private void ShowCollectionWindow(CollectionRecord r, IReadOnlyList<CollectionItemState> states)
@@ -354,7 +353,6 @@ public sealed partial class MainViewModel
         await RefreshAsync();
     });
 
-    // ---------------- collection chapters ----------------
     [ObservableProperty] private IReadOnlyDictionary<string, CollectionChapterVm> _collectionChapters = new Dictionary<string, CollectionChapterVm>();
     private IReadOnlyList<CollectionRecord> _collections = [];
 
@@ -380,7 +378,7 @@ public sealed partial class MainViewModel
             static bool Mis(ModRowVm r) => r.Overview.Missing.Count > 0;
             vm.Updates = inChapter.Count(Upd); vm.Conflicts = inChapter.Count(Con); vm.Missing = inChapter.Count(Mis);
             vm.ShowUpdateCommand = Show(Upd); vm.ShowConflictCommand = Show(Con); vm.ShowMissingCommand = Show(Mis);
-            vm.WatchRows(inChapter); 
+            vm.WatchRows(inChapter.Where(Visible).ToList()); // the header selects what the search shows
             return vm;
         }
         static bool Real(ModRowVm r) => r.Overview.Package.LayerOfModId is null;

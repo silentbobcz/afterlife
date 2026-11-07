@@ -2,11 +2,16 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## Unreleased
+## 1.0.0-alpha.3
 
 - **Faster refresh**: the window no longer walks the game folder and reads every mod's Nexus rows from the database after every click. The last scan is reused while only profiles change (a full scan still runs on start, REFRESH, *Scan manual mods*, after apply or launch and when the window comes back to the front); the overview builds its per-mod data from one-time lookups.
 - **Steadier list**: rows are updated in place, so the selection, checkboxes and scroll position survive a refresh; the mod picture is not decoded again when the selected mod did not change.
-- Tests are organised by feature; comments in the sources no longer carry patch numbers.
+- **Address Library** database (`bin/x64/plugins/address_library/version-….bin`), written by native plugins when the game starts, no longer shows up in *Scan manual mods*; AFTERLIFE never touches it.
+- **Leftovers are not mods**: a mod folder with nothing its loader would load (for example only a `pending.lock` left by a removed CET mod) is no longer listed in *Scan manual mods*.
+- **Select all while searching** takes exactly the mods the search shows (list header, block and category headers, Ctrl+A), so found mods can be moved into a category in one go.
+- **Clear search**: a ✕ in the search box (or Esc) removes the filter.
+- **More core mods**: Audioware and Virtual Atelier are recognised as optional core mods (in the library, installed by hand and as requirements on Nexus pages or in scripts).
+- Leaner sources: the coordinator is a facade over five services, the main view model is a set of partial files, overlay view models and their templates have their own files. no change in behaviour. Tests are organised by feature; comments no longer carry patch numbers.
 
 ## 1.0.0-alpha.2
 
@@ -21,9 +26,9 @@ Fixes and small additions after the first alpha on a real install.
 - **Blocked apply** shows a SHOW MOD button that jumps to the mod the blocker belongs to.
 - **Header checkboxes** in CORE MODS, collections, MODS and categories select all mods of the block for bulk actions (three states).
 - **Preview** groups the changes by mod with the reason (switched off, held back because its framework is off, update); the summary and the Apply dialog count mods held back, so a long remove list after switching ArchiveXL off is explained.
-- **Update replaces the old version completely** (P123): the new version takes its place in every profile, collection, category and conflict rule, the game is updated at once (when the profile is the one in the game) and the old version is deleted from the library. UPDATE ALL and REPLACE ALL apply once at the end. Old versions left from earlier updates are offered for deletion once after start.
-- **Alphabetical order** (P124): mods inside MODS and every category, and the profiles, are sorted by name (a layer stays below its mod); collections keep their curator's order. With a custom load order the profile follows the sorted list (blocks and categories keep their order). Dragging inside a category no longer reorders; to load a mod earlier, put it in a category placed higher.
-- **Manual mods without noise** (P125): `red4ext/config.ini`, lock and cache files that a mod in the library wrote into its own folder (also while it is switched off) are no longer listed. A core-mod group with only its own settings or logs says so instead of "installed manually"; the Address Library database (`bin/x64/plugins/address_library`) is named and explained.
+- **Update replaces the old version completely**: the new version takes its place in every profile, collection, category and conflict rule, the game is updated at once (when the profile is the one in the game) and the old version is deleted from the library. UPDATE ALL and REPLACE ALL apply once at the end. Old versions left from earlier updates are offered for deletion once after start.
+- **Alphabetical order**: mods inside MODS and every category, and the profiles, are sorted by name (a layer stays below its mod); collections keep their curator's order. With a custom load order the profile follows the sorted list (blocks and categories keep their order). Dragging inside a category no longer reorders; to load a mod earlier, put it in a category placed higher.
+- **Manual mods without noise**: `red4ext/config.ini`, lock and cache files that a mod in the library wrote into its own folder (also while it is switched off) are no longer listed. A core-mod group with only its own settings or logs says so instead of "installed manually"; the Address Library database (`bin/x64/plugins/address_library`) is named and explained.
 - **Activity log** (Settings): writes switches, imports, every planned file change with its reason and the results into the log folder, one file per day.
 
 ## 1.0.0-alpha
