@@ -136,6 +136,20 @@ public static class UnmanagedGrouping
     public static bool IsGameData(string path) =>
         path.StartsWith("bin/x64/plugins/address_library/", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>Kinds whose loader needs an entry file in the mod's own folder.</summary>
+    private static readonly HashSet<DetectedKind> FolderKinds = [DetectedKind.CetMod, DetectedKind.Red4extPlugin, DetectedKind.Redscript, DetectedKind.Tweak, DetectedKind.Redmod];
+    private static readonly HashSet<string> LoadableExtensions = new(StringComparer.OrdinalIgnoreCase) { ".dll", ".asi", ".reds", ".yaml", ".yml", ".tweak", ".xl", ".archive" };
+
+    /// <summary>
+    /// A mod folder without anything its loader would load (no init.lua, .reds, .dll, tweak, archive or REDmod info.json):
+    /// only files a mod left behind while it ran (lock files, logs, saved settings). Not a mod, so not listed; never moved.
+    /// </summary>
+    public static bool IsOnlyLeftovers(DetectedMod g) =>
+        g.Kind != DetectedKind.Framework && g.Kinds.All(FolderKinds.Contains)
+        && !g.Files.Any(f => LoadableExtensions.Contains(Path.GetExtension(f.Path))
+            || Path.GetFileName(f.Path).Equals("init.lua", StringComparison.OrdinalIgnoreCase)
+            || Path.GetFileName(f.Path).Equals("info.json", StringComparison.OrdinalIgnoreCase));
+
     public static IReadOnlyList<DetectedMod> Group(IEnumerable<(string Path, long Size)> files)
     {
         var groups = new Dictionary<string, Builder>(StringComparer.OrdinalIgnoreCase);
@@ -193,6 +207,7 @@ public static class UnmanagedGrouping
 
         return groups.Values
             .Select(g => g.Build())
+            .Where(g => !IsOnlyLeftovers(g))
             .OrderBy(g => g.Kind == DetectedKind.Framework)
             .ThenBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();

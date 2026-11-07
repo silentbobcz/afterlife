@@ -155,10 +155,13 @@ public sealed class ScanService
         foreach (var (path, ids) in raw.SamePackages)
             if (ids.Any(selected.IsEnabled)) hidden.Add(path);
         var blockers = raw.InTheWay.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase);
-        return new ScanResult(raw.Unmanaged, raw.External, raw.Archives)
+        // leftovers of mods that are gone (a lock file in an empty CET folder) are not listed anywhere
+        var groups = UnmanagedGrouping.Group(raw.Unmanaged);
+        var listed = groups.SelectMany(g => g.Files).Select(f => f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return new ScanResult(raw.Unmanaged.Where(u => listed.Contains(u.Path)).ToList(), raw.External, raw.Archives)
         {
             ExternalVersions = raw.Versions,
-            Detected = UnmanagedGrouping.WithBlockers(UnmanagedGrouping.Group(raw.Unmanaged), blockers,
+            Detected = UnmanagedGrouping.WithBlockers(groups, blockers,
                 raw.Same.ToDictionary(k => k.Key, k => (IReadOnlyList<string>)k.Value, StringComparer.OrdinalIgnoreCase), hidden),
             InTheWay = blockers,
             RuntimeFiles = raw.Runtime,

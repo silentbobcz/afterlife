@@ -462,6 +462,31 @@ public class ManualModsNoiseTests
     }
 
     [Fact]
+    public void A_mod_folder_with_only_leftovers_is_not_a_manual_mod()
+    {
+        var g = UnmanagedGrouping.Group(
+        [
+            ("bin/x64/plugins/cyber_engine_tweaks/mods/AppearanceCreatorMod/ArchiveScans/pending.lock", 0L),
+            ("red4ext/plugins/Gone/Gone.log", 10L),
+            ("r6/scripts/Old/settings.json", 5L),
+            ("bin/x64/plugins/cyber_engine_tweaks/mods/Real/init.lua", 10L),
+            ("bin/x64/plugins/cyber_engine_tweaks/mods/Real/data/db.sqlite3", 10L),
+            ("r6/scripts/Script/main.reds", 10L),
+            ("engine/config/platform/pc/tweak.ini", 10L),
+        ]);
+        Assert.DoesNotContain(g, d => d.Name is "AppearanceCreatorMod" or "Gone" or "Old");
+        Assert.Contains(g, d => d.Name == "Real" && d.Files.Count == 2);
+        Assert.Contains(g, d => d.Name == "Script");
+        Assert.Contains(g, d => d.Name == "tweak.ini");
+
+        using var t = new TestEnv();
+        t.Write("bin/x64/plugins/cyber_engine_tweaks/mods/AppearanceCreatorMod/ArchiveScans/pending.lock", "");
+        var s = t.C.Scan();
+        Assert.Empty(s.Detected);
+        Assert.Empty(s.Unmanaged);
+    }
+
+    [Fact]
     public void Address_library_database_written_by_the_game_is_not_a_manual_mod()
     {
         using var t = new TestEnv();
