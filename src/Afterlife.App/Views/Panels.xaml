@@ -1,0 +1,600 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Afterlife.App.Controls"
+                    xmlns:vm="clr-namespace:Afterlife.App.ViewModels"
+                    xmlns:fx="clr-namespace:Afterlife.App.Controls">
+    <!-- The larger panels: Scan manual mods (inbox), Settings, Guide. -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Blocks.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <DataTemplate DataType="{x:Type vm:InboxVm}">
+        <StackPanel Width="780">
+            <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource T2}" Text="{Binding Hint}" TextWrapping="Wrap" />
+            <!-- folder sweep -->
+            <c:CutBorder Margin="0,12,0,0" Background="{StaticResource Bg}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource C}" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="12,8">
+                <Grid>
+                    <StackPanel>
+                        <fx:FolderScan Folders="{Binding Folders}" Active="{Binding IsScanning}" Running="{Binding IsScanning}" />
+                        <TextBlock Margin="0,6,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource C}" Text="{Binding ScanLine}" />
+                    </StackPanel>
+                </Grid>
+            </c:CutBorder>
+            <Grid Margin="0,12,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource Mono}" VerticalAlignment="Center" Text="{Binding Summary}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Style="{StaticResource LinkButton}" Command="{Binding SelectAllCommand}" Content="Select all mods" Margin="0,0,16,0" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource AccentButton}" Command="{Binding RescanCommand}" Margin="0,0,10,0" IsEnabled="{Binding IsScanning, Converter={StaticResource Not}}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="7" Height="7" Stroke="{StaticResource C}" StrokeThickness="1.5" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="RESCAN" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource DangerButton}" Command="{Binding RemoveSelectedCommand}" Content="REMOVE SELECTED FROM GAME" />
+                </StackPanel>
+            </Grid>
+            <TextBlock Margin="0,6,0,0" Style="{StaticResource Body}" Foreground="{StaticResource G}" Text="Clean. Every file in the mod folders is managed by AFTERLIFE."
+                       Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+            <ScrollViewer MaxHeight="430" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsEmpty, Converter={StaticResource InverseBoolToVis}}">
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:DetectedGroupVm}">
+                            <Border Margin="0,0,6,6" Padding="12,8" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Style="{StaticResource PlainCheck}" VerticalAlignment="Center" IsChecked="{Binding IsChecked}"
+                                                  IsEnabled="{Binding Removable}" AutomationProperties.Name="{Binding Name}" />
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource T}" />
+                                            <Border Style="{StaticResource TagBorder}" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource TagText}" Text="{Binding KindLabel}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" Margin="12,0" Style="{StaticResource Mono}" Foreground="{StaticResource T2}" VerticalAlignment="Center" Text="{Binding Summary}" />
+                                        <ToggleButton Grid.Column="3" IsChecked="{Binding ShowFiles}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}" Content="files">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <TextBlock x:Name="T" Text="Show files" Foreground="{StaticResource C}" FontSize="12" VerticalAlignment="Center" />
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="T" Property="Text" Value="Hide files" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                    </Grid>
+                                    <TextBlock Margin="30,4,0,0" Style="{StaticResource Meta}" FontSize="11.5" Foreground="{StaticResource O}" Text="{Binding Note}"
+                                               Visibility="{Binding Note, Converter={StaticResource NullToVis}}" />
+                                    <ItemsControl Margin="30,6,0,0" ItemsSource="{Binding Files}" Visibility="{Binding ShowFiles, Converter={StaticResource BoolToVis}}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:LineVm}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Text="{Binding Left}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Left}" />
+                                                    <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource T2}" Text="{Binding Right}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <StackPanel Visibility="{Binding HasRemoved, Converter={StaticResource BoolToVis}}">
+                <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Text="{Binding Removed.Count, StringFormat='REMOVED EARLIER · KEPT IN THE LIBRARY · {0}'}" />
+                <!-- the list scrolls instead of being cut off -->
+                <ScrollViewer MaxHeight="190" VerticalScrollBarVisibility="Auto" Focusable="False">
+                <ItemsControl ItemsSource="{Binding Removed}" Margin="0,0,6,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:RemovedBatchVm}">
+                            <Grid Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock VerticalAlignment="Center" Style="{StaticResource Body}">
+                                    <Run Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="   " /><Run Text="{Binding Detail, Mode=OneWay}" Foreground="{StaticResource T2}" FontSize="12" />
+                                </TextBlock>
+                                <Button Grid.Column="1" Style="{StaticResource AccentButton}" Command="{Binding Restore}" Content="RESTORE" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:SettingsVm}">
+        <ScrollViewer MaxHeight="640" VerticalScrollBarVisibility="Auto" Focusable="False">
+        <StackPanel Width="680" Margin="0,0,8,0">
+            <Border Margin="0,0,0,12" Padding="12,8" BorderThickness="1" BorderBrush="{Binding MessageTone, Converter={StaticResource ToneBrush}}"
+                    Background="{Binding MessageTone, Converter={StaticResource ToneTint}}" Visibility="{Binding Message, Converter={StaticResource NullToVis}}">
+                <TextBlock Style="{StaticResource Body}" FontSize="12.5" Text="{Binding Message}" TextWrapping="Wrap" />
+            </Border>
+
+            <!-- GAME -->
+            <c:CutBorder Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource Y}" CutTopLeft="True" CutTopRight="False" Cut="8" Padding="14,10">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource Y}" Text="01 · GAME" />
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Mono}" FontSize="12.5" Text="{Binding GameFolder}" TextTrimming="CharacterEllipsis" ToolTip="{Binding GameFolder}" />
+                            <TextBlock Style="{StaticResource Meta}" Text="{Binding GameVersion}" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenGameCommand}" Content="Open in Explorer" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Margin="14,0,0,0" Style="{StaticResource AccentButton}" Command="{Binding ChangeGameCommand}" Content="CHANGE…" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                    </Grid>
+                    <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding GameFolderHint}" TextWrapping="Wrap" />
+                </StackPanel>
+            </c:CutBorder>
+
+            <!-- LIBRARY -->
+            <c:CutBorder Margin="0,10,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource C}" CutTopLeft="True" CutTopRight="False" Cut="8" Padding="14,10">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" Text="02 · LIBRARY" />
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource Mono}" FontSize="12.5" VerticalAlignment="Center" Text="{Binding Library}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Library}" />
+                        <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenLibraryCommand}" Content="Open in Explorer" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Margin="14,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenScanCommand}" Content="Removed mods…" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </c:CutBorder>
+
+            <!-- NEXUS -->
+            <c:CutBorder Margin="0,10,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource M}" CutTopLeft="True" CutTopRight="False" Cut="8" Padding="14,10">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Style="{StaticResource MonoLabel}" Foreground="{StaticResource M}" Text="03 · NEXUS MODS" />
+                        <Border HorizontalAlignment="Right" BorderThickness="1" Padding="7,1" BorderBrush="{Binding NexusTone, Converter={StaticResource ToneBrush}}"
+                                Visibility="{Binding NexusTier, Converter={StaticResource NullToVis}}">
+                            <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Text="{Binding NexusTier}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding NexusHint}" TextWrapping="Wrap" />
+                    <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}" Command="{Binding LoginNexusCommand}" Content="LOG IN WITH NEXUS MODS"
+                            Visibility="{Binding SsoAvailable, Converter={StaticResource BoolToVis}}" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <TextBox x:Name="NexusKeyBox" Style="{StaticResource DarkTextBox}" Text="{Binding NexusKeyInput, UpdateSourceTrigger=PropertyChanged}" FontFamily="{StaticResource MonoFont}"
+                                     AutomationProperties.Name="Nexus Mods API key" />
+                            <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Meta}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Setter Property="Text" Value="Paste your personal API key" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=NexusKeyBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HasNexusKey}" Value="True">
+                                                <Setter Property="Text" Value="Key saved · paste a new one to replace it" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource PrimaryButton}" Command="{Binding SaveKeyCommand}" Content="SAVE KEY" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                    </Grid>
+                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Body}" FontSize="12.5" Text="{Binding NexusStatus}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" TextWrapping="Wrap" />
+                    <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                        <Button Style="{StaticResource LinkButton}" Command="{Binding OpenKeyPageCommand}" Content="Get my API key on nexusmods.com ↗" />
+                        <Button Margin="16,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding CheckKeyCommand}" Content="Check again" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
+                        <Button Margin="16,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding ForgetKeyCommand}" Content="Remove key" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                    <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding NxmHandler}" Content="Open Mod Manager Download links in AFTERLIFE (nxm://)" />
+                    <TextBlock Margin="28,2,0,0" Style="{StaticResource Meta}" Text="{Binding NxmHint}" TextWrapping="Wrap" />
+                </StackPanel>
+            </c:CutBorder>
+
+            <!-- STORAGE -->
+            <c:CutBorder Margin="0,10,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource M}" CutTopLeft="True" CutTopRight="False" Cut="8" Padding="14,10">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MonoLabel}" Text="04 · KEPT FILES" />
+                    <TextBlock Margin="0,6,0,8" Style="{StaticResource Meta}" TextWrapping="Wrap"
+                               Text="Copies AFTERLIFE keeps so you can undo. Deleting them frees space; the game, the mods in the library and the profiles stay." />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="26" />
+                            <RowDefinition Height="26" />
+                            <RowDefinition Height="26" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Removed files (undo)" />
+                        <TextBlock Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" VerticalAlignment="Center" Text="{Binding RemovedSize}" />
+                        <Button Grid.Column="2" Style="{StaticResource QuietLinkButton}" FontSize="12" Content="Delete" Command="{Binding PurgeRemovedCommand}" IsEnabled="{Binding HasRemoved}" />
+                        <TextBlock Grid.Row="1" Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Downloaded archives" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" VerticalAlignment="Center" Text="{Binding DownloadSize}" />
+                        <Button Grid.Row="1" Grid.Column="2" Style="{StaticResource QuietLinkButton}" FontSize="12" Content="Delete" Command="{Binding PurgeDownloadsCommand}" IsEnabled="{Binding HasDownloads}" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Temporary files" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" VerticalAlignment="Center" Text="{Binding TempSize}" />
+                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource QuietLinkButton}" FontSize="12" Content="Delete" Command="{Binding PurgeTempCommand}" IsEnabled="{Binding HasTemp}" />
+                    </Grid>
+                    <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource DangerButton}" Command="{Binding PurgeAllCommand}" Content="DELETE ALL KEPT FILES" />
+                </StackPanel>
+            </c:CutBorder>
+
+            <!-- DISPLAY -->
+            <c:CutBorder Margin="0,10,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" AccentBrush="{StaticResource T3}" CutTopLeft="True" CutTopRight="False" Cut="8" Padding="14,10">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource MonoLabel}" Text="05 · DISPLAY · DIAGNOSTICS" />
+                    <CheckBox Margin="0,8,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ReduceMotion}" Content="Reduce motion (stops the background, glitches, scans and breach animation)" />
+                    <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ActivityLog}" Content="Log what AFTERLIFE does (for finding problems; one file per day in the log folder)"
+                              ToolTip="{Binding ActivityLogHint}" />
+                    <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <Button Style="{StaticResource LinkButton}" Command="{Binding OpenLogsCommand}" Content="Open log folder" />
+                        <Button Margin="16,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding CopyDiagnosticsCommand}" Content="Copy diagnostics"
+                                ToolTip="Mod list, versions and the last errors, without your key or paths, for a bug report" />
+                        <Button Margin="16,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding RemoveFromPcCommand}" Content="Remove AFTERLIFE from this PC…" />
+                    </StackPanel>
+                </StackPanel>
+            </c:CutBorder>
+        </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- visual guide; the short part first, everything on request -->
+    <DataTemplate DataType="{x:Type vm:GuideVm}">
+        <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto" Focusable="False">
+        <StackPanel Width="680" Margin="0,0,10,0">
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="THE LIST" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="IN PROFILE" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The switch: the mod is on in the selected profile. Nothing reaches the game before APPLY CHANGES." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="DEPLOYED" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The mod is really in the game folder right now." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <Path Fill="{StaticResource T3}" Width="6" Height="10" HorizontalAlignment="Left" Data="M0,0 H2 V2 H0 Z M4,0 H6 V2 H4 Z M0,4 H2 V6 H0 Z M4,4 H6 V6 H4 Z M0,8 H2 V10 H0 Z M4,8 H6 V10 H4 Z" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag a row into another category, or a whole block by its icon to change the load order. Inside MODS and categories mods are sorted by name; higher blocks load first and win file conflicts." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECKBOXES" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Select mods for bulk actions; the checkbox in a block or category header selects all of it. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
+            </Grid>
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="BLOCKS" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="24" Height="24" VerticalAlignment="Center">
+                            <c:CutBorder Background="{StaticResource YTint}" BorderBrush="{StaticResource Y}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                            <Path Data="M4.5,4.5 H11.5 V11.5 H4.5 Z M6.5,6.5 H9.5 V9.5 H6.5 Z M6.5,1 V4.5 M9.5,1 V4.5 M6.5,11.5 V15 M9.5,11.5 V15 M1,6.5 H4.5 M1,9.5 H4.5 M11.5,6.5 H15 M11.5,9.5 H15" Stroke="{StaticResource Y}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Path Fill="{StaticResource Y}" Width="7" Height="8" Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-3,-3"
+                                  Data="M1,4.2 H9 V10 H1 Z M2.3,4.2 V3 A2.7,2.7 0 0 1 7.7,3 V4.2 H6.4 V3 A1.4,1.4 0 0 0 3.6,3 V4.2 Z" />
+                        </Grid>
+                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource Y}" Text="CORE MODS" />
+                    </StackPanel>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Frameworks (CET, RED4ext, redscript …). Always on top, always load first, cannot be moved (the lock)." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="24" Height="24" VerticalAlignment="Center">
+                            <c:CutBorder Background="{StaticResource CTint}" BorderBrush="{StaticResource C}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                            <Path Data="M8,1.5 L14.5,5 L8,8.5 L1.5,5 Z M1.5,8 L8,11.5 L14.5,8 M1.5,11 L8,14.5 L14.5,11" Stroke="{StaticResource C}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource C}" Text="COLLECTION" />
+                    </StackPanel>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Mods of a Nexus collection; MANAGE for its order, lock and downloads." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="24" Height="24" VerticalAlignment="Center">
+                            <c:CutBorder Background="{StaticResource TagTextTint}" BorderBrush="{StaticResource TagText}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                            <Path Data="M8,1.5 L14.5,4.8 V11.2 L8,14.5 L1.5,11.2 V4.8 Z M1.5,4.8 L8,8.1 L14.5,4.8 M8,8.1 V14.5" Stroke="{StaticResource TagText}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource TagText}" Text="MODS" />
+                    </StackPanel>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Your other mods. + CATEGORY splits them into categories." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="24" Height="24" VerticalAlignment="Center">
+                            <c:CutBorder Background="{StaticResource VTint}" BorderBrush="{StaticResource V}" Cut="6" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" />
+                            <Path Data="M3.5,1.5 H12.5 V14.5 L8,10.8 L3.5,14.5 Z M6,5 H10" Stroke="{StaticResource V}" StrokeThickness="1.4" StrokeLineJoin="Round" Width="10" Height="11" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{StaticResource V}" Text="CATEGORY" />
+                    </StackPanel>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="A category inside MODS: a smaller violet divider with its own switch, Rename and Remove." />
+            </Grid>
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="MARKS" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <c:CutBorder Background="{StaticResource CTint}" BorderBrush="{StaticResource C}" Cut="5" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="6,1,7,1" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Fill="{StaticResource C}" Width="10" Height="10" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" Data="M5,0 L10,5.6 L6.7,5.6 L6.7,10 L3.3,10 L3.3,5.6 L0,5.6 Z" />
+                            <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource C}" Text="2" />
+                        </StackPanel>
+                    </c:CutBorder>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Newer version on Nexus. Click the mark in a block header to show the first such mod. UPDATE replaces the old version, applies and deletes the old one." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <c:CutBorder Background="{StaticResource OTint}" BorderBrush="{StaticResource O}" Cut="5" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="6,1,7,1" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Fill="{StaticResource O}" Width="11" Height="10" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" Data="F0 M5.5,0 L11,10 L0,10 Z M4.8,3.4 L6.2,3.4 L6.0,6.9 L5.0,6.9 Z M4.8,7.8 L6.2,7.8 L6.2,9.1 L4.8,9.1 Z" />
+                            <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource O}" Text="1" />
+                        </StackPanel>
+                    </c:CutBorder>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="File conflict: another mod replaces some of its files." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <c:CutBorder Background="{StaticResource MTint}" BorderBrush="{StaticResource M}" Cut="5" CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="6,1,7,1" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Fill="{StaticResource M}" Width="9" Height="9" Stretch="Uniform" Margin="0,0,5,0" VerticalAlignment="Center" Data="M1.4,0 L5,3.6 L8.6,0 L10,1.4 L6.4,5 L10,8.6 L8.6,10 L5,6.4 L1.4,10 L0,8.6 L3.6,5 L0,1.4 Z" />
+                            <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource M}" Text="1" />
+                        </StackPanel>
+                    </c:CutBorder>
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Missing something it needs (a core mod or another mod)." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource O}" Text="2 VERSIONS ON" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Two versions of one mod are on in this profile; usually switch one off." />
+            </Grid>
+            <StackPanel Visibility="{Binding ShowAll, Converter={StaticResource BoolToVis}}">
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="LOAD ORDER" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="BLOCKS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="CORE MODS first, then the blocks in the order you see. Drag a block by its icon or use the small arrows next to it; the block keeps its inner order." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="INSIDE MODS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Mods without a category load first, then the categories from top to bottom. Putting a mod into a category moves it in the load order too; AFTERLIFE tells you when a conflicting file gets another winner." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="COLLECTIONS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Their mods stay inside the collection. A locked collection keeps the curator's order; unlock it in MANAGE to drag." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="RESET ORDER" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Back to the game's alphabetical order." />
+            </Grid>
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="SELECTING AND MOVING" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CTRL / SHIFT" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+click adds one mod to the selection, Shift+click a range, Ctrl+A all visible mods." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="GROUP" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag one of the checked mods to move all of them together, or use MOVE TO CATEGORY in the bar below the list. After the move the mods are unchecked." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="HEADERS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drop mods on a MODS or category header to put them at its end. Removing a category never deletes mods." />
+            </Grid>
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="VERSIONS AND DUPLICATES" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="NEW VERSION" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="A newer download replaces the old version in the profile. For a mod in a collection you choose: into the collection (old one off), replace (old one deleted) or keep it outside." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="TWO VERSIONS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Switching on another version of a mod that is on offers to switch the other one off; Keep both is for optional files from the same Nexus page." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="DUPLICATES" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The same files are never imported twice: the mod already in the library is used. Older duplicates are found after start and merged with MERGE." />
+            </Grid>
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="RENAMING" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="DOUBLE-CLICK" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="On a mod, profile or category name to rename it. Profiles also have Rename next to Delete profile; Mods off keeps its name." />
+            </Grid>
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="APPLY AND TOOLS" />
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="PREVIEW" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="What APPLY CHANGES will copy, remove or reorder in the game; Apply also lists two versions of one mod." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECK UPDATES" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Asks Nexus Mods for newer versions (needs your Nexus key). UPDATE ALL downloads directly with Nexus Premium; other accounts get the download pages one after another." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="EXPORT LIST" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Active mods with versions, handy when you look for a problem mod." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="KEYS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A select all · Esc closes a panel." />
+            </Grid>
+            </StackPanel>
+            <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource SmallAccentButton}" Command="{Binding ToggleAllCommand}" Content="{Binding ToggleLabel}" />
+        </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+</ResourceDictionary>
