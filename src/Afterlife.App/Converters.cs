@@ -26,7 +26,7 @@ public sealed class InverseBool : IValueConverter
 
 public sealed class NullToVisibility : IValueConverter
 {
-    /// <summary>ConverterParameter "invert": visible only when the value is empty (P97: lock of CORE MODS).</summary>
+    /// <summary>ConverterParameter "invert": visible only when the value is empty (lock of CORE MODS).</summary>
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         (value is null || (value is string s && s.Length == 0)) != (parameter as string == "invert") ? Visibility.Collapsed : Visibility.Visible;
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
@@ -59,7 +59,7 @@ public sealed class ToneToBrush : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
-/// <summary>P51: chapter headers of collections get a manage button.</summary>
+/// <summary>Chapter headers of collections get a manage button.</summary>
 public sealed class CollectionChapterToVisibility : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
@@ -68,7 +68,7 @@ public sealed class CollectionChapterToVisibility : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
-/// <summary>P68: chapter name → its collection header view model.</summary>
+/// <summary>Chapter name → its collection header view model.</summary>
 public sealed class ChapterLookupConverter : IMultiValueConverter
 {
     public object? Convert(object[] values, Type targetType, object? parameter, CultureInfo culture) =>

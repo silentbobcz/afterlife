@@ -18,7 +18,7 @@ public sealed record ImportAnalysis(
 {
     /// <summary>Rejected only because a framework contract is unverified; an explicit test import is possible.</summary>
     public bool UnverifiedFrameworkOnly { get; init; }
-    /// <summary>R3: archive path of fomod/ModuleConfig.xml when the mod has an installer with options.</summary>
+    /// <summary>Archive path of fomod/ModuleConfig.xml when the mod has an installer with options.</summary>
     public string? FomodConfigPath { get; init; }
 }
 
@@ -29,7 +29,7 @@ public sealed record ImportLimits(int MaxFiles = 20_000, long MaxTotalBytes = 8L
 
 public sealed record ImportOptions(string? ForcedRoot = null, bool AllowUnverifiedFrameworks = false)
 {
-    /// <summary>R3: files chosen in the FOMOD installer (relative to the folder that contains fomod/).</summary>
+    /// <summary>Files chosen in the FOMOD installer (relative to the folder that contains fomod/).</summary>
     public IReadOnlyList<FomodFile>? FomodFiles { get; init; }
 }
 
@@ -85,7 +85,7 @@ public static class ImportAnalyzer
             var config = parsed.Where(x => x.Path.Key.EndsWith("FOMOD/MODULECONFIG.XML", StringComparison.Ordinal)).OrderBy(x => x.Path.Value.Length).First();
             if (options.FomodFiles is null)
                 return new ImportAnalysis(ImportStatus.NeedsFomod, [], [], [], ["the mod has an installer with options"], warnings, [], []) { FomodConfigPath = config.Entry.RawPath };
-            // R3: the chosen files become the archive content, at their game paths
+            // the chosen files become the archive content, at their game paths
             var mappedFomod = Fomod.Map(parsed.Select(x => x.Entry.RawPath), Fomod.RootOf(config.Path.Value), options.FomodFiles);
             if (mappedFomod.Count == 0) return Reject("the chosen installer options contain no files");
             var byRaw = parsed.ToDictionary(x => x.Entry.RawPath, x => x.Entry, StringComparer.Ordinal);
@@ -129,7 +129,7 @@ public static class ImportAnalyzer
             var candidates = RootCandidates(parsed.Where(x => !IsRedmodPath(x.Path)).Select(x => x.Path));
             if (hasRedmod)
             {
-                // R2: REDmods are supported: mods/<Name>/… goes to the game as is; legacy folders next to it too
+                // REDmods are supported: mods/<Name>/… goes to the game as is; legacy folders next to it too
                 var redRoots = parsed.Where(x => IsRedmodInfo(x.Path)).Select(x => RedmodPrefix(x.Path)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
                 if (redRoots.Count > 1)
                     return new ImportAnalysis(ImportStatus.NeedsChoice, [], [], redRoots.Order(StringComparer.Ordinal).ToList(),
@@ -216,7 +216,7 @@ public static class ImportAnalyzer
             var contract = FrameworkCatalog.Find(cap)!;
             if (!contract.ManagedInMvp)
                 return Reject($"AFTERLIFE cannot install {Capabilities.DisplayName(cap)} yet; install it by hand");
-            // P36: frameworks install like any other mod; their own runtime files are tidied up when switched off (P37)
+            // frameworks install like any other mod; their own runtime files are tidied up when switched off
         }
         var reqs = FrameworkCatalog.InferRequirements(targets, provides);
         if (targets.Any(t => t.Extension == ".archive"))

@@ -38,7 +38,7 @@ public sealed partial class FirstRunVm : OverlayVm
     [ObservableProperty] private bool _busy;
 
     [ObservableProperty] private string? _libraryNote;
-    /// <summary>P33: optional personal Nexus Mods API key, asked together with the folders.</summary>
+    /// <summary>Optional personal Nexus Mods API key, asked together with the folders.</summary>
     [ObservableProperty] private string _nexusKey = "";
     public string NexusHint => "Optional. Your personal key from nexusmods.com (Settings → API Keys) lets AFTERLIFE download mods, read their descriptions and requirements. You can add it later in Settings.";
     [RelayCommand] private void OpenKeyPage() => AppLinks.Open(NexusClient.KeyPage);
@@ -56,7 +56,7 @@ public sealed partial class FirstRunVm : OverlayVm
         Validate();
     }
 
-    /// <summary>P2: library next to AFTERLIFE.exe when that place is usable, otherwise %LOCALAPPDATA%.</summary>
+    /// <summary>Library next to AFTERLIFE.exe when that place is usable, otherwise %LOCALAPPDATA%.</summary>
     private void SuggestLibrary()
     {
         _suggesting = true;
@@ -113,7 +113,7 @@ public sealed partial class FirstRunVm : OverlayVm
 
     private static string? DetectGame()
     {
-        // Simple check of the default store locations; full detection (Steam libraries, GOG, Epic) is milestone M5.
+        // Simple check of the default store locations; full detection (Steam libraries, GOG, Epic) is milestone.
         var candidates = new List<string>();
         foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.IsReady).Select(d => d.RootDirectory.FullName))
         {
@@ -174,7 +174,7 @@ public sealed partial class ConfirmVm : OverlayVm
         LinesTitle = linesTitle;
         OptionLabel = optionLabel;
         _optionChecked = optionChecked;
-        // Escape: with a third button it means "leave everything as it is" (P121), otherwise the second button.
+        // Escape: with a third button it means "leave everything as it is", otherwise the second button.
         CloseCommand = new RelayCommand(() => { if (AbortLabel is not null) Aborted = true; _tcs.TrySetResult(false); });
     }
 
@@ -182,20 +182,20 @@ public sealed partial class ConfirmVm : OverlayVm
     public override string Title => TitleText;
     public string Message { get; }
     public string ConfirmLabel { get; }
-    /// <summary>P121: optional third button that changes nothing (the other two both do something). Sets <see cref="Aborted"/>.</summary>
+    /// <summary>Optional third button that changes nothing (the other two both do something). Sets <see cref="Aborted"/>.</summary>
     public string? AbortLabel { get; init; }
     public bool HasAbort => AbortLabel is not null;
     public bool Aborted { get; private set; }
     public bool Danger { get; }
-    /// <summary>One item per line (P18/P21): what exactly will happen.</summary>
+    /// <summary>One item per line: what exactly will happen.</summary>
     public IReadOnlyList<string> Lines { get; }
     public string? LinesTitle { get; }
     public bool HasLines => Lines.Count > 0;
-    /// <summary>Optional checkbox, for example "also switch off the mods that need it" (P15).</summary>
+    /// <summary>Optional checkbox, for example "also switch off the mods that need it".</summary>
     public string? OptionLabel { get; }
     [ObservableProperty] private bool _optionChecked;
     public Task<bool> Result => _tcs.Task;
-    /// <summary>P98/P99: the second button can say what it does ("Keep both", "Not now").</summary>
+    /// <summary>The second button can say what it does ("Keep both", "Not now").</summary>
     public string CancelLabel { get; init; } = "Cancel";
 
     [RelayCommand] private void Confirm() => _tcs.TrySetResult(true);
@@ -220,7 +220,7 @@ public sealed partial class TextPromptVm : OverlayVm
     public Task<string?> Result => _tcs.Task;
     public string ConfirmLabel { get; init; } = "CREATE";
     public int MaxLength { get; init; } = 40;
-    /// <summary>P76: an empty answer is allowed (rename: back to the original name).</summary>
+    /// <summary>An empty answer is allowed (rename: back to the original name).</summary>
     public bool AllowEmpty { get; init; }
 
     [ObservableProperty]
@@ -255,7 +255,7 @@ public sealed partial class DecisionsVm : OverlayVm
 {
     private readonly TaskCompletionSource<IReadOnlyList<DecisionItemVm>?> _tcs = new();
 
-    /// <summary>P62: one choice per mod, not per file.</summary>
+    /// <summary>One choice per mod, not per file.</summary>
     public DecisionsVm(IEnumerable<(string Path, string Mod)> files) =>
         Groups = files.GroupBy(f => f.Mod).OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
             .Select(g => new DecisionGroupVm(g.Key, g.Select(f => f.Path).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList())).ToList();
@@ -370,8 +370,8 @@ public sealed record RemovedBatchVm(RemovedBatch Batch, ICommand Restore)
 }
 
 /// <summary>
-/// P6/P16: "Scan manual mods" — mods found in the game that AFTERLIFE did not install, grouped; rescan with the
-/// NETDECK network scan, reversible removal (core mods too, P15), restore.
+/// "Scan manual mods" — mods found in the game that AFTERLIFE did not install, grouped; rescan with the
+/// NETDECK network scan, reversible removal (core mods too), restore.
 /// </summary>
 public sealed partial class InboxVm : OverlayVm
 {
@@ -422,7 +422,7 @@ public sealed partial class InboxVm : OverlayVm
         IsScanning = true;
         try
         {
-            // P74: reading the folders and rebuilding the list can hold the window for a moment, which froze the sweep
+            // reading the folders and rebuilding the list can hold the window for a moment, which froze the sweep
             // half way; so read first, then play one whole sweep over the fresh counts and end with the result
             ScanLine = "> reading the game folders …";
             await _main.RescanAsync();
@@ -475,7 +475,7 @@ public sealed record SettingsActions(
     Action CopyDiagnostics,
     Func<SettingsVm, Task> RemoveFromPc);
 
-/// <summary>P26: game, library, Nexus Mods (P24), display, diagnostics.</summary>
+/// <summary>Game, library, Nexus Mods, display, diagnostics.</summary>
 public sealed partial class SettingsVm : OverlayVm
 {
     private readonly SettingsActions _a;
@@ -522,7 +522,6 @@ public sealed partial class SettingsVm : OverlayVm
 
     partial void OnReduceMotionChanged(bool value) => _a.SetReduceMotion(value);
 
-    /// <summary>P113</summary>
     partial void OnActivityLogChanged(bool value) => _a.SetActivityLog(value);
     public string ActivityLogHint => "Writes what AFTERLIFE does (switches, imports, every planned file change with its reason, results) into the log folder, one file per day. Switch it on when something looks wrong, then send the file with your report.";
 
@@ -591,7 +590,7 @@ public sealed partial class SettingsVm : OverlayVm
         NexusTone = Tone.Neutral;
     }
 
-    // ---------------- storage (P57) ----------------
+    // ---------------- storage ----------------
     [ObservableProperty] private string _removedSize = "…";
     [ObservableProperty] private string _downloadSize = "…";
     [ObservableProperty] private string _tempSize = "…";
@@ -641,7 +640,7 @@ public sealed partial class ProfileChoiceVm : ObservableObject
     [ObservableProperty] private bool _isChecked;
 }
 
-/// <summary>P11: choose profiles for several mods at once.</summary>
+/// <summary>Choose profiles for several mods at once.</summary>
 public sealed partial class ProfilePickerVm : OverlayVm
 {
     private readonly TaskCompletionSource<IReadOnlyList<string>?> _tcs = new();
@@ -673,7 +672,7 @@ public sealed partial class PlanPreviewVm : OverlayVm
             s.Kind == StepKind.Remove ? Tone.Warn : Tone.Info)).ToList();
         Issues = r.EnvironmentIssues.Concat(r.Plan.Blockers).Concat(r.Plan.Warnings)
             .Select(i => new LineVm(i.Message, i.Path ?? "", i.Severity == Severity.Blocking ? Tone.Block : Tone.Warn)).ToList();
-        // P114: the same plan by mod, with the reason, so a long remove list can be checked at a glance
+        // the same plan by mod, with the reason, so a long remove list can be checked at a glance
         Groups = OverviewBuilder.GroupPlan(r, nameOf)
             .Select(g => new LineVm($"{g.Name}   {g.Counts}", g.Why, g.Why.StartsWith("held back", StringComparison.Ordinal) ? Tone.Warn : g.Remove > 0 && g.Add == 0 ? Tone.Warn : Tone.Info)).ToList();
     }
@@ -684,7 +683,7 @@ public sealed partial class PlanPreviewVm : OverlayVm
     public string SavesHint => "Saves made with a mod may not load without it. Switching profiles never touches your saves.";
     public IReadOnlyList<LineVm> Steps { get; }
     public IReadOnlyList<LineVm> Issues { get; }
-    /// <summary>P114: by mod: counts and why.</summary>
+    /// <summary>By mod: counts and why.</summary>
     public IReadOnlyList<LineVm> Groups { get; }
     public bool HasGroups => Groups.Count > 0;
     [ObservableProperty] private bool _byFile;
@@ -746,12 +745,12 @@ public static class Licenses
 }
 
 
-/// <summary>P48: mods downloaded from Nexus Mods through AFTERLIFE, plus a link to the full history on the website.</summary>
+/// <summary>Mods downloaded from Nexus Mods through AFTERLIFE, plus a link to the full history on the website.</summary>
 public sealed partial class DownloadsVm(IReadOnlyList<DownloadVm> items) : OverlayVm
 {
     public override string Title => "DOWNLOAD HISTORY";
     public IReadOnlyList<DownloadVm> All { get; } = items;
-    /// <summary>P77: filtered by the search box (mod name and file).</summary>
+    /// <summary>Filtered by the search box (mod name and file).</summary>
     public IReadOnlyList<DownloadVm> Items => string.IsNullOrWhiteSpace(Search) ? All
         : All.Where(i => i.Name.Contains(Search.Trim(), StringComparison.OrdinalIgnoreCase) || i.Detail.Contains(Search.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
     [ObservableProperty, NotifyPropertyChangedFor(nameof(Items), nameof(NoMatch))] private string _search = "";
@@ -771,7 +770,7 @@ public sealed record DownloadVm(string Name, string Detail, string Status, Tone 
 }
 
 
-/// <summary>P52: the list of active mods with versions, to copy or save when looking for a problem mod.</summary>
+/// <summary>The list of active mods with versions, to copy or save when looking for a problem mod.</summary>
 public sealed partial class ExportVm : OverlayVm
 {
     private readonly Func<ExportScope, bool, string> _text;
@@ -812,7 +811,7 @@ public sealed partial class ExportVm : OverlayVm
     }
 }
 
-/// <summary>R3: the mod's own installer (FOMOD), step by step, in AFTERLIFE's look. Returns the choices or null.</summary>
+/// <summary>The mod's own installer (FOMOD), step by step, in AFTERLIFE's look. Returns the choices or null.</summary>
 public sealed partial class FomodVm : OverlayVm
 {
     private readonly TaskCompletionSource<IReadOnlyList<FomodChoice>?> _tcs = new();
@@ -998,7 +997,7 @@ public sealed partial class FomodOptionVm(FomodVm owner, string step, FomodGroup
     [RelayCommand] private void Hover() => owner.Show(plugin);
 }
 
-/// <summary>P51: what a collection contains compared with the library, before it is added.</summary>
+/// <summary>What a collection contains compared with the library, before it is added.</summary>
 public sealed partial class CollectionPreviewVm : OverlayVm
 {
     private readonly TaskCompletionSource<bool> _tcs = new();
@@ -1067,7 +1066,7 @@ public sealed partial class CollectionItemVm(CollectionItemState s, bool optiona
     public ICommand Open => new RelayCommand(() => { if (s.Item.PageUrl is { } u) AppLinks.Open(u); });
 }
 
-/// <summary>P51: one collection in the library: progress, update, order, instructions, remove.</summary>
+/// <summary>One collection in the library: progress, update, order, instructions, remove.</summary>
 public sealed partial class ManageCollectionVm : OverlayVm
 {
     public ManageCollectionVm(CollectionRecord r, IReadOnlyList<CollectionItemState> states, MainViewModel main)
@@ -1088,13 +1087,13 @@ public sealed partial class ManageCollectionVm : OverlayVm
     }
 
     public CollectionRecord Record { get; }
-    /// <summary>P69: the running (or paused) download of this collection, if any.</summary>
+    /// <summary>The running (or paused) download of this collection, if any.</summary>
     public CollectionProgressVm? Progress { get; init; }
     public bool HasProgress => Progress is not null;
     public bool ShowContinue => HasMissing && Progress is null;
     public override string Title => "COLLECTION · " + Record.Name.ToUpperInvariant();
     private readonly string _headerBase, _headerTail, _inLibrary;
-    /// <summary>P79: while downloading, the count is in the progress block (it stays current there).</summary>
+    /// <summary>While downloading, the count is in the progress block (it stays current there).</summary>
     public string Header => _headerBase + (Progress is null ? $" · {_inLibrary} in library" : "") + _headerTail;
     public string? Instructions => string.IsNullOrWhiteSpace(Record.Revision.Instructions) ? null : Record.Revision.Instructions;
     public bool HasInstructions => Instructions is not null;
@@ -1112,7 +1111,7 @@ public sealed partial class ManageCollectionVm : OverlayVm
     public ICommand OpenPageCommand { get; }
 }
 
-/// <summary>P69/P70: download of a collection, shown in its window: overall bar, current file bar, items, pause and resume.</summary>
+/// <summary>Download of a collection, shown in its window: overall bar, current file bar, items, pause and resume.</summary>
 public sealed partial class CollectionProgressVm : ObservableObject
 {
     public CollectionProgressVm(string slug, string name) { Slug = slug; Name = name; }
@@ -1135,7 +1134,7 @@ public sealed partial class CollectionProgressVm : ObservableObject
     public bool Hidden { get; set; }
 
     public double OverallPercent => Total == 0 ? 0 : Done * 100.0 / Total;
-    /// <summary>P79: the file in progress as one line: name, and the percent when AFTERLIFE downloads it itself (Premium).</summary>
+    /// <summary>The file in progress as one line: name, and the percent when AFTERLIFE downloads it itself (Premium).</summary>
     public string? CurrentLine => Current is null ? null : CurrentPercent > 0 && CurrentPercent < 100 ? $"> {Current} · {CurrentPercent:0} %" : $"> {Current}";
     partial void OnCurrentChanged(string? value) => OnPropertyChanged(nameof(CurrentLine));
     partial void OnCurrentPercentChanged(double value) => OnPropertyChanged(nameof(CurrentLine));
@@ -1159,7 +1158,7 @@ public sealed partial class CollectionProgressItemVm(string key, string name) : 
     [ObservableProperty] private Tone _tone = Tone.Neutral;
 }
 
-/// <summary>P95/P98: one of several options (category of the checked mods, what a new collection version does).</summary>
+/// <summary>One of several options (category of the checked mods, what a new collection version does).</summary>
 public sealed partial class ChoiceVm : OverlayVm
 {
     private readonly TaskCompletionSource<int?> _tcs = new();
@@ -1180,7 +1179,7 @@ public sealed partial class ChoiceVm : OverlayVm
     public string Message { get; }
     public IReadOnlyList<string> Options { get; }
     public string ConfirmLabel { get; }
-    /// <summary>Optional checkbox, for example "use this for all" (P98).</summary>
+    /// <summary>Optional checkbox, for example "use this for all".</summary>
     public string? OptionLabel { get; }
     [ObservableProperty] private bool _optionChecked;
     public Task<int?> Result => _tcs.Task;
@@ -1196,7 +1195,7 @@ public sealed partial class ChoiceVm : OverlayVm
     [RelayCommand] private void Cancel() => _tcs.TrySetResult(null);
 }
 
-/// <summary>P96: visual guide to the list; a short basic part, everything on request.</summary>
+/// <summary>Visual guide to the list; a short basic part, everything on request.</summary>
 public sealed partial class GuideVm : OverlayVm
 {
     public override string Title => "QUICK GUIDE";

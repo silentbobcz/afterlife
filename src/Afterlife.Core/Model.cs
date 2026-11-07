@@ -63,7 +63,7 @@ public sealed record PackageManifest(
     string? SourceMd5 = null,
     DateTimeOffset? ImportedAt = null)
 {
-    /// <summary>R3: options chosen in the mod's FOMOD installer (to reinstall or to replay a collection).</summary>
+    /// <summary>Options chosen in the mod's FOMOD installer (to reinstall or to replay a collection).</summary>
     public IReadOnlyList<FomodChoice>? FomodChoices { get; init; }
 }
 

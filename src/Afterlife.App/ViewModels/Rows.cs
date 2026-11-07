@@ -39,7 +39,7 @@ public sealed partial class ModRowVm : ObservableObject
 
     /// <summary>
     /// Takes over the state of a rebuilt overview so the row object (and with it the list's selection, checkbox
-    /// and scroll position) survives a refresh. Every bound property is re-read by the view afterwards.
+    /// And scroll position) survives a refresh. Every bound property is re-read by the view afterwards.
     /// </summary>
     public void Update(ModOverview o, bool editable)
     {
@@ -61,33 +61,33 @@ public sealed partial class ModRowVm : ObservableObject
 
     public ModOverview Overview { get; private set; }
     public string PackageId => Overview.Package.PackageId;
-    /// <summary>P23: core mods form their own chapter at the top of the list.</summary>
+    /// <summary>Core mods form their own chapter at the top of the list.</summary>
     public bool IsCore => Overview.IsCore;
-    /// <summary>P51: a collection is its own chapter, below CORE MODS.</summary>
-    /// <summary>P51/P95: group key in the list; set by the main view model from the block layout.</summary>
+    /// <summary>A collection is its own chapter, below CORE MODS.</summary>
+    /// <summary>Group key in the list; set by the main view model from the block layout.</summary>
     public string Chapter { get => _chapter; set => SetProperty(ref _chapter, value); }
     private string _chapter = "";
-    /// <summary>P97: layout section (block or category) the mod loads in; see <see cref="Afterlife.Core.BlockLayout"/>.</summary>
+    /// <summary>Layout section (block or category) the mod loads in; see <see cref="Afterlife.Core.BlockLayout"/>.</summary>
     public string Section { get; set; } = "";
-    /// <summary>P97: position of the section in the load order (core = -1).</summary>
+    /// <summary>Position of the section in the load order (core = -1).</summary>
     public int BlockRank { get; set; }
-    /// <summary>P95: in MODS or one of its categories (can move between them).</summary>
+    /// <summary>In MODS or one of its categories (can move between them).</summary>
     public bool InModsBlock => Chapter == MainViewModel.PlainChapter || Chapter.StartsWith(MainViewModel.CategoryChapterPrefix, StringComparison.Ordinal);
     public bool InCollection => !IsCore && Overview.Collections.Count > 0;
-    /// <summary>P22: selection for bulk actions is its own state; clicking a row only shows its details.</summary>
+    /// <summary>Selection for bulk actions is its own state; clicking a row only shows its details.</summary>
     [ObservableProperty] private bool _isChecked;
-    /// <summary>P25: drop marker while another row is dragged over this one (-1 above, 1 below).</summary>
+    /// <summary>Drop marker while another row is dragged over this one (-1 above, 1 below).</summary>
     [ObservableProperty] private int _dropHint;
     public bool CanDrag => CanToggle && !IsCore && Overview.Package.LayerOfModId is null && !Overview.OrderLocked;
     public string Name => Overview.Package.LayerOfModId is null ? Overview.Package.ModName : "└ " + Overview.Package.ModName;
-    /// <summary>P98: another version of this mod is on in the profile too.</summary>
+    /// <summary>Another version of this mod is on in the profile too.</summary>
     public string? TwinText { get => _twinText; set => SetProperty(ref _twinText, value); }
     private string? _twinText;
-    /// <summary>M4: newer version on Nexus.</summary>
+    /// <summary>Newer version on Nexus.</summary>
     public bool HasUpdate => Overview.Update is not null;
     public string? UpdateText => Overview.Update is { } u ? "UPDATE " + (u.Version is null ? "" : "v" + u.Version.TrimStart('v', 'V')) : null;
 
-    /// <summary>P49: a required mod is missing (files or Nexus page): name in the error colour and a short line.</summary>
+    /// <summary>A required mod is missing (files or Nexus page): name in the error colour and a short line.</summary>
     public bool HasMissing => Overview.Missing.Count > 0;
     public string? MissingText => Overview.Missing.Count == 0 ? null
         : "missing: " + string.Join(", ", Overview.Missing.Take(3)) + (Overview.Missing.Count > 3 ? $" +{Overview.Missing.Count - 3}" : "");
@@ -145,14 +145,14 @@ public sealed partial class ModRowVm : ObservableObject
 
 public sealed record RequirementVm(string Name, string Status, Tone Tone, bool Satisfied, ICommand? Action, string? ActionLabel)
 {
-    /// <summary>P85: a visible link to the page (or a search on Nexus) for what is missing.</summary>
+    /// <summary>A visible link to the page (or a search on Nexus) for what is missing.</summary>
     public bool CanOpenPage => !Satisfied && Url is not null && Open is not null;
     public string OpenPageLabel => Url is not null && Url.Contains("keyword=", StringComparison.Ordinal) ? "Search on Nexus ↗" : "Open page ↗";
     public string Glyph => Satisfied ? "✓" : (Tone == Tone.Warn ? "!" : "×");
-    /// <summary>P46: where it was found (files, scripts, Nexus page).</summary>
+    /// <summary>Where it was found (files, scripts, Nexus page).</summary>
     public string Source { get; init; } = "";
     public string? Url { get; init; }
-    /// <summary>P47: click on the name: open its Nexus page when known, otherwise copy the name.</summary>
+    /// <summary>Click on the name: open its Nexus page when known, otherwise copy the name.</summary>
     public ICommand? Open { get; init; }
     public ICommand? Copy { get; init; }
     public string? Notes { get; init; }
@@ -164,7 +164,7 @@ public sealed record ConflictVm(string Path, string Detail, bool ThisModWins, IC
 
 public sealed partial class DetailsVm : ObservableObject
 {
-    /// <summary>P85: the page Nexus gave, else built from the mod number, else a search by name.</summary>
+    /// <summary>The page Nexus gave, else built from the mod number, else a search by name.</summary>
     private static string? PageOf(NexusRequirementStatus r) =>
         !string.IsNullOrWhiteSpace(r.Url) ? r.Url
         : r.External ? null
@@ -188,7 +188,7 @@ public sealed partial class DetailsVm : ObservableObject
         Subtitle = $"v{p.Version} · {origin} · {p.Files.Count} file{(p.Files.Count == 1 ? "" : "s")}";
         Tags = new ModRowVm(o, false, (_, _) => Task.CompletedTask).Tags;
         Source = p.SourceArchiveName is null ? null : $"{p.SourceArchiveName}{(p.ImportedAt is null ? "" : $" · imported {p.ImportedAt.Value.LocalDateTime:d}")}";
-        NexusId = null; // P41: shown as a link instead
+        NexusId = null; // shown as a link instead
 
         Requirements = o.Requirements.Select(r =>
         {
@@ -207,7 +207,7 @@ public sealed partial class DetailsVm : ObservableObject
                 Copy = new RelayCommand(() => main.CopyToClipboard(r.Name)),
             };
         }).ToList();
-        // P46: requirements only the Nexus page lists, same look, after a gap
+        // requirements only the Nexus page lists, same look, after a gap
         ExtraRequirements = o.RequirementLinks.Select(r => new RequirementVm(r.Name, r.Status, r.Tone, r.Tone == Tone.Ok, null, null)
         {
             Source = r.External ? "from Nexus page · outside Nexus" : "from Nexus page",
@@ -232,7 +232,7 @@ public sealed partial class DetailsVm : ObservableObject
 
         InstallMap = o.InstallMap.Select(l => new LineVm(l.Folder, l.Summary)).ToList();
         Files = p.Files.Select(f => f.Target).ToList();
-        // P56: files grouped by folder; a click opens the folder in the game (or the library copy when not in the game)
+        // files grouped by folder; a click opens the folder in the game (or the library copy when not in the game)
         var lib = new LibraryPaths(AppSettings.ResolveLibrary(null));
         FileFolders = p.Files.GroupBy(f => { var i = f.Target.LastIndexOf('/'); return i < 0 ? "(game folder)" : f.Target[..i]; }, StringComparer.OrdinalIgnoreCase)
             .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
@@ -256,7 +256,7 @@ public sealed partial class DetailsVm : ObservableObject
             .DistinctBy(l => l.Left + l.Right).ToList();
         RemoveCommand = new AsyncRelayCommand(() => main.RemoveFromLibraryAsync(p.PackageId, p.ModName));
         ViewFilesCommand = new RelayCommand(() => Tab = DetailTab.Files);
-        // P39: keep the tab the user picked while switching between mods; otherwise show what needs attention
+        // keep the tab the user picked while switching between mods; otherwise show what needs attention
         _main = main;
         _tab = main.PreferredTab ?? o.State switch
         {
@@ -265,7 +265,7 @@ public sealed partial class DetailsVm : ObservableObject
             _ => DetailTab.Overview,
         };
 
-        // P41/P43: Nexus page
+        // Nexus page
         NexusUrl = o.NexusUrl;
         NexusConfirmed = o.NexusConfirmed;
         Summary = o.Nexus?.Summary;
@@ -297,10 +297,10 @@ public sealed partial class DetailsVm : ObservableObject
     public bool CanLinkNexus => !NexusConfirmed;
     public string LinkNexusLabel => NexusUrl is null ? "Link to Nexus…" : "Not this mod? Link to Nexus…";
     public string? Summary { get; }
-    /// <summary>P86: picture from the Nexus page, from the library cache.</summary>
+    /// <summary>Picture from the Nexus page, from the library cache.</summary>
     [ObservableProperty, NotifyPropertyChangedFor(nameof(HasImage), nameof(ImageStretch))] private System.Windows.Media.ImageSource? _image;
     public bool HasImage => Image is not null;
-    /// <summary>P87: wide pictures (at least 2.1 : 1) fill the strip, the rest is shown whole and centred.</summary>
+    /// <summary>Wide pictures (at least 2.1 : 1) fill the strip, the rest is shown whole and centred.</summary>
     public System.Windows.Media.Stretch ImageStretch =>
         Image is { Width: > 0, Height: > 0 } i && i.Width / i.Height >= 2.1 ? System.Windows.Media.Stretch.UniformToFill : System.Windows.Media.Stretch.Uniform;
     public string? NexusMeta { get; }
@@ -352,7 +352,7 @@ public sealed partial class DetailsVm : ObservableObject
         ? "No direct file conflicts. Archive contents are not analyzed."
         : "Same file path in more than one mod. Archive contents are not analyzed.";
     public ICommand OverrideCommand { get; }
-    /// <summary>P30/P32: files already in the game at this mod's paths, with REPLACE and DISCARD IMPORT.</summary>
+    /// <summary>Files already in the game at this mod's paths, with REPLACE and DISCARD IMPORT.</summary>
     public IReadOnlyList<string> ForeignPaths { get; }
     public bool HasForeign => ForeignPaths.Count > 0;
     public ICommand ReplaceCommand { get; }
@@ -372,7 +372,7 @@ public sealed partial class DetailsVm : ObservableObject
 
 public enum DetailTab { Overview, Files, Requirements, Conflicts }
 
-/// <summary>P56: one folder of a mod in the Files tab.</summary>
+/// <summary>One folder of a mod in the Files tab.</summary>
 public sealed record FileFolderVm(string Folder, string Summary, IReadOnlyList<string> Files, ICommand Open, string OpenTip);
 
 
@@ -388,7 +388,7 @@ public sealed class ObservableList<T> : ObservableCollection<T>
     }
 }
 
-/// <summary>P12: one row of the core table in the header.</summary>
+/// <summary>One row of the core table in the header.</summary>
 public sealed class CoreModVm(CoreModStatus s, NexusUpdate? update = null, ICommand? updateCommand = null)
 {
     public CoreModStatus Status { get; } = s;
@@ -396,7 +396,7 @@ public sealed class CoreModVm(CoreModStatus s, NexusUpdate? update = null, IComm
     public string Version => Status.Version ?? "–";
     public string Source => Status.SourceLabel;
     public string? NexusUrl => Status.NexusUrl;
-    /// <summary>P118: a newer version of this core mod is on Nexus; shown as a quiet mark next to the version.</summary>
+    /// <summary>A newer version of this core mod is on Nexus; shown as a quiet mark next to the version.</summary>
     public NexusUpdate? Update { get; } = update;
     public bool HasUpdate => Update is not null;
     public ICommand? UpdateCommand { get; } = updateCommand;
@@ -417,7 +417,7 @@ public sealed record NexusSource(string ModId, string? FileId, string? ModName, 
 
 public enum ChapterKind { Core, Collection, Plain, Category }
 
-/// <summary>P68/P82/P83/P95/P97: header of a chapter in the mod list: fold arrow, count, marks, a switch for all its mods and (not core) a drag handle.</summary>
+/// <summary>Header of a chapter in the mod list: fold arrow, count, marks, a switch for all its mods and (not core) a drag handle.</summary>
 public sealed class CollectionChapterVm(ChapterKind kind, string key, string label, string name, int on, int total, bool canToggle,
     bool collapsed, ICommand? toggle, ICommand? manage, ICommand fold) : INotifyPropertyChanged
 {
@@ -425,7 +425,7 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
 
     public ChapterKind Kind { get; } = kind;
 
-    // P110: the header checkbox selects (checks) every mod of the chapter for bulk actions; three states like the list header
+    // the header checkbox selects (checks) every mod of the chapter for bulk actions; three states like the list header
     private IReadOnlyList<ModRowVm> _rows = [];
     public bool? Selection => _rows.Count == 0 ? false : _rows.All(r => r.IsChecked) ? true : _rows.Any(r => r.IsChecked) ? null : false;
     public bool CanSelect => _rows.Count > 0;
@@ -461,11 +461,11 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public bool IsOn => On > 0;
     public bool CanToggle { get; } = canToggle && toggle is not null;
     public bool IsCollapsed { get; } = collapsed;
-    /// <summary>P95: a category inside a folded MODS block is hidden with it.</summary>
+    /// <summary>A category inside a folded MODS block is hidden with it.</summary>
     public bool IsHidden { get; init; }
     public string CountText => $"{On} / {Total} ON";
     public Tone Tone => Kind switch { ChapterKind.Core => Tone.Brand, ChapterKind.Collection => Tone.Info, ChapterKind.Category => Tone.Category, _ => Tone.Plain };
-    /// <summary>P102: quickhack-like icon of the block in its colour (own drawing, not game art): chip, layers, cube, bookmark (P104).</summary>
+    /// <summary>Quickhack-like icon of the block in its colour (own drawing, not game art): chip, layers, cube, bookmark.</summary>
     public string IconData => Kind switch
     {
         ChapterKind.Core => "M4.5,4.5 H11.5 V11.5 H4.5 Z M6.5,6.5 H9.5 V9.5 H6.5 Z M6.5,1 V4.5 M9.5,1 V4.5 M6.5,11.5 V15 M9.5,11.5 V15 M1,6.5 H4.5 M1,9.5 H4.5 M11.5,6.5 H15 M11.5,9.5 H15",
@@ -487,7 +487,7 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public ICommand? ManageCommand { get; } = manage;
     public ICommand FoldCommand { get; } = fold;
 
-    // P97: blocks after CORE MODS can be moved; their order is the load order
+    // blocks after CORE MODS can be moved; their order is the load order
     /// <summary>Layout key: "mods", "collection:slug" or "category:id"; null for CORE MODS (never moves).</summary>
     public string? BlockKey { get; init; }
     public bool CanMove => BlockKey is not null && MoveUpCommand is not null;
@@ -497,14 +497,14 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
         ? "Drag to move the category inside MODS (or use the arrows). Categories higher up load first."
         : "Drag to move the whole block (or use the arrows). Blocks higher up load first; CORE MODS always stay on top.";
 
-    // P95: categories
+    // categories
     public ICommand? AddCategoryCommand { get; init; }
     public ICommand? RenameCommand { get; init; }
     public ICommand? RemoveCommand { get; init; }
     public string EmptyHint => IsCategory ? "empty · drag mods here or select them and use MOVE TO CATEGORY" : "";
     public bool IsEmpty => Total == 0;
 
-    // P89/P92: what needs attention inside, as small marks in the header (also when folded)
+    // what needs attention inside, as small marks in the header (also when folded)
     public int Updates { get; set; }
     public int Conflicts { get; set; }
     public int Missing { get; set; }

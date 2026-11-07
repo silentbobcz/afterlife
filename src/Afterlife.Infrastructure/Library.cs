@@ -14,7 +14,7 @@ public sealed class LibraryPaths(string root)
     public string Downloads => Path.Combine(Root, "downloads");
     public string Locks => Path.Combine(Root, "locks");
     public string Backups => Path.Combine(Root, "backups");
-    /// <summary>P86: pictures of mods from their Nexus pages, one small file per mod.</summary>
+    /// <summary>Pictures of mods from their Nexus pages, one small file per mod.</summary>
     public string Images => Path.Combine(Root, "cache", "images");
 
     public string PackageRoot(string packageId) => Path.Combine(Packages, packageId);
@@ -37,14 +37,14 @@ public sealed record ImportRequest(
     string? NexusModId = null,
     string? NexusFileId = null)
 {
-    /// <summary>R3: stored with the package.</summary>
+    /// <summary>Stored with the package.</summary>
     public IReadOnlyList<FomodChoice>? FomodChoices { get; init; }
 }
 
 public sealed record ImportResult(ImportAnalysis Analysis, PackageManifest? Package)
 {
     public bool Succeeded => Package is not null;
-    /// <summary>P99: the same content was already in the library; <see cref="Package"/> is that existing package.</summary>
+    /// <summary>The same content was already in the library; <see cref="Package"/> is that existing package.</summary>
     public bool AlreadyInLibrary { get; init; }
 }
 
@@ -126,7 +126,7 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
         return archive.Entries.Where(e => !e.IsDirectory && e.Key is not null).Select(e => e.Key!.Replace('\\', '/')).ToList();
     }
 
-    /// <summary>P51: copies the entries under a folder of an archive into a new zip (bundled mods of a collection).</summary>
+    /// <summary>Copies the entries under a folder of an archive into a new zip (bundled mods of a collection).</summary>
     public static int RepackFolder(string archiveFile, string folder, string zipDestination)
     {
         var prefix = folder.TrimEnd('/') + "/";
@@ -148,7 +148,7 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
         return n;
     }
 
-    /// <summary>R3: one file from an archive (FOMOD config and its pictures), at most 16 MB.</summary>
+    /// <summary>One file from an archive (FOMOD config and its pictures), at most 16 MB.</summary>
     public static byte[]? ReadEntry(string archiveFile, string rawPath)
     {
         using var archive = OpenArchive(Path.GetFullPath(archiveFile));
@@ -282,7 +282,7 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
 
     /// <summary>
     /// Deletes a package unless a profile, the deployed generation or an unfinished operation needs it.
-    /// Older generations do not protect it any more (P22): recovery only ever returns to the last generation.
+    /// Older generations do not protect it any more: recovery only ever returns to the last generation.
     /// </summary>
     public void Delete(string packageId)
     {
@@ -326,7 +326,7 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
         var nexus = System.Text.RegularExpressions.Regex.Match(stem, @"^(?<name>.+?)-(?<id>\d{1,7})-(?<ver>\d+(?:-\d+){0,4}[a-z]?)-(?<ts>\d{9,11})$");
         if (nexus.Success)
             return (nexus.Groups["name"].Value.Trim(), nexus.Groups["ver"].Value.Replace('-', '.'), nexus.Groups["id"].Value);
-        // P63: newer Nexus names "Name-4885-0.2.27-2026-10-26T22-14Z-cB3xB00IB" (separators may also be spaces)
+        // newer Nexus names "Name-4885-0.2.27-2026-10-26T22-14Z-cB3xB00IB" (separators may also be spaces)
         var dated = System.Text.RegularExpressions.Regex.Match(stem,
             @"^(?<name>.+?)[-\s]+(?<id>\d{1,7})[-\s]+v?(?<ver>\d+(?:[.\-]\d+){0,4}[a-z]?)[-\s]+(?<ts>\d{4}-\d{2}-\d{2}T\d{2}[-:]?\d{2}(?:[-:]?\d{2})?Z?)(?:[-\s]+[A-Za-z0-9]{1,16})?$");
         if (dated.Success)

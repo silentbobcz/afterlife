@@ -4,7 +4,7 @@ namespace Afterlife.App.Services;
 
 /// <summary>
 /// Owns the single InstallCoordinator. Every call runs on a background thread, one at a time,
-/// so the window never freezes and the SQLite connection is never used concurrently.
+/// So the window never freezes and the SQLite connection is never used concurrently.
 /// </summary>
 public sealed class CoordinatorHost : IDisposable
 {

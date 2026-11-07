@@ -140,7 +140,7 @@ public sealed class InstallLock : IDisposable
 
 public sealed record DeleteOutcome(IReadOnlyList<string> Deleted, IReadOnlyList<(string Name, string Reason)> Kept, ExecutionResult? Execution)
 {
-    /// <summary>P55: files the deleted mods had created themselves, moved to Removed.</summary>
+    /// <summary>Files the deleted mods had created themselves, moved to Removed.</summary>
     public int Leftovers { get; init; }
 }
 
@@ -151,12 +151,12 @@ public sealed record ScanResult(IReadOnlyList<(string Path, long Size)> Unmanage
     /// <summary>Version read from the binary of each framework installed outside AFTERLIFE (null when it has none).</summary>
     public IReadOnlyDictionary<string, string?> ExternalVersions { get; init; } = new Dictionary<string, string?>();
 
-    /// <summary>P32: unmanaged file → library mods that want to write the same path.</summary>
+    /// <summary>Unmanaged file → library mods that want to write the same path.</summary>
     public IReadOnlyDictionary<string, IReadOnlyList<string>> InTheWay { get; init; } = new Dictionary<string, IReadOnlyList<string>>();
-    /// <summary>P55: files a mod installed by AFTERLIFE created by itself (logs, settings, caches): path → package id. Not listed as manual mods.</summary>
+    /// <summary>Files a mod installed by AFTERLIFE created by itself (logs, settings, caches): path → package id. Not listed as manual mods.</summary>
     public IReadOnlyDictionary<string, string> RuntimeFiles { get; init; } = new Dictionary<string, string>();
 
-    /// <summary>Unmanaged files grouped into likely mods (P6).</summary>
+    /// <summary>Unmanaged files grouped into likely mods.</summary>
     public IReadOnlyList<DetectedMod> Detected { get; init; } = [];
 }
 
@@ -272,7 +272,7 @@ public sealed class InstallCoordinator : IDisposable
         return p;
     }
 
-    /// <summary>P76: shown name of a mod in AFTERLIFE; files in the game do not change. Empty = back to the original name.</summary>
+    /// <summary>Shown name of a mod in AFTERLIFE; files in the game do not change. Empty = back to the original name.</summary>
     public PackageManifest RenamePackage(string packageId, string? name)
     {
         var p = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
@@ -288,9 +288,9 @@ public sealed class InstallCoordinator : IDisposable
     public string OriginalName(string packageId) => Store.GetMeta("name.original:" + packageId) ?? Store.GetPackage(packageId)?.ModName ?? "";
 
     /// <summary>
-    /// P72: deletes a profile. Mods off cannot be deleted, nor the profile that is in the game now (switch the game
-    /// to another profile first, so nothing in the game belongs to a missing profile). Mods stay in the library;
-    /// a collection that used the profile keeps its record.
+    /// Deletes a profile. Mods off cannot be deleted, nor the profile that is in the game now (switch the game
+    /// To another profile first, so nothing in the game belongs to a missing profile). Mods stay in the library;
+    /// A collection that used the profile keeps its record.
     /// </summary>
     public void DeleteProfile(string profileId)
     {
@@ -327,8 +327,8 @@ public sealed class InstallCoordinator : IDisposable
 
     // ---------------- library ----------------
     /// <summary>
-    /// P99: an archive whose files are exactly those of a package already in the library (same digest:
-    /// paths, hashes and sizes) does not become a second copy; the existing package is returned instead.
+    /// An archive whose files are exactly those of a package already in the library (same digest:
+    /// Paths, hashes and sizes) does not become a second copy; the existing package is returned instead.
     /// </summary>
     public ImportResult Import(ImportRequest request)
     {
@@ -345,7 +345,7 @@ public sealed class InstallCoordinator : IDisposable
         return r with { Package = same, AlreadyInLibrary = true };
     }
 
-    /// <summary>P99: groups of packages with exactly the same files (duplicates made before 0.5.3).</summary>
+    /// <summary>Groups of packages with exactly the same files (duplicates made before 0.5.3).</summary>
     public IReadOnlyList<IReadOnlyList<PackageManifest>> DuplicateGroups() =>
         Store.GetPackages().Where(p => p.LayerOfModId is null && p.Files.Count > 0)
             .GroupBy(p => p.ManifestDigest)
@@ -354,8 +354,8 @@ public sealed class InstallCoordinator : IDisposable
             .ToList();
 
     /// <summary>
-    /// P99: the kept package takes the place of its duplicates: in every profile (on when any copy was on,
-    /// at the position of the first copy) and in every collection. The duplicates are then free to delete.
+    /// The kept package takes the place of its duplicates: in every profile (on when any copy was on,
+    /// At the position of the first copy) and in every collection. The duplicates are then free to delete.
     /// </summary>
     public void AdoptDuplicates(string keepId, IReadOnlyCollection<string> others)
     {
@@ -382,9 +382,9 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     /// <summary>
-    /// P123: the new version takes the place of the old one everywhere: in every profile (same position, same on/off),
-    /// as the winner of its file conflicts, in its requirement overrides and in every collection. The old version is
-    /// then in no profile and can be deleted from the library once the game no longer has its files.
+    /// The new version takes the place of the old one everywhere: in every profile (same position, same on/off),
+    /// As the winner of its file conflicts, in its requirement overrides and in every collection. The old version is
+    /// Then in no profile and can be deleted from the library once the game no longer has its files.
     /// </summary>
     public void ReplaceVersion(string oldId, string newId)
     {
@@ -418,7 +418,7 @@ public sealed class InstallCoordinator : IDisposable
         });
     }
 
-    /// <summary>P98: the new version of a mod takes the place of the old one in every collection.</summary>
+    /// <summary>The new version of a mod takes the place of the old one in every collection.</summary>
     public void ReplaceInCollections(string oldId, string newId)
     {
         foreach (var r in CollectionStore.List(Store))
@@ -429,7 +429,7 @@ public sealed class InstallCoordinator : IDisposable
         }
     }
 
-    /// <summary>P101: a new name for a profile; Mods off keeps its name, two profiles cannot share one.</summary>
+    /// <summary>A new name for a profile; Mods off keeps its name, two profiles cannot share one.</summary>
     public ProfileState RenameProfile(string profileId, string name)
     {
         var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
@@ -457,7 +457,7 @@ public sealed class InstallCoordinator : IDisposable
     /// <summary>
     /// Keeps the user's edits of managed files as a layer package. The layer is enabled in the selected profile
     /// (or, when Mods off is selected, in the profile that is deployed) and takes over the ledger entries,
-    /// because the files on disk are now exactly the layer's content.
+    /// Because the files on disk are now exactly the layer's content.
     /// </summary>
     public PackageManifest CaptureChanges(IReadOnlyCollection<string> paths)
     {
@@ -503,7 +503,7 @@ public sealed class InstallCoordinator : IDisposable
     /// <summary>
     /// Walks the game folder and stores the result (a full scan). The part that depends on the selected profile
     /// (identical copies hidden while their mod is on) is derived afterwards, so <see cref="CachedScan"/> can reuse
-    /// the walk when only a profile changed.
+    /// The walk when only a profile changed.
     /// </summary>
     public ScanResult Scan()
     {
@@ -516,8 +516,8 @@ public sealed class InstallCoordinator : IDisposable
 
     /// <summary>
     /// The last scan, if nothing it depends on changed (packages, ledger, game root) and nothing touched the game
-    /// folder through AFTERLIFE since; otherwise a fresh one. Changes made outside AFTERLIFE are seen on the next
-    /// full <see cref="Scan"/>, which the app runs on start, on a manual refresh and when its window is activated.
+    /// Folder through AFTERLIFE since; otherwise a fresh one. Changes made outside AFTERLIFE are seen on the next
+    /// Full <see cref="Scan"/>, which the app runs on start, on a manual refresh and when its window is activated.
     /// </summary>
     public ScanResult CachedScan() =>
         _scanCache is { } c && c.Version == Store.ScanVersion && c.Root == GameRoot ? Finish(c.Raw, SelectedProfile) : Scan();
@@ -657,8 +657,8 @@ public sealed class InstallCoordinator : IDisposable
     };
 
     /// <summary>
-    /// P55: which deployed package a file AFTERLIFE did not write belongs to: the nearest own (not shared) folder of
-    /// one deployed package, or a runtime folder of a core mod deployed by AFTERLIFE (P37).
+    /// Which deployed package a file AFTERLIFE did not write belongs to: the nearest own (not shared) folder of
+    /// One deployed package, or a runtime folder of a core mod deployed by AFTERLIFE.
     /// </summary>
     private Dictionary<string, string> RuntimeOwners(IEnumerable<string> paths, Dictionary<string, LedgerEntry> ledger)
     {
@@ -682,14 +682,14 @@ public sealed class InstallCoordinator : IDisposable
         var library = Store.GetPackages();
         foreach (var c in FrameworkCatalog.Contracts.Where(c => c.RuntimeFolders.Count > 0 || c.RuntimeFiles.Count > 0))
         {
-            // the deployed copy first; P125: else a copy in the library (its files stay its settings, P55)
+            // the deployed copy first; else a copy in the library (its files stay its settings)
             var owner = owners.Select(Store.GetPackage).FirstOrDefault(p => p is not null && p.Provides.Contains(c.Capability))
                         ?? library.FirstOrDefault(p => p.Provides.Contains(c.Capability));
             if (owner is null) continue;
             foreach (var f in c.RuntimeFolders) runtimeFolders.Add((f, c.RuntimeExclude, owner.PackageId));
-            foreach (var f in c.RuntimeFiles) runtimeFiles[GamePath.Parse(f).Value] = owner.PackageId; // P125: e.g. red4ext/config.ini
+            foreach (var f in c.RuntimeFiles) runtimeFiles[GamePath.Parse(f).Value] = owner.PackageId; // e.g. red4ext/config.ini
         }
-        // P125: own folders of every mod in the library (not only the deployed ones): a lock file or cache a CET mod
+        // own folders of every mod in the library (not only the deployed ones): a lock file or cache a CET mod
         // wrote into its folder belongs to it even when it is switched off right now
         var libSubtree = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var modIdOf = library.ToDictionary(p => p.PackageId, p => p.ModId, StringComparer.Ordinal);
@@ -746,7 +746,7 @@ public sealed class InstallCoordinator : IDisposable
         catch (System.Text.Json.JsonException) { return new(StringComparer.OrdinalIgnoreCase); }
     }
 
-    /// <summary>P55: when a package is deleted from the library, the files it created itself go to Removed as "Leftovers of X" (can be restored).</summary>
+    /// <summary>When a package is deleted from the library, the files it created itself go to Removed as "Leftovers of X" (can be restored).</summary>
     private List<RemovalResult> MoveRuntimeLeftovers(IReadOnlyCollection<string> deletedPackages, IReadOnlyDictionary<string, string> names)
     {
         var results = new List<RemovalResult>();
@@ -771,7 +771,7 @@ public sealed class InstallCoordinator : IDisposable
         || path.StartsWith("archive/pc/content/", StringComparison.OrdinalIgnoreCase)
         || path.StartsWith("archive/pc/ep1/", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Files in the game at this package's paths that AFTERLIFE did not write (P30/P32).</summary>
+    /// <summary>Files in the game at this package's paths that AFTERLIFE did not write.</summary>
     public IReadOnlyList<string> ForeignFilesOf(string packageId)
     {
         var pkg = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
@@ -782,8 +782,8 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     /// <summary>
-    /// P30 REPLACE: moves the files that block a package out of the game into the library ("removed", restorable),
-    /// so the next apply can install the package. Protected base game files are refused.
+    /// REPLACE: moves the files that block a package out of the game into the library ("removed", restorable),
+    /// So the next apply can install the package. Protected base game files are refused.
     /// </summary>
     public RemovalResult MoveAsideFor(string packageId)
     {
@@ -813,11 +813,11 @@ public sealed class InstallCoordinator : IDisposable
         _ => new[] { signature },
     };
 
-    // ---------------- unmanaged files (P6) ----------------
+    // ---------------- unmanaged files ----------------
     /// <summary>
     /// Moves files AFTERLIFE did not install out of the game into the library's "removed" folder (reversible).
     /// Refuses managed files, files outside the mod folders and anything while the game runs or an operation is unfinished.
-    /// Core mods can be removed too (P15); the window warns about mods that need them first.
+    /// Core mods can be removed too; the window warns about mods that need them first.
     /// </summary>
     public RemovalResult RemoveUnmanaged(IReadOnlyCollection<string> paths, string label)
     {
@@ -858,10 +858,10 @@ public sealed class InstallCoordinator : IDisposable
         if (Store.GetUnfinishedOperation() is not null) throw new InvalidOperationException("an operation did not finish; run recovery first");
     }
 
-    // ---------------- game folder (P7) ----------------
+    // ---------------- game folder ----------------
     /// <summary>
     /// Points the library at another game folder. Allowed when nothing is deployed (apply Mods off first),
-    /// or when the same install was moved and every managed file is found unchanged at the new place.
+    /// Or when the same install was moved and every managed file is found unchanged at the new place.
     /// </summary>
     public void ChangeGameRoot(string newRoot)
     {
@@ -892,7 +892,7 @@ public sealed class InstallCoordinator : IDisposable
         Scan();
     }
 
-    // ---------------- bulk profile edits (P11) ----------------
+    // ---------------- bulk profile edits ----------------
     public ProfileState SetEnabledMany(string profileId, IReadOnlyCollection<string> packageIds, bool enabled)
     {
         var p = Store.GetProfile(profileId) ?? throw new InvalidOperationException($"unknown profile {profileId}");
@@ -909,7 +909,7 @@ public sealed class InstallCoordinator : IDisposable
 
     /// <summary>
     /// Switches packages off in every profile and deletes those that are no longer needed. Packages whose files are
-    /// still in the game are kept and reported (the window uses <see cref="DeleteEverywhere"/> instead).
+    /// Still in the game are kept and reported (the window uses <see cref="DeleteEverywhere"/> instead).
     /// </summary>
     public (IReadOnlyList<string> Deleted, IReadOnlyList<(string Name, string Reason)> Kept) DeleteFromLibrary(IReadOnlyCollection<string> packageIds)
     {
@@ -935,9 +935,9 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     /// <summary>
-    /// P21: one confirmed action. Switches the packages off in every profile, takes their files out of the game
+    /// One confirmed action. Switches the packages off in every profile, takes their files out of the game
     /// (re-deploying exactly what is in the game now minus these packages, so other pending edits stay pending)
-    /// and deletes them from the library.
+    /// And deletes them from the library.
     /// </summary>
     public DeleteOutcome DeleteEverywhere(IReadOnlyCollection<string> packageIds, IProgress<DeployProgress>? progress = null)
     {
@@ -1008,7 +1008,7 @@ public sealed class InstallCoordinator : IDisposable
         return new DeleteOutcome(deleted, kept, exec) { Leftovers = leftovers.Sum(l => l.Moved) };
     }
 
-    /// <summary>P15: managed mods that need one of these capabilities and are wanted somewhere or in the game.</summary>
+    /// <summary>Managed mods that need one of these capabilities and are wanted somewhere or in the game.</summary>
     public IReadOnlyList<Dependent> DependentsOf(IReadOnlyCollection<string> capabilities, IReadOnlyCollection<string>? exceptPackages = null)
     {
         var caps = capabilities.ToHashSet(StringComparer.Ordinal);
@@ -1044,7 +1044,7 @@ public sealed class InstallCoordinator : IDisposable
         });
     }
 
-    // ---------------- requirements (P40) ----------------
+    // ---------------- requirements ----------------
     /// <summary>
     /// Recomputes what every library package provides and needs with the current rules: paths, script content
     /// (Codeware, Mod Settings, RedFileSystem, Native Settings UI) and the mod's Nexus page when it is known.
@@ -1081,7 +1081,7 @@ public sealed class InstallCoordinator : IDisposable
         return changed;
     }
 
-    /// <summary>P41/P43: links a library package to a mod on Nexus (id typed by the user or taken from a link).</summary>
+    /// <summary>Links a library package to a mod on Nexus (id typed by the user or taken from a link).</summary>
     public PackageManifest LinkToNexus(string packageId, string nexusModId)
     {
         var p = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
@@ -1091,11 +1091,11 @@ public sealed class InstallCoordinator : IDisposable
         return q;
     }
 
-    // ---------------- framework leftovers (P37) ----------------
+    // ---------------- framework leftovers ----------------
     /// <summary>
     /// After a framework was switched off: files it created itself while the game ran (logs, settings, caches)
-    /// are moved into the library ("removed", restorable). Only when the framework is really gone from the game,
-    /// never inside folders of other mods (CET mods), never files AFTERLIFE manages.
+    /// Are moved into the library ("removed", restorable). Only when the framework is really gone from the game,
+    /// Never inside folders of other mods (CET mods), never files AFTERLIFE manages.
     /// </summary>
     public RemovalResult? CleanLeftovers(string capability)
     {
@@ -1122,7 +1122,7 @@ public sealed class InstallCoordinator : IDisposable
         return r;
     }
 
-    // ---------------- collections (P51) ----------------
+    // ---------------- collections ----------------
     public IReadOnlyList<CollectionRecord> Collections() => CollectionStore.List(Store);
 
     /// <summary>Reads collection.json from a downloaded collection bundle and merges it with the API revision.</summary>
@@ -1175,7 +1175,7 @@ public sealed class InstallCoordinator : IDisposable
         return PackageLibrary.RepackFolder(bundleFile, folder, zip) > 0 ? zip : null;
     }
 
-    // ---------------- FOMOD (R3) ----------------
+    // ---------------- FOMOD ----------------
     public FomodConfig ReadFomod(string archiveFile, string configPath)
     {
         var bytes = PackageLibrary.ReadEntry(archiveFile, configPath) ?? throw new ImportException("the installer description is missing in the archive");
@@ -1202,7 +1202,7 @@ public sealed class InstallCoordinator : IDisposable
         catch (ImportException) { return null; }
     }
 
-    // ---------------- storage (P57) ----------------
+    // ---------------- storage ----------------
     public StorageInfo StorageInfo()
     {
         var removed = Directory.Exists(Removed.Root) ? Directory.EnumerateDirectories(Removed.Root).Count() : 0;
@@ -1211,7 +1211,7 @@ public sealed class InstallCoordinator : IDisposable
             Afterlife.Infrastructure.Storage.SizeOf(Library.Staging) + Afterlife.Infrastructure.Storage.SizeOf(Library.Backups));
     }
 
-    /// <summary>P57: deletes kept files for good. Never touches the game, the mods in the library or an unfinished change.</summary>
+    /// <summary>Deletes kept files for good. Never touches the game, the mods in the library or an unfinished change.</summary>
     public long PurgeStorage(bool removed, bool downloads, bool temp)
     {
         using var _ = InstallLock.Acquire(Library, GameRoot);
@@ -1223,11 +1223,11 @@ public sealed class InstallCoordinator : IDisposable
         return freed;
     }
 
-    // ---------------- load order (P25) ----------------
+    // ---------------- load order ----------------
     /// <summary>
     /// Drag-and-drop order of a profile: top loads first and wins archive conflicts. The order of the profile entries
-    /// follows the list and AFTERLIFE writes archive/pc/mod/modlist.txt from it. Archives installed outside AFTERLIFE
-    /// load after the listed ones; an existing modlist.txt is kept as a baseline and restored later.
+    /// Follows the list and AFTERLIFE writes archive/pc/mod/modlist.txt from it. Archives installed outside AFTERLIFE
+    /// Load after the listed ones; an existing modlist.txt is kept as a baseline and restored later.
     /// </summary>
     public ProfileState Reorder(string profileId, IReadOnlyList<string> orderedPackageIds)
     {
@@ -1384,7 +1384,7 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     // ---------------- launch ----------------
-    // ---------------- REDmod (R2) ----------------
+    // ---------------- REDmod ----------------
     public const string RedModTool = "tools/redmod/bin/redMod.exe";
     public const string RedModLog = "tools/redmod/bin/REDmodLog.txt";
     private const string RedModSignatureKey = "redmod.signature";
@@ -1400,8 +1400,8 @@ public sealed class InstallCoordinator : IDisposable
     }
 
     /// <summary>
-    /// R2: REDmods only work after redMod.exe compiled them and the game starts with -modded. Runs the deploy when
-    /// the REDmods or their files changed since the last successful run (like Vortex does on launch).
+    /// REDmods only work after redMod.exe compiled them and the game starts with -modded. Runs the deploy when
+    /// The REDmods or their files changed since the last successful run (like Vortex does on launch).
     /// </summary>
     public RedModResult DeployRedMods(bool force = false)
     {

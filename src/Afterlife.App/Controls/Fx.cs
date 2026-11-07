@@ -8,8 +8,8 @@ namespace Afterlife.App.Controls;
 
 /// <summary>
 /// Decorative motion from the design (summary "Naznačené animace"): scan sweep over the header, progressive
-/// check-off of frameworks, data travelling along requirement lines, lifted drop zone.
-/// P14: looping effects (EDDIES, BREACH, NETDECK) run all the time; only the Reduce motion setting turns them off.
+/// Check-off of frameworks, data travelling along requirement lines, lifted drop zone.
+/// Looping effects (EDDIES, BREACH, NETDECK) run all the time; only the Reduce motion setting turns them off.
 /// The Windows "animation effects" switch is no longer used: on many PCs it is off and the window looked static.
 /// </summary>
 public static class Fx
@@ -28,7 +28,7 @@ public static class Fx
         MotionChanged?.Invoke();
     }
 
-    // ---------------- looping storyboard effects (P14) ----------------
+    // ---------------- looping storyboard effects ----------------
     /// <summary>
     /// Flicker: BREACH echo marks (opacity 1 → .25 → 1 → .4 → 1, 3.2 s). Blink: terminal cursor (1 s).
     /// Beam: a light bar crossing its container every 5 s (BREACH header). Mark: EDDIES logo mark skew glitch (6 s).

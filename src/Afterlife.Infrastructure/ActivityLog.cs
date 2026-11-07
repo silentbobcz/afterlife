@@ -4,9 +4,9 @@ using Afterlife.Core;
 namespace Afterlife.Infrastructure;
 
 /// <summary>
-/// P113: optional plain-text record of what AFTERLIFE does (switches, imports, every planned file change with its
-/// reason, blockers, results). Off by default; switched on in Settings. One file per day next to the error logs,
-/// so "Open log folder" shows both. Never throws: a failing log must not stop the work it describes.
+/// Optional plain-text record of what AFTERLIFE does (switches, imports, every planned file change with its
+/// Reason, blockers, results). Off by default; switched on in Settings. One file per day next to the error logs,
+/// So "Open log folder" shows both. Never throws: a failing log must not stop the work it describes.
 /// </summary>
 public static class ActivityLog
 {

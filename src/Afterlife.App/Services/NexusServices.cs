@@ -8,7 +8,7 @@ using Microsoft.Win32;
 namespace Afterlife.App.Services;
 
 /// <summary>
-/// The user's personal Nexus Mods API key (D8), encrypted with Windows DPAPI for the current Windows user.
+/// The user's personal Nexus Mods API key, encrypted with Windows DPAPI for the current Windows user.
 /// Stored next to settings.json; never written to logs or the library.
 /// </summary>
 public static class NexusKeyStore
@@ -105,7 +105,7 @@ public static class NxmProtocol
 
 /// <summary>
 /// One AFTERLIFE window per Windows user. A second start (for example from an nxm link) hands its link to the
-/// running window over a named pipe and exits.
+/// Running window over a named pipe and exits.
 /// </summary>
 public sealed class SingleInstance : IDisposable
 {

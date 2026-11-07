@@ -64,7 +64,7 @@ public sealed record PlanDecisions(IReadOnlySet<string> DiscardChangesPathKeys)
 /// <summary>
 /// Diff between the frozen snapshot and the observed game folder. Pure: all IO goes through IStateObserver.
 /// Rule: a path is changed only if the ledger proves ownership and its content is as expected,
-/// or it does not exist (Add never overwrites).
+/// Or it does not exist (Add never overwrites).
 /// </summary>
 public static class Planner
 {
@@ -77,7 +77,7 @@ public static class Planner
         IReadOnlySet<string>? volatilePathKeys = null)
     {
         decisions ??= PlanDecisions.None;
-        // P115/P119: files a framework rewrites itself while the game runs (Input Loader's r6/cache XMLs, its ini).
+        // files a framework rewrites itself while the game runs (Input Loader's r6/cache XMLs, its ini).
         // Their content on disk is expected to drift from what the archive shipped; that is not a user edit.
         volatilePathKeys ??= FrameworkCatalog.VolatilePathKeys;
         var removes = new List<PlanStep>();
@@ -124,7 +124,7 @@ public static class Planner
                     replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, f.StoredPath, null, "discard user changes"));
                 else if (volatilePathKeys.Contains(gp.Key))
                 {
-                    // P115/P119: the mod rewrote its own runtime file. Nothing new to deploy → leave it alone;
+                    // the mod rewrote its own runtime file. Nothing new to deploy → leave it alone;
                     // a new version of the mod → put its copy there (the plugin rebuilds it on the next start anyway).
                     if (le.Hash != f.Hash)
                         replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, f.StoredPath, null, "new content for runtime file (rewritten by its mod while the game runs)"));
@@ -138,10 +138,10 @@ public static class Planner
                 if (!obs.Exists)
                     adds.Add(Step(StepKind.Add, f.Path, ArtifactKind.Payload, f.OwnerPackageId, null, f.Hash, f.Size, f.StoredPath, null, "new file"));
                 else if (obs.Size == f.Size && observer.FullHash(gp) == f.Hash)
-                    // P31: the very same file is already there (left from a manual install): adopt it instead of blocking.
+                    // the very same file is already there (left from a manual install): adopt it instead of blocking.
                     retags.Add(Step(StepKind.Retag, f.Path, ArtifactKind.Payload, f.OwnerPackageId, f.Hash, f.Hash, f.Size, null, null, "identical file already in game; adopted"));
                 else if (volatilePathKeys.Contains(gp.Key))
-                    // P115/P119: a runtime file left by an earlier (manual) install of the same framework: take it over.
+                    // a runtime file left by an earlier (manual) install of the same framework: take it over.
                     replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, observer.FullHash(gp), f.Hash, f.Size, f.StoredPath, null, "take over runtime file of its own mod"));
                 else
                     blockers.Add(new Issue(IssueKind.ForeignFileAtTarget, Severity.Blocking,
@@ -269,7 +269,7 @@ public static class RecoveryClassifier
 {
     /// <summary>
     /// Decides what happened to a step that was durably marked Prepared (the intent record is the proof of
-    /// ownership; the hash only tells which side of the change the disk is on).
+    /// Ownership; the hash only tells which side of the change the disk is on).
     /// </summary>
     public static RecoveryVerdict Classify(PlanStep step, bool exists, string? hash) => step.Kind switch
     {

@@ -39,7 +39,7 @@ public static class Json
 
 /// <summary>
 /// SQLite state (WAL, synchronous=FULL). All writes that must be durable before touching the game folder
-/// are committed before the corresponding filesystem change.
+/// Are committed before the corresponding filesystem change.
 /// </summary>
 public sealed class AfterlifeStore : IDisposable
 {

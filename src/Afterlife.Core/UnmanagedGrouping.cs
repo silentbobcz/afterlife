@@ -16,26 +16,26 @@ public sealed record DetectedMod(
     public long TotalSize => Files.Sum(f => f.Size);
     public IReadOnlyList<DetectedKind> Kinds { get; init; } = [];
     public bool IsFramework => Kind == DetectedKind.Framework;
-    /// <summary>Capability this group provides when it is a core mod (P15).</summary>
+    /// <summary>Capability this group provides when it is a core mod.</summary>
     public string? Capability => IsFramework && UnmanagedGrouping.FrameworkCapabilities.TryGetValue(Name, out var c) ? c : null;
-    /// <summary>P32: library mods that cannot be installed while these files are in the game.</summary>
+    /// <summary>Library mods that cannot be installed while these files are in the game.</summary>
     public IReadOnlyList<string> Blocks { get; init; } = [];
 }
 
 /// <summary>
-/// Groups unmanaged files into likely mods (P6). Heuristics only; nothing is inferred from file contents:
+/// Groups unmanaged files into likely mods. Heuristics only; nothing is inferred from file contents:
 /// <c>X.archive</c> + <c>X.archive.xl</c> + <c>X.xl</c>; first folder below r6/scripts, r6/tweaks, CET mods,
-/// red4ext/plugins and REDmod mods; groups with the same normalized name are merged.
-/// Framework files (CET, RED4ext and its framework plugins) are grouped separately; since P15 they can be removed too.
+/// Red4ext/plugins and REDmod mods; groups with the same normalized name are merged.
+/// Framework files (CET, RED4ext and its framework plugins) are grouped separately; they can be removed too.
 /// </summary>
 public static class UnmanagedGrouping
 {
     /// <summary>
-    /// P32: marks groups whose files block library mods, and gathers loose single files that only exist because
-    /// a library mod wants the same path into one group per blocked mod ("In the way of X").
+    /// Marks groups whose files block library mods, and gathers loose single files that only exist because
+    /// A library mod wants the same path into one group per blocked mod ("In the way of X").
     /// </summary>
-    /// <param name="same">P45: files with exactly the content a library mod ships (path → mod names).</param>
-    /// <param name="hidden">P45: identical files of mods enabled in the selected profile; APPLY takes them over, so they are not listed.</param>
+    /// <param name="same">files with exactly the content a library mod ships (path → mod names).</param>
+    /// <param name="hidden">identical files of mods enabled in the selected profile; APPLY takes them over, so they are not listed.</param>
     public static IReadOnlyList<DetectedMod> WithBlockers(IReadOnlyList<DetectedMod> groups, IReadOnlyDictionary<string, IReadOnlyList<string>> inTheWay,
         IReadOnlyDictionary<string, IReadOnlyList<string>>? same = null, IReadOnlySet<string>? hidden = null)
     {
@@ -109,7 +109,7 @@ public static class UnmanagedGrouping
         ["RedFileSystem"] = "RedFileSystem",
     };
 
-    /// <summary>Group name → capability, so the window can warn about mods that need a framework before it is removed (P15).</summary>
+    /// <summary>Group name → capability, so the window can warn about mods that need a framework before it is removed.</summary>
     public static readonly IReadOnlyDictionary<string, string> FrameworkCapabilities = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         ["Cyber Engine Tweaks"] = Capabilities.Cet,
@@ -176,7 +176,7 @@ public static class UnmanagedGrouping
             else if (lower.StartsWith("mods/") && parts.Length > 2)
                 Add("redmod:" + Normalize(parts[1]), parts[1], DetectedKind.Redmod, f);
             else if (lower.StartsWith("bin/x64/plugins/address_library/"))
-                // P125: offset database for the exact game version (version-<packed exe version>.bin), used by ASI/RED4ext plugins
+                // offset database for the exact game version (version-<packed exe version>.bin), used by ASI/RED4ext plugins
                 Add("other:addresslibrary", "Address Library (offsets for the game version)", DetectedKind.Other, f);
             else
                 Add("other:" + lower, parts[^1], DetectedKind.Other, f);
@@ -212,7 +212,7 @@ public static class UnmanagedGrouping
         public List<(string Path, long Size)> Files { get; } = new();
         public HashSet<DetectedKind> Kinds { get; } = new();
 
-        /// <summary>P125: a core-mod group without the core mod itself (no signature file), only what it wrote while running.</summary>
+        /// <summary>A core-mod group without the core mod itself (no signature file), only what it wrote while running.</summary>
         private bool IsOnlyRuntime()
         {
             if (!FrameworkCapabilities.TryGetValue(name, out var cap) || FrameworkCatalog.Find(cap) is not { } c) return false;

@@ -32,8 +32,8 @@ public static class Capabilities
 
 /// <summary>
 /// Known frameworks: signature files that prove a package (or an unmanaged install) provides a capability,
-/// and where they keep runtime files. Since P36 every framework is installed like any other mod; files a framework
-/// creates while the game runs are moved aside after it is switched off (P37).
+/// And where they keep runtime files. Since every framework is installed like any other mod; files a framework
+/// Creates while the game runs are moved aside after it is switched off.
 /// </summary>
 public sealed record FrameworkContract(
     string Capability,
@@ -43,23 +43,23 @@ public sealed record FrameworkContract(
     bool ManagedInMvp,
     string Note)
 {
-    /// <summary>Mod id on nexusmods.com/cyberpunk2077 (P12: link for frameworks that are not installed).</summary>
+    /// <summary>Mod id on nexusmods.com/cyberpunk2077 (link for frameworks that are not installed).</summary>
     public string? NexusModId { get; init; }
     /// <summary>Short label for the core table in the header.</summary>
     public string ShortName { get; init; } = "";
     /// <summary>Optional frameworks are listed as "available" when missing, not as a problem.</summary>
     public bool Optional { get; init; }
     /// <summary>
-    /// P37: folders where the framework creates its own files while the game runs (logs, settings, caches).
+    /// Folders where the framework creates its own files while the game runs (logs, settings, caches).
     /// Files there that AFTERLIFE did not write are moved aside (restorable) after the framework is switched off.
     /// </summary>
     public IReadOnlyList<string> RuntimeFolders { get; init; } = [];
     /// <summary>Sub-folders of <see cref="RuntimeFolders"/> that belong to other mods and are never touched.</summary>
     public IReadOnlyList<string> RuntimeExclude { get; init; } = [];
     /// <summary>
-    /// P115/P119: files the framework ships in its archive only as a starting copy and then rewrites itself
-    /// every time the game runs (Input Loader: the merged r6/cache XMLs and its ini). A different content there
-    /// is the framework at work, not a user edit: never reported as "changed outside", removed or replaced freely.
+    /// Files the framework ships in its archive only as a starting copy and then rewrites itself
+    /// Every time the game runs (Input Loader: the merged r6/cache XMLs and its ini). A different content there
+    /// Is the framework at work, not a user edit: never reported as "changed outside", removed or replaced freely.
     /// </summary>
     public IReadOnlyList<string> RuntimeFiles { get; init; } = [];
 
@@ -88,7 +88,7 @@ public static class FrameworkCatalog
             NexusModId = "4575", ShortName = "Input Loader", RuntimeFolders = ["red4ext/plugins/input_loader"],
             RuntimeFiles = ["r6/cache/inputContexts.xml", "r6/cache/inputUserMappings.xml", "engine/config/platform/pc/input_loader.ini"],
         },
-        // P12: further common base mods. Folder layouts from their Nexus/GitHub install notes; still to verify in M0.
+        // further common base mods. Folder layouts from their Nexus/GitHub install notes; still to verify.
         new FrameworkContract(Capabilities.ModSettings, new[] { "red4ext/plugins/mod_settings/mod_settings.dll" }, false, true, true,
             "Keeps user choices in red4ext/plugins/mod_settings/user.ini.")
         {
@@ -103,7 +103,7 @@ public static class FrameworkCatalog
 
     public static FrameworkContract? Find(string capability) => Contracts.FirstOrDefault(c => c.Capability == capability);
 
-    /// <summary>Upper-case path keys of every <see cref="FrameworkContract.RuntimeFiles"/> entry (P115/P119).</summary>
+    /// <summary>Upper-case path keys of every <see cref="FrameworkContract.RuntimeFiles"/> entry.</summary>
     public static IReadOnlySet<string> VolatilePathKeys { get; } =
         Contracts.SelectMany(c => c.RuntimeFiles).Select(p => GamePath.Parse(p).Key).ToHashSet(StringComparer.Ordinal);
 
@@ -121,7 +121,7 @@ public static class FrameworkCatalog
     }
 
     /// <summary>
-    /// P40: requirements that cannot be seen from paths, read from script text: Codeware, Mod Settings,
+    /// Requirements that cannot be seen from paths, read from script text: Codeware, Mod Settings,
     /// RedFileSystem (redscript imports/annotations) and Native Settings UI (CET Lua).
     /// </summary>
     public static IReadOnlyList<RequirementSpec> InferFromContent(IEnumerable<(GamePath Target, string Text)> scripts, IReadOnlyCollection<string> provided)
@@ -144,7 +144,7 @@ public static class FrameworkCatalog
             .OrderBy(r => r.Capability, StringComparer.Ordinal).ToList();
     }
 
-    /// <summary>Catalog capability of a Nexus mod id (P40/P43: requirements listed on the Nexus page).</summary>
+    /// <summary>Catalog capability of a Nexus mod id (requirements listed on the Nexus page).</summary>
     public static string? CapabilityOfNexusId(string? nexusModId) =>
         nexusModId is null ? null : Contracts.FirstOrDefault(c => c.NexusModId == nexusModId)?.Capability;
 

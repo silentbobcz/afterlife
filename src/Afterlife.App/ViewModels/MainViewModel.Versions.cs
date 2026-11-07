@@ -5,12 +5,12 @@ using CommunityToolkit.Mvvm.Input;
 namespace Afterlife.App.ViewModels;
 
 /// <summary>
-/// P98: a new version of a mod in a collection; two versions of one mod on at the same time.
-/// P99: duplicates (the same files twice in the library). P101: renaming profiles.
+/// A new version of a mod in a collection; two versions of one mod on at the same time.
+/// Duplicates (the same files twice in the library). renaming profiles.
 /// </summary>
 public sealed partial class MainViewModel
 {
-    // ---------------- P98: two versions on ----------------
+    // ---------------- two versions on ----------------
     /// <summary>Packages of the same mod (same AFTERLIFE mod id) that are on together in the selected profile.</summary>
     private static Dictionary<string, List<ModOverview>> TwinsOn(InstallOverview o) =>
         o.Mods.Where(m => m.Wanted && m.Package.LayerOfModId is null)
@@ -27,7 +27,7 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>When a mod is switched on and another version of it is on: offer to switch the other one off.</summary>
-    /// <returns>Versions to switch off; empty = keep both; null = P121 Cancel, the mod is not switched on at all.</returns>
+    /// <returns>Versions to switch off; empty = keep both; null = Cancel, the mod is not switched on at all.</returns>
     private async Task<IReadOnlyList<string>?> OtherVersionsToSwitchOffAsync(string packageId)
     {
         if (_overview is null) return [];
@@ -49,8 +49,8 @@ public sealed partial class MainViewModel
         _overview is null || IsModsOff ? []
             : TwinsOn(_overview).Values.Select(g => $"! {g[0].Package.ModName}: {g.Count} versions on ({string.Join(", ", g.Select(m => m.Package.Version))})");
 
-    // ---------------- P98: new version of a mod in a collection ----------------
-    private int? _collectionUpdateChoice; // P98: "for all" during Update all
+    // ---------------- new version of a mod in a collection ----------------
+    private int? _collectionUpdateChoice; // "for all" during Update all
 
     private IReadOnlyList<string> CollectionsOf(string packageId) =>
         _collections.Where(r => r.PackageOf.Values.Contains(packageId)).Select(r => r.Name).ToList();
@@ -74,12 +74,12 @@ public sealed partial class MainViewModel
         return pick;
     }
 
-    // ---------------- P123: old versions left from earlier updates ----------------
+    // ---------------- old versions left from earlier updates ----------------
     private bool _oldVersionsAsked;
 
     /// <summary>
     /// Once per session: older versions of a mod that is in the library in a newer version too, switched off in every
-    /// profile, not in the game and in no collection (left from updates before P123). Offers to delete them.
+    /// Profile, not in the game and in no collection (left from updates before). Offers to delete them.
     /// </summary>
     private Task CheckOldVersionsAsync() => RunUiAsync(async () =>
     {
@@ -107,7 +107,7 @@ public sealed partial class MainViewModel
         Say($"Deleted {r.Deleted.Count} old version(s) from the library.", Tone.Ok);
     });
 
-    // ---------------- P99: duplicates ----------------
+    // ---------------- duplicates ----------------
     private bool _duplicatesAsked;
 
     /// <summary>Asks once per session (and after imports) to merge packages that have exactly the same files.</summary>
@@ -148,7 +148,7 @@ public sealed partial class MainViewModel
         SayLines(report, r.Kept.Count > 0 ? Tone.Warn : Tone.Ok);
     });
 
-    // ---------------- P101: rename a profile ----------------
+    // ---------------- rename a profile ----------------
     [RelayCommand]
     private Task RenameProfile() => RunUiAsync(async () =>
     {
@@ -169,6 +169,6 @@ public sealed partial class MainViewModel
         }
     });
 
-    /// <summary>P101: double-click on a category name.</summary>
+    /// <summary>Double-click on a category name.</summary>
     public void RenameCategory(string id) => _ = RenameCategoryAsync(id);
 }

@@ -8,8 +8,8 @@ using System.Windows.Threading;
 namespace Afterlife.App.Controls;
 
 /// <summary>
-/// One shared ~30 fps clock for every looping effect (P14). Runs only while something listens and motion is on,
-/// so a hidden or reduced-motion window costs nothing.
+/// One shared ~30 fps clock for every looping effect. Runs only while something listens and motion is on,
+/// So a hidden or reduced-motion window costs nothing.
 /// </summary>
 public static class FxClock
 {
@@ -71,9 +71,9 @@ public abstract class AnimatedElement : FrameworkElement
 }
 
 /// <summary>
-/// P17/P29: the EDDIES background, ported 1:1 from EDDIES app.css (body::before) and fx.js (canvas fx-bg):
-/// magenta glow top right, cyan glow bottom left, 44 px grid, a magenta perspective floor running towards the
-/// viewer from 62 % height with cyan rays from 62 % width, a magenta horizon haze and rising data dust.
+/// The EDDIES background, ported 1:1 from EDDIES app.css (body::before) and fx.js (canvas fx-bg):
+/// Magenta glow top right, cyan glow bottom left, 44 px grid, a magenta perspective floor running towards the
+/// Viewer from 62 % height with cyan rays from 62 % width, a magenta horizon haze and rising data dust.
 /// </summary>
 public sealed class Backdrop : AnimatedElement
 {
@@ -194,8 +194,8 @@ public sealed class Scanlines : FrameworkElement
 }
 
 /// <summary>
-/// P13: the AFTERLIFE name drawn like the EDDIES logo: Chakra Petch Bold in yellow with a soft glow, two raster
-/// cuts through the letters, a cyan/magenta bar underneath and short cyan (top) and magenta (bottom) glitch slices
+/// The AFTERLIFE name drawn like the EDDIES logo: Chakra Petch Bold in yellow with a soft glow, two raster
+/// Cuts through the letters, a cyan/magenta bar underneath and short cyan (top) and magenta (bottom) glitch slices
 /// (EDDIES keyframes glitch-a 4.2 s and glitch-b 3.7 s). Every 6 s a BREACH-style white flash runs over it.
 /// </summary>
 public sealed class GlitchTitle : AnimatedElement
@@ -292,7 +292,7 @@ public sealed class GlitchTitle : AnimatedElement
             Offset(dc, g, Mc, 4, 0, 0.6, null);
         }
 
-        // P34: no underline
+        // no underline
 
         // glitch slices
         var top = new RectangleGeometry(new Rect(_ink.Left - 6, _ink.Top - 4, _ink.Width + 12, _ink.Height * 0.40 + 4));
@@ -314,8 +314,8 @@ public sealed class GlitchTitle : AnimatedElement
 }
 
 /// <summary>
-/// P13: BREACH corner brackets around the logo mark. They snap in from 1.8× size, hold and fade (2.4 s loop),
-/// one corner after another. Still frame: no frame at all, as the user preferred over a static blue frame.
+/// BREACH corner brackets around the logo mark. They snap in from 1.8× size, hold and fade (2.4 s loop),
+/// One corner after another. Still frame: no frame at all, as the user preferred over a static blue frame.
 /// </summary>
 public sealed class CornerBrackets : AnimatedElement
 {
@@ -357,8 +357,8 @@ public sealed class CornerBrackets : AnimatedElement
 }
 
 /// <summary>
-/// P16: NETDECK-style network scan. Nodes linked by traces; a scan line sweeps across, nodes it passes ping with
-/// a ring and packets run along the traces. <see cref="Active"/> makes it faster and brighter while scanning.
+/// NETDECK-style network scan. Nodes linked by traces; a scan line sweeps across, nodes it passes ping with
+/// A ring and packets run along the traces. <see cref="Active"/> makes it faster and brighter while scanning.
 /// </summary>
 public sealed class NetScan : AnimatedElement
 {
@@ -500,13 +500,13 @@ public sealed class GlitchBand : AnimatedElement
     }
 }
 
-/// <summary>One scanned game folder with the number of files AFTERLIFE did not install (P27).</summary>
+/// <summary>One scanned game folder with the number of files AFTERLIFE did not install.</summary>
 public sealed record ScanFolder(string Label, string Short, int Count);
 
 /// <summary>
-/// P27: folder sweep instead of the node graph. Each scanned folder is a row (or a cell in compact mode); a scan
-/// head runs over them, the bar of a folder fills when the head passes, folders with unmanaged files light up
-/// yellow with their count. Faster and brighter while <see cref="Active"/>.
+/// Folder sweep instead of the node graph. Each scanned folder is a row (or a cell in compact mode); a scan
+/// Head runs over them, the bar of a folder fills when the head passes, folders with unmanaged files light up
+/// Yellow with their count. Faster and brighter while <see cref="Active"/>.
 /// </summary>
 public sealed class FolderScan : AnimatedElement
 {
@@ -514,7 +514,7 @@ public sealed class FolderScan : AnimatedElement
         new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.AffectsMeasure));
     public static readonly DependencyProperty ActiveProperty = DependencyProperty.Register(nameof(Active), typeof(bool), typeof(FolderScan),
         new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
-    /// <summary>P42: the sweep runs only while true (hover on the tile, scanning); otherwise a still "checked" frame.</summary>
+    /// <summary>The sweep runs only while true (hover on the tile, scanning); otherwise a still "checked" frame.</summary>
     public static readonly DependencyProperty RunningProperty = DependencyProperty.Register(nameof(Running), typeof(bool), typeof(FolderScan),
         new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { if (e.NewValue is true) ((FolderScan)d)._runStart = FxClock.Now; }));
     public bool Running { get => (bool)GetValue(RunningProperty); set => SetValue(RunningProperty, value); }
@@ -575,7 +575,7 @@ public sealed class FolderScan : AnimatedElement
             dc.DrawText(Text(f.Label, 10.5, labelColor), new Point(0, y));
             // track
             dc.DrawRectangle(Frozen(A(Cc, 0.08)), null, new Rect(barX, y + 5, barW, 4));
-            // P90: the head runs over the whole bar; a checked folder stays full: cyan when clean, yellow when something was found
+            // the head runs over the whole bar; a checked folder stays full: cyan when clean, yellow when something was found
             var fill = passed ? 1.0 : onIt ? head - i : 0;
             dc.DrawRectangle(Frozen(found ? Yc : A(Cc, passed ? 0.45 : 0.7)), null, new Rect(barX, y + 5, barW * fill, 4));
             if (onIt)
@@ -616,9 +616,9 @@ public sealed class FolderScan : AnimatedElement
 }
 
 /// <summary>
-/// P44: light support for the top of the window behind the logo: a slow cyan glow around the mark, a magenta
-/// afterglow behind the name, thin circuit traces with data packets running out of the logo, a bottom rule with a
-/// travelling highlight and a rare faint glitch slice. Still frame (glow and traces only) when motion is off.
+/// Light support for the top of the window behind the logo: a slow cyan glow around the mark, a magenta
+/// Afterglow behind the name, thin circuit traces with data packets running out of the logo, a bottom rule with a
+/// Travelling highlight and a rare faint glitch slice. Still frame (glow and traces only) when motion is off.
 /// </summary>
 public sealed class HeaderAura : AnimatedElement
 {

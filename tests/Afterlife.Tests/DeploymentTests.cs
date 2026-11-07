@@ -237,7 +237,7 @@ public class DeploymentTests
     [Fact]
     public void Writing_through_a_symlinked_directory_is_refused()
     {
-        if (OperatingSystem.IsWindows()) return; // symlink creation needs privileges on Windows; covered by M0 junction test
+        if (OperatingSystem.IsWindows()) return; // symlink creation needs privileges on Windows; covered by the junction test
         using var t = new TestEnv();
         var outside = Path.Combine(t.Root, "outside");
         Directory.CreateDirectory(outside);

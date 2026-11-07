@@ -41,10 +41,10 @@ public sealed record NexusFileInfo(string FileName, string? Version, string? Mod
 
 public sealed class NexusException(string message) : Exception(message);
 
-/// <summary>A mod the Nexus page lists as required (P40/P43).</summary>
+/// <summary>A mod the Nexus page lists as required.</summary>
 public sealed record NexusRequirement(string ModId, string Name, string Url, bool External, string? Notes);
 
-/// <summary>P43: what the Nexus page says about a mod, cached in the library database.</summary>
+/// <summary>What the Nexus page says about a mod, cached in the library database.</summary>
 public sealed record NexusModInfo(
     string ModId,
     string Name,
@@ -60,7 +60,7 @@ public sealed record NexusModInfo(
     public string Url => $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}";
 }
 
-/// <summary>P48: one download from Nexus Mods through AFTERLIFE (kept even after the mod is deleted).</summary>
+/// <summary>One download from Nexus Mods through AFTERLIFE (kept even after the mod is deleted).</summary>
 public sealed record NexusDownload(string ModId, string FileId, string Name, string? Version, string FileName, DateTimeOffset DownloadedAt)
 {
     public string Url => $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}";
@@ -74,11 +74,11 @@ public sealed record NexusFile(string FileId, string Name, string? Version, stri
 
 public sealed record NexusFiles(string ModId, IReadOnlyList<NexusFile> Files, IReadOnlyList<(string Old, string New)> Updates);
 
-/// <summary>M4: a newer file for a package. Exact = the author marked our file as replaced; otherwise the version of the main file differs.</summary>
+/// <summary>A newer file for a package. Exact = the author marked our file as replaced; otherwise the version of the main file differs.</summary>
 public sealed record NexusUpdate(string ModId, string FileId, string? Version, string Name, bool Exact, DateTimeOffset CheckedAt)
 {
     /// <summary>
-    /// Page of the new file. P117: <c>nmm=1</c> opens Nexus' download page for mod managers, where one click on
+    /// Page of the new file. <c>nmm=1</c> opens Nexus' download page for mod managers, where one click on
     /// "Slow download" (free) or "Download" (Premium) sends the file through the nxm:// link straight into AFTERLIFE.
     /// </summary>
     public string Url => $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}?tab=files&file_id={FileId}&nmm=1";
@@ -203,7 +203,7 @@ public static class DownloadHistory
 
 public static class NexusInfo
 {
-    /// <summary>P49: Nexus has no optional flag on requirements; the author's note says it.</summary>
+    /// <summary>Nexus has no optional flag on requirements; the author's note says it.</summary>
     public static bool IsOptionalNote(string? notes) => notes is { } n &&
         (n.TrimStart().StartsWith("optional", StringComparison.OrdinalIgnoreCase) || n.TrimStart().StartsWith("recommended", StringComparison.OrdinalIgnoreCase));
 
@@ -241,7 +241,7 @@ public static class NexusInfo
 
 /// <summary>
 /// Minimal Nexus Mods API v1 client: who owns the key (Premium or not), mod and file names, download links.
-/// Every user enters their own personal API key (D8); it never leaves this machine except to api.nexusmods.com.
+/// Every user enters their own personal API key; it never leaves this machine except to api.nexusmods.com.
 /// </summary>
 public sealed class NexusClient : IDisposable
 {
@@ -302,10 +302,10 @@ public sealed class NexusClient : IDisposable
     }
 
     /// <summary>
-    /// P43: summary, author, picture and counts (API v1) plus the requirements listed on the mod page (GraphQL v2).
+    /// Summary, author, picture and counts (API v1) plus the requirements listed on the mod page (GraphQL v2).
     /// Requirements are best effort: when GraphQL fails the rest is still returned.
     /// </summary>
-    /// <summary>P51: one revision of a collection (latest when no number).</summary>
+    /// <summary>One revision of a collection (latest when no number).</summary>
     public async Task<CollectionRevisionInfo> CollectionRevisionAsync(CollectionLink link, CancellationToken ct = default)
     {
         var body = JsonSerializer.Serialize(new { query = CollectionLogic.RevisionQuery, variables = new { slug = link.Slug, revision = link.Revision, domain = link.Game } });
@@ -322,7 +322,7 @@ public sealed class NexusClient : IDisposable
         }
     }
 
-    /// <summary>P51: downloads the collection bundle (.7z with collection.json and bundled files) into the given file.</summary>
+    /// <summary>Downloads the collection bundle (.7z with collection.json and bundled files) into the given file.</summary>
     public async Task<bool> CollectionBundleAsync(string downloadLink, string destination, CancellationToken ct = default)
     {
         var path = downloadLink.StartsWith("/v1/", StringComparison.Ordinal) ? downloadLink[4..] : downloadLink.TrimStart('/');
@@ -338,7 +338,7 @@ public sealed class NexusClient : IDisposable
         }
     }
 
-    /// <summary>M4: files of a mod and which file replaced which.</summary>
+    /// <summary>Files of a mod and which file replaced which.</summary>
     public async Task<NexusFiles> FilesAsync(string modId, CancellationToken ct = default)
     {
         using var doc = await GetJsonAsync($"games/{NxmLink.Cyberpunk}/mods/{modId}/files.json", ct);
@@ -514,8 +514,8 @@ public sealed class NexusClient : IDisposable
 
 /// <summary>
 /// Nexus Mods single sign-on (wss://sso.nexusmods.com): the user approves AFTERLIFE on the website and the key comes
-/// back without copying. Needs the application slug Nexus Mods issues after registration (API Acceptable Use Policy);
-/// until then <see cref="ApplicationSlug"/> is null and the app uses the personal key.
+/// Back without copying. Needs the application slug Nexus Mods issues after registration (API Acceptable Use Policy);
+/// Until then <see cref="ApplicationSlug"/> is null and the app uses the personal key.
 /// </summary>
 public static class NexusSso
 {
@@ -584,8 +584,8 @@ public static class NexusSso
 }
 
 /// <summary>
-/// P86: the picture of a mod from its Nexus page, kept in the library so it is fetched once per mod (only for mods
-/// in the library, never in bulk). Missing or failing pictures just leave the details without one.
+/// The picture of a mod from its Nexus page, kept in the library so it is fetched once per mod (only for mods
+/// In the library, never in bulk). Missing or failing pictures just leave the details without one.
 /// </summary>
 public static class ModImageCache
 {
