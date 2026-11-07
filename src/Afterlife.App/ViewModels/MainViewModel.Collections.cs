@@ -109,7 +109,6 @@ public sealed partial class MainViewModel
         return rev;
     }
 
-    // ---------------- download progress ----------------
     private CollectionProgressVm? _collectionProgress;
 
     private void ShowCollectionWindow(CollectionRecord r, IReadOnlyList<CollectionItemState> states)
@@ -354,7 +353,6 @@ public sealed partial class MainViewModel
         await RefreshAsync();
     });
 
-    // ---------------- collection chapters ----------------
     [ObservableProperty] private IReadOnlyDictionary<string, CollectionChapterVm> _collectionChapters = new Dictionary<string, CollectionChapterVm>();
     private IReadOnlyList<CollectionRecord> _collections = [];
 

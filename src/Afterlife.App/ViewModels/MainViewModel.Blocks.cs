@@ -91,7 +91,6 @@ public sealed partial class MainViewModel
         ModsView.Refresh();
     }
 
-    // ---------------- order ----------------
     private List<string> CurrentOrder() =>
         Mods.Where(m => !m.IsCore && m.Overview.Package.LayerOfModId is null).Select(m => m.PackageId).ToList();
 
@@ -216,7 +215,6 @@ public sealed partial class MainViewModel
 
     private string CategoryName(string id) => _layout.Categories.FirstOrDefault(c => c.Id == id)?.Name ?? "category";
 
-    // ---------------- blocks ----------------
     /// <summary>Moves a block (collection, MODS) or a category before or after another one.</summary>
     public Task MoveBlockAsync(string block, string target, bool after) => RunUiAsync(async () =>
     {
@@ -267,7 +265,6 @@ public sealed partial class MainViewModel
                 new AsyncRelayCommand(() => StepBlockAsync(block, 1), () => canEdit && i >= 0 && i < siblings.Count - 1));
     }
 
-    // ---------------- categories ----------------
     private async Task<string?> AskCategoryNameAsync(string title, string initial, string? exceptId)
     {
         while (true)
