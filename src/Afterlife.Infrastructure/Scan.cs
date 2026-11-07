@@ -168,15 +168,6 @@ public sealed class ScanService
         };
     }
 
-    /// <summary>Folders many mods share: a file directly in them belongs to nobody in particular.</summary>
-    private static readonly HashSet<string> SharedFolders = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "", "archive", "archive/pc", "archive/pc/mod", "bin", "bin/x64", "bin/x64/plugins", "bin/x64/plugins/cyber_engine_tweaks/mods",
-        "r6", "r6/scripts", "r6/tweaks", "r6/config", "r6/config/redsUserHints", "r6/config/settings", "r6/input", "r6/cache", "r6/cache/modded",
-        "r6/audioware", "r6/logs", "red4ext", "red4ext/plugins", "red4ext/logs", "mods", "engine", "engine/config", "engine/config/platform",
-        "engine/config/platform/pc", "engine/tools",
-    };
-
     /// <summary>
     /// Which deployed package a file AFTERLIFE did not write belongs to: the nearest own (not shared) folder of
     /// One deployed package, or a runtime folder of a core mod deployed by AFTERLIFE.
@@ -191,7 +182,7 @@ public sealed class ScanService
             var dir = ParentOf(e.Path);
             if (!direct.TryGetValue(dir, out var d)) direct[dir] = d = new HashSet<string>(StringComparer.Ordinal);
             d.Add(e.Owner);
-            for (var x = dir; !SharedFolders.Contains(x); x = ParentOf(x))
+            for (var x = dir; !GameLayout.SharedFolders.Contains(x); x = ParentOf(x))
             {
                 if (!subtree.TryGetValue(x, out var t)) subtree[x] = t = new HashSet<string>(StringComparer.Ordinal);
                 t.Add(e.Owner);
@@ -218,7 +209,7 @@ public sealed class ScanService
             foreach (var f in p.Files)
             {
                 if (!GamePath.TryCreate(f.Target, out var gp, out _)) continue;
-                for (var x = ParentOf(gp.Value); !SharedFolders.Contains(x); x = ParentOf(x))
+                for (var x = ParentOf(gp.Value); !GameLayout.SharedFolders.Contains(x); x = ParentOf(x))
                 {
                     if (!libSubtree.TryGetValue(x, out var t)) libSubtree[x] = t = new HashSet<string>(StringComparer.Ordinal);
                     t.Add(p.PackageId);
@@ -228,7 +219,7 @@ public sealed class ScanService
         foreach (var path in paths)
         {
             string? owner = null;
-            for (var x = ParentOf(path); !SharedFolders.Contains(x); x = ParentOf(x))
+            for (var x = ParentOf(path); !GameLayout.SharedFolders.Contains(x); x = ParentOf(x))
             {
                 if (!subtree.TryGetValue(x, out var t)) continue;
                 if (t.Count == 1) owner = t.First();
@@ -239,7 +230,7 @@ public sealed class ScanService
             owner ??= runtimeFolders.FirstOrDefault(r => path.StartsWith(r.Folder + "/", StringComparison.OrdinalIgnoreCase)
                 && !r.Exclude.Any(e => path.StartsWith(e + "/", StringComparison.OrdinalIgnoreCase))).Owner;
             if (owner is null)
-                for (var x = ParentOf(path); !SharedFolders.Contains(x); x = ParentOf(x))
+                for (var x = ParentOf(path); !GameLayout.SharedFolders.Contains(x); x = ParentOf(x))
                 {
                     if (!libSubtree.TryGetValue(x, out var t)) continue;
                     // one mod, or several versions of the same mod

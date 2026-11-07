@@ -56,7 +56,8 @@ public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
         return freed;
     }
 
-    public RemovalResult Remove(string gameRoot, IReadOnlyCollection<GamePath> paths, string label)
+    /// <param name="keepInGame">true: copy only; the file stays in the game (the deployment removes or replaces it afterwards).</param>
+    public RemovalResult Remove(string gameRoot, IReadOnlyCollection<GamePath> paths, string label, bool keepInGame = false)
     {
         var id = $"{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
         var files = new List<RemovedFile>();
@@ -91,8 +92,9 @@ public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
                 continue;
             }
             File.Move(tmp, dst);
-            fs.Delete(src);
             moved++;
+            if (keepInGame) continue;
+            fs.Delete(src);
             PruneEmptyDirectories(gameRoot, gp);
         }
 

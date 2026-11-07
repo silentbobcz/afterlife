@@ -247,12 +247,12 @@ Files that mods in the library create on their own (logs, settings, caches, lock
 
 ## 15. Files changed outside AFTERLIFE
 
-Mods often change their own settings files after you play. Files a core mod rewrites by design every time the game runs (Input Loader's `r6/cache/inputContexts.xml`, `inputUserMappings.xml` and `input_loader.ini`, Mod Settings' `user.ini`) are not reported: they are removed with their mod and replaced by an update. For other files, when AFTERLIFE is about to replace or remove a changed one, it asks once **per mod**:
+Mods often change their own files after you play: settings, databases (AMM's `db.sqlite3`), caches. AFTERLIFE tells the two cases apart by where the file is:
 
-- **Keep my edits** · the changed files are saved in the library as *my edits* and stay with the mod,
-- **Discard** · they are replaced or removed as planned.
+- **In the mod's own folder** (a CET mod folder, a RED4ext plugin folder, a redscript module folder): the mod is at work. Nothing is reported and nothing blocks. When the mod is switched off, deleted or updated, a copy of the changed files goes to *Removed* as *Changed files of …* (restorable in *Scan manual mods*) before they are removed or replaced.
+- **Directly in a shared folder** (`archive/pc/mod`, `r6/scripts`, `r6/tweaks`, …): that is your edit. While the mod stays, the row says **CHANGED OUTSIDE** and nothing else is held back. When AFTERLIFE is about to replace or remove the file, **APPLY** asks once **per mod**: **Keep my edits** saves the changed files in the library as *my edits* that stay with the mod; **Discard** replaces or removes them as planned. **Keep all** and **Discard all** decide for every mod at once. When you delete a mod everywhere, its changed files are moved to *Removed* instead of blocking the deletion.
 
-**Keep all** and **Discard all** decide for every mod at once. When you delete a mod everywhere, its changed files are moved to *Removed* as *Changed files of …* instead of blocking the deletion.
+Files a core mod rewrites by design every time the game runs (Input Loader's `r6/cache/inputContexts.xml`, `inputUserMappings.xml` and `input_loader.ini`, Mod Settings' `user.ini`) are treated like files in the mod's own folder.
 
 ## 16. Export the mod list
 

@@ -46,7 +46,11 @@ public sealed record PlanStep(
     string? SourceStoredPath,
     string? SourceContent,
     BaselineAction Baseline,
-    string Reason);
+    string Reason)
+{
+    /// <summary>The file was changed by its mod (or the user) since AFTERLIFE wrote it: copy it into the library before this step touches it.</summary>
+    public bool SaveAside { get; init; }
+}
 
 public sealed record Plan(IReadOnlyList<PlanStep> Steps, IReadOnlyList<Issue> Blockers, IReadOnlyList<Issue> Warnings)
 {
@@ -129,6 +133,17 @@ public static class Planner
                     if (le.Hash != f.Hash)
                         replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, f.StoredPath, null, "new content for runtime file (rewritten by its mod while the game runs)"));
                 }
+                else if (le.Hash == f.Hash && le.Owner == f.OwnerPackageId)
+                {
+                    // nothing new to deploy: a file in the mod's own folder is the mod at work (settings, database), leave it;
+                    // a file directly in a shared folder was edited by hand: say so, but do not hold other mods back
+                    if (!GameLayout.IsInOwnFolder(f.Path))
+                        warnings.Add(new Issue(IssueKind.ModifiedManagedFile, Severity.Warning,
+                            $"{f.Path} was changed outside AFTERLIFE; it stays as it is until this mod is updated or switched off", le.Owner, f.Path));
+                }
+                else if (GameLayout.IsInOwnFolder(f.Path))
+                    // new content for a file the mod rewrote in its own folder: the current copy goes to the library first
+                    replaces.Add(Step(StepKind.Replace, f.Path, ArtifactKind.Payload, f.OwnerPackageId, current, f.Hash, f.Size, f.StoredPath, null, "new content for a file the mod changed itself (old copy saved to the library)") with { SaveAside = true });
                 else
                     blockers.Add(new Issue(IssueKind.ModifiedManagedFile, Severity.Blocking,
                         $"{f.Path} was changed outside AFTERLIFE; capture the changes as a local mod or discard them", le.Owner, f.Path));
@@ -166,6 +181,9 @@ public static class Planner
                 removes.Add(Step(StepKind.Remove, le.Path, ArtifactKind.Payload, le.Owner, current, null, 0, null, null, "discard user changes"));
             else if (volatilePathKeys.Contains(gp.Key))
                 removes.Add(Step(StepKind.Remove, le.Path, ArtifactKind.Payload, le.Owner, current, null, 0, null, null, "no longer in profile (runtime file rewritten by its mod)"));
+            else if (GameLayout.IsInOwnFolder(le.Path))
+                // the mod leaves and changed this file itself (settings, database): the copy goes to the library, restorable
+                removes.Add(Step(StepKind.Remove, le.Path, ArtifactKind.Payload, le.Owner, current, null, 0, null, null, "no longer in profile (changed by its mod; copy saved to the library)") with { SaveAside = true });
             else
                 blockers.Add(new Issue(IssueKind.ModifiedManagedFile, Severity.Blocking,
                     $"{le.Path} was changed outside AFTERLIFE; capture the changes as a local mod or discard them", le.Owner, le.Path));

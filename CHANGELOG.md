@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## 1.0.0-alpha.4
+
+- **Files a mod changes in its own folder** (settings, AMM's database, caches) no longer block anything: they are left alone while the mod stays, and a copy goes to the library as *Changed files of …* when the mod is switched off, deleted or updated. An edit directly in a shared folder shows CHANGED OUTSIDE on its row without holding other mods back; APPLY asks Keep / Discard only when that file is about to be replaced or removed. Before, one changed file could block APPLY and every deletion.
+- **APPLY CHANGES** stays available when the only blockers are changed files; the keep/discard dialog opens from it.
+
 ## 1.0.0-alpha.3
 
 - **Faster refresh**: the window no longer walks the game folder and reads every mod's Nexus rows from the database after every click. The last scan is reused while only profiles change (a full scan still runs on start, REFRESH, *Scan manual mods*, after apply or launch and when the window comes back to the front); the overview builds its per-mod data from one-time lookups.

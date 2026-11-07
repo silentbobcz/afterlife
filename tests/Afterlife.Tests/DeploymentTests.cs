@@ -360,3 +360,85 @@ public class CaptureTests
         Assert.Equal("user edit", t.Read("archive/pc/mod/a.archive"));
     }
 }
+
+/// <summary>Files a mod rewrites in its own folder (settings, databases) are the mod's business, not a blocker.</summary>
+public class OwnFolderDataTests
+{
+    private const string Db = "bin/x64/plugins/cyber_engine_tweaks/mods/AMM/db.sqlite3";
+
+    private static PackageManifest ImportAmm(TestEnv t)
+    {
+        var cet = t.C.Import(new ImportRequest(t.Zip("CET", ("bin/x64/plugins/cyber_engine_tweaks.asi", "asi")), "Cyber Engine Tweaks", "1.38",
+            Options: new ImportOptions(AllowUnverifiedFrameworks: true))).Package!;
+        t.C.SetEnabled(cet.PackageId, true);
+        return t.ImportZip("AMM", ("bin/x64/plugins/cyber_engine_tweaks/mods/AMM/init.lua", "lua"), (Db, "shipped"));
+    }
+
+    [Fact]
+    public void Data_changed_by_a_mod_in_its_own_folder_blocks_nothing_and_is_saved_when_the_mod_leaves()
+    {
+        using var t = new TestEnv();
+        var amm = ImportAmm(t);
+        var other = t.ImportZip("Other", ("archive/pc/mod/other.archive", "o"));
+        t.C.UpdateSelected(p => p.WithEntry(amm.PackageId, true).WithEntry(other.PackageId, true));
+        t.ApplyOk();
+        // the game ran: AMM wrote its database
+        t.Write(Db, "saved outfits");
+
+        // nothing to deploy: the file is left alone, no blocker, no warning on the row
+        var preview = t.C.Preview();
+        Assert.True(preview.CanApply);
+        Assert.True(preview.Plan.IsNoop);
+        Assert.NotEqual(ModState.ChangedOutside, OverviewBuilder.Build(t.C).Mods.Single(m => m.Package.PackageId == amm.PackageId).State);
+
+        // another mod can be deleted meanwhile
+        var del = t.C.DeleteEverywhere([other.PackageId]);
+        Assert.Empty(del.Kept);
+        Assert.Equal("saved outfits", t.Read(Db));
+
+        // switching AMM off removes the database, a copy is kept in the library
+        t.C.SetEnabled(amm.PackageId, false);
+        t.ApplyOk();
+        Assert.Null(t.Read(Db));
+        var batch = Assert.Single(t.C.Removed.List(), b => b.Label == "Changed files of AMM");
+        Assert.Contains(batch.Files, f => f.Path == Db);
+
+        // and back on: the shipped copy returns, the saved one can be restored by hand
+        t.C.SetEnabled(amm.PackageId, true);
+        t.ApplyOk();
+        Assert.Equal("shipped", t.Read(Db));
+    }
+
+    [Fact]
+    public void Deleting_a_mod_whose_own_folder_data_changed_saves_the_data()
+    {
+        using var t = new TestEnv();
+        var amm = ImportAmm(t);
+        t.C.SetEnabled(amm.PackageId, true);
+        t.ApplyOk();
+        t.Write(Db, "saved outfits");
+        var del = t.C.DeleteEverywhere([amm.PackageId]);
+        Assert.Empty(del.Kept);
+        Assert.Null(t.Read(Db));
+        Assert.Contains(t.C.Removed.List(), b => b.Label == "Changed files of AMM" && b.Files.Any(f => f.Path == Db));
+    }
+
+    [Fact]
+    public void An_edit_directly_in_a_shared_folder_is_a_warning_while_the_mod_stays()
+    {
+        using var t = new TestEnv();
+        var a = t.ImportZip("A", ("archive/pc/mod/a.archive", "original"));
+        var other = t.ImportZip("Other", ("archive/pc/mod/other.archive", "o"));
+        t.C.UpdateSelected(p => p.WithEntry(a.PackageId, true).WithEntry(other.PackageId, true));
+        t.ApplyOk();
+        t.Write("archive/pc/mod/a.archive", "user edit");
+
+        var preview = t.C.Preview();
+        Assert.True(preview.CanApply);
+        Assert.Contains(preview.Plan.Warnings, w => w.Kind == IssueKind.ModifiedManagedFile && w.Path == "archive/pc/mod/a.archive");
+        Assert.Equal(ModState.ChangedOutside, OverviewBuilder.Build(t.C).Mods.Single(m => m.Package.PackageId == a.PackageId).State);
+        // other mods are not held back by it
+        Assert.Empty(t.C.DeleteEverywhere([other.PackageId]).Kept);
+        Assert.Equal("user edit", t.Read("archive/pc/mod/a.archive"));
+    }
+}

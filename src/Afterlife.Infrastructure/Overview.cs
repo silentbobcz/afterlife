@@ -250,7 +250,7 @@ public static class OverviewBuilder
                 status.Unfinished is null && status.LastGeneration?.ProfileId == p.Id))
             .ToList();
 
-        var blockersByPath = preview.Plan.Blockers.Where(b => b.Path is not null)
+        var blockersByPath = preview.Plan.Blockers.Concat(preview.Plan.Warnings.Where(w => w.Kind == IssueKind.ModifiedManagedFile)).Where(b => b.Path is not null)
             .GroupBy(b => GamePath.Parse(b.Path!).Key).ToDictionary(g => g.Key, g => g.ToList());
         var stepsByOwner = preview.Plan.Steps
             .Select(s => (s, owner: s.Kind == StepKind.Remove || s.Kind == StepKind.Forget
@@ -412,7 +412,7 @@ public static class OverviewBuilder
                 + $"(for example left from a manual install): {string.Join(", ", foreign.Take(3))}{(foreign.Count > 3 ? $" +{foreign.Count - 3} more" : "")}. "
                 + "Nothing was overwritten. REPLACE moves them aside (restorable in Scan manual mods); DISCARD IMPORT keeps them and drops this mod.");
         if (issues.Any(i => i.Kind == IssueKind.ModifiedManagedFile))
-            return (ModState.ChangedOutside, "! CHANGED OUTSIDE · DECIDE", Tone.Warn, "Some of this mod's files were changed outside AFTERLIFE. Keep your edits or discard them before applying.");
+            return (ModState.ChangedOutside, "! CHANGED OUTSIDE", Tone.Warn, "Some of this mod's files were changed outside AFTERLIFE. They stay as they are; when the mod is updated or switched off, APPLY asks whether to keep or discard them, and a copy goes to the library.");
         if (wanted && issues.Any(i => i.Kind == IssueKind.FileConflict))
             return (ModState.Conflict, "! CONFLICT · DECIDE", Tone.Warn, "Another mod provides the same file. Choose which one wins on the Conflicts tab.");
         if (wanted && !included && p.LayerOfModId is not null)

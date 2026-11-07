@@ -334,10 +334,11 @@ public class RuntimeFileTests
         var o = OverviewBuilder.Build(t.C);
         Assert.NotEqual(ModState.ChangedOutside, o.Mods.Single(m => m.Package.PackageId == il.PackageId).State);
 
-        // a plain managed file edited by hand still blocks, as before
+        // a file in the mod's own folder changed since: the mod's business, left alone
         t.Write("red4ext/plugins/input_loader/input_loader.dll", "patched");
         preview = t.C.Preview();
-        Assert.Contains(preview.Plan.Blockers, b => b.Kind == IssueKind.ModifiedManagedFile && b.Path == "red4ext/plugins/input_loader/input_loader.dll");
+        Assert.True(preview.CanApply);
+        Assert.True(preview.Plan.IsNoop);
     }
 
     [Fact]

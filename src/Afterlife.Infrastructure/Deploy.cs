@@ -87,6 +87,7 @@ public sealed class DeployService
 
     internal ExecutionResult Run(DeploymentSnapshot snapshot, Plan plan, IProgress<DeployProgress>? progress = null)
     {
+        SaveAside(plan);
         var opId = "op-" + Guid.NewGuid().ToString("N");
         var fpBefore = _env.Fingerprint(GameRoot);
         var steps = plan.Steps.Select(s => new StepRecord(opId, s,
@@ -102,6 +103,25 @@ public sealed class DeployService
             return null;
         });
         return executor.Execute(opId, progress);
+    }
+
+    /// <summary>
+    /// Files a mod changed itself (settings, databases) that the plan is about to remove or replace: a copy goes to
+    /// Removed as "Changed files of X" first, so nothing the mod saved is lost. The files stay in place for the plan.
+    /// </summary>
+    private void SaveAside(Plan plan)
+    {
+        var steps = plan.Steps.Where(s => s.SaveAside).ToList();
+        if (steps.Count == 0) return;
+        var ledger = Store.GetLedger();
+        var names = Store.GetPackages().ToDictionary(p => p.PackageId, p => p.ModName);
+        foreach (var g in steps.GroupBy(s => ledger.TryGetValue(GamePath.Parse(s.Path).Key, out var le) ? le.Owner : s.Owner ?? "?"))
+        {
+            var paths = g.Select(s => GamePath.Parse(s.Path)).ToList();
+            var r = _ctx.Removed.Remove(GameRoot, paths, $"Changed files of {names.GetValueOrDefault(g.Key, g.Key)}", keepInGame: true);
+            if (r.Skipped.Count > 0) throw new InvalidOperationException($"{r.Skipped[0]} could not be saved to the library; nothing was changed");
+            ActivityLog.Write("removed", $"changed files of {names.GetValueOrDefault(g.Key, g.Key)}: saved {r.Moved} file(s) to the library (batch {r.BatchId ?? "-"})\n" + string.Join("\n", paths.Select(p => p.Value)));
+        }
     }
 
     public OperationRecord? PendingRecovery => Store.GetUnfinishedOperation();

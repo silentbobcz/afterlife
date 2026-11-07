@@ -493,8 +493,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             var profileSwitch = !o.IsDeployedProfile;
             HasChanges = o.PendingChanges > 0 || profileSwitch;
             ChangesSummary = o.PendingChanges > 0 ? o.ChangesSummary : (profileSwitch ? $"Switch the game to {st.Selected.Name}" : o.ChangesSummary);
-            CanApply = HasChanges && blocking.Count == 0 && !IsOperating;
-            ApplyBlockedReason = blocking.Count == 0 ? "" : blocking[0].Message + (blocking.Count > 1 ? $" (+{blocking.Count - 1} more)" : "");
+            // changed files are decided in a dialog when APPLY runs (keep / discard); everything else blocks the button
+            var decidable = blocking.All(b => b.Kind == IssueKind.ModifiedManagedFile);
+            CanApply = HasChanges && decidable && !IsOperating;
+            ApplyBlockedReason = blocking.Count == 0 ? "" : blocking[0].Message + (blocking.Count > 1 ? $" (+{blocking.Count - 1} more)" : "") + (decidable ? " · APPLY asks" : "");
             // a blocker tied to a mod gets a SHOW button; environment issues (game running, ...) have none
             var blockedId = blocking.Select(b => b.PackageId).FirstOrDefault(id => id is not null && o.Mods.Any(m => m.Package.PackageId == id));
             BlockedPackageId = blockedId;
