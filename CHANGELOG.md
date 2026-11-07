@@ -11,7 +11,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 - **Select all while searching** takes exactly the mods the search shows (list header, block and category headers, Ctrl+A), so found mods can be moved into a category in one go.
 - **Clear search**: a ✕ in the search box (or Esc) removes the filter.
 - **More core mods**: Audioware and Virtual Atelier are recognised as optional core mods (in the library, installed by hand and as requirements on Nexus pages or in scripts).
-- Leaner sources: the coordinator is a facade over five services, the main view model is a set of partial files, overlay view models and their templates have their own files. no change in behaviour. Tests are organised by feature; comments no longer carry patch numbers.
+- Leaner sources: the coordinator is a facade over five services, the main view model is a set of partial files, overlay view models and their templates have their own files; no change in behaviour. Tests are organised by feature; comments no longer carry patch numbers.
 
 ## 1.0.0-alpha.2
 
