@@ -235,7 +235,8 @@ public static class OverviewBuilder
         var collections = CollectionStore.List(c.Store);
         var byId = packages.ToDictionary(p => p.PackageId);
         var ledger = c.Store.GetLedger();
-        var ledgerOwners = ledger.Values.GroupBy(l => l.Owner).ToDictionary(g => g.Key, g => g.Count());
+        var lookup = new Lookup(packages, ledger, collections, profile, snapshot, NexusInfo.LoadAll(c.Store), NexusUpdates.LoadAll(c.Store));
+        var ledgerOwners = lookup.LedgerOwners;
         var lastIncluded = status.LastGeneration is null || status.Unfinished is not null
             ? new HashSet<string>()
             : Json.Deserialize<DeploymentSnapshot>(status.LastGeneration.SnapshotJson).IncludedPackages.ToHashSet();
@@ -261,45 +262,44 @@ public static class OverviewBuilder
         var entryIndex = profile.Entries.Select((e, i) => (e.PackageId, i)).ToDictionary(x => x.PackageId, x => x.i);
         int OrderOf(PackageManifest p)
         {
-            var id = p.LayerOfModId is null ? p.PackageId
-                : packages.FirstOrDefault(b => b.ModId == p.LayerOfModId && b.LayerOfModId is null)?.PackageId ?? p.PackageId;
+            var id = p.LayerOfModId is null ? p.PackageId : lookup.MainOf(p.LayerOfModId)?.PackageId ?? p.PackageId;
             return entryIndex.TryGetValue(id, out var i) ? i : int.MaxValue;
         }
         var custom = profile.ArchiveOrder.Custom;
         var sorted = packages
             .OrderBy(p => p.Provides.Any(c => c.StartsWith("framework:", StringComparison.Ordinal)) ? 0 : 1)
             .ThenBy(p => custom ? OrderOf(p) : 0)
-            .ThenBy(p => p.LayerOfModId is null ? p.ModName : ModNameOf(packages, p.LayerOfModId) + " ~", StringComparer.OrdinalIgnoreCase);
+            .ThenBy(p => p.LayerOfModId is null ? p.ModName : (lookup.MainOf(p.LayerOfModId)?.ModName ?? p.LayerOfModId) + " ~", StringComparer.OrdinalIgnoreCase);
         foreach (var p in sorted)
         {
             var wanted = profile.IsEnabled(p.PackageId);
             var inGame = ledgerOwners.ContainsKey(p.PackageId) || lastIncluded.Contains(p.PackageId);
             var isIncluded = included.Contains(p.PackageId);
-            var issues = snapshot.Issues.Where(i => i.PackageId == p.PackageId).ToList();
+            var issues = lookup.IssuesOf(p.PackageId);
             var myPaths = p.Files.Select(f => GamePath.Parse(f.Target).Key).ToHashSet();
-            var ownedPaths = ledger.Values.Where(l => l.Owner == p.PackageId).Select(l => GamePath.Parse(l.Path).Key);
-            var pathBlockers = myPaths.Concat(ownedPaths).Distinct()
+            var pathBlockers = myPaths.Concat(lookup.OwnedPaths(p.PackageId)).Distinct()
                 .SelectMany(k => blockersByPath.TryGetValue(k, out var l) ? l : []).ToList();
             issues.AddRange(pathBlockers);
             stepsByOwner.TryGetValue(p.PackageId, out var mySteps);
             mySteps ??= [];
             var hasOverride = profile.Overrides.Any(o => o.PackageId == p.PackageId);
+            var (nexusId, nexusConfirmed) = NexusInfo.IdOf(p);
+            var page = lookup.PageOf(nexusId);
 
             var (state, label, tone, explanation) = Classify(p, wanted, inGame, isIncluded, issues, mySteps, profile.IsSystemModsOff);
             mods.Add(new ModOverview(p, wanted, inGame, isIncluded, state, label, tone, hasOverride, explanation,
-                Requirements(p, profile, packages, included, external, ledgerOwners, NexusInfo.Load(c.Store, NexusInfo.IdOf(p).Id)),
-                Conflicts(p, snapshot, issues, byId, profile),
+                Requirements(p, profile, lookup, included, external, ledgerOwners, page),
+                Conflicts(p, snapshot, issues, byId, profile, lookup),
                 InstallMap(p), issues)
             {
-                NexusId = NexusInfo.IdOf(p).Id,
-                NexusConfirmed = NexusInfo.IdOf(p).Confirmed,
-                Nexus = NexusInfo.Load(c.Store, NexusInfo.IdOf(p).Id),
-                Update = NexusUpdates.Load(c.Store, p.PackageId),
-                Collections = collections.Where(r => r.PackageOf.Values.Contains(p.PackageId)).Select(r => r.Name).ToList(),
-                CollectionOptional = collections.Any(r => r.Revision.Items.Any(i => i.Optional && r.PackageOf.TryGetValue(i.Key, out var x) && x == p.PackageId))
-                    && !collections.Any(r => r.Revision.Items.Any(i => !i.Optional && r.PackageOf.TryGetValue(i.Key, out var x) && x == p.PackageId)),
-                OrderLocked = collections.Any(r => r.OrderLocked && r.ProfileId == profile.Id && r.PackageOf.Values.Contains(p.PackageId)),
-                RequirementLinks = NexusLinks(NexusInfo.Load(c.Store, NexusInfo.IdOf(p).Id), packages, ledgerOwners, external),
+                NexusId = nexusId,
+                NexusConfirmed = nexusConfirmed,
+                Nexus = page,
+                Update = lookup.UpdateOf(p.PackageId),
+                Collections = lookup.CollectionNames(p.PackageId),
+                CollectionOptional = lookup.IsCollectionOptional(p.PackageId),
+                OrderLocked = lookup.IsOrderLocked(p.PackageId),
+                RequirementLinks = NexusLinks(page, lookup, ledgerOwners, external),
             });
         }
 
@@ -317,8 +317,86 @@ public static class OverviewBuilder
         };
     }
 
-    private static string ModNameOf(IReadOnlyList<PackageManifest> all, string modId) =>
-        all.FirstOrDefault(p => p.ModId == modId && p.LayerOfModId is null)?.ModName ?? modId;
+    /// <summary>
+    /// Everything the per-mod loop in <see cref="Build"/> asks repeatedly, computed once: without it every mod filtered
+    /// the whole ledger, every collection and the whole package list, and read its Nexus rows from the database.
+    /// </summary>
+    private sealed class Lookup
+    {
+        private readonly Dictionary<string, PackageManifest> _mainByModId;
+        private readonly Dictionary<string, List<string>> _ledgerPathsByOwner;
+        private readonly Dictionary<string, List<string>> _collectionNames = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _inCollectionOptional = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _inCollectionRequired = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _orderLocked = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<Issue>> _issuesByPackage;
+        private readonly Dictionary<string, List<PackageManifest>> _providersByCapability = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, PackageManifest> _firstByNexusId = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<DesiredFile>> _conflictFilesByPackage = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, DesiredFile> _fileByKey;
+        private readonly Dictionary<string, NexusModInfo> _pages;
+        private readonly Dictionary<string, NexusUpdate> _updates;
+
+        public Dictionary<string, int> LedgerOwners { get; }
+
+        public Lookup(IReadOnlyList<PackageManifest> packages, Dictionary<string, LedgerEntry> ledger, IReadOnlyList<CollectionRecord> collections,
+            ProfileState profile, DeploymentSnapshot snapshot, Dictionary<string, NexusModInfo> pages, Dictionary<string, NexusUpdate> updates)
+        {
+            _pages = pages;
+            _updates = updates;
+            _mainByModId = packages.Where(p => p.LayerOfModId is null).GroupBy(p => p.ModId, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            _ledgerPathsByOwner = ledger.Values.GroupBy(l => l.Owner, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.Select(l => GamePath.Parse(l.Path).Key).ToList(), StringComparer.Ordinal);
+            LedgerOwners = _ledgerPathsByOwner.ToDictionary(x => x.Key, x => x.Value.Count, StringComparer.Ordinal);
+            _issuesByPackage = snapshot.Issues.Where(i => i.PackageId is not null).GroupBy(i => i.PackageId!, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
+            foreach (var p in packages)
+            {
+                foreach (var cap in p.Provides)
+                {
+                    if (!_providersByCapability.TryGetValue(cap, out var list)) _providersByCapability[cap] = list = [];
+                    list.Add(p);
+                }
+                if (NexusInfo.IdOf(p).Id is { } nid) _firstByNexusId.TryAdd(nid, p);
+            }
+            foreach (var r in collections)
+            {
+                foreach (var pid in r.PackageOf.Values.Distinct())
+                {
+                    if (!_collectionNames.TryGetValue(pid, out var names)) _collectionNames[pid] = names = [];
+                    names.Add(r.Name);
+                    if (r.OrderLocked && r.ProfileId == profile.Id) _orderLocked.Add(pid);
+                }
+                foreach (var item in r.Revision.Items)
+                    if (r.PackageOf.TryGetValue(item.Key, out var pid)) (item.Optional ? _inCollectionOptional : _inCollectionRequired).Add(pid);
+            }
+            _fileByKey = new Dictionary<string, DesiredFile>(StringComparer.Ordinal);
+            foreach (var f in snapshot.Files)
+            {
+                _fileByKey.TryAdd(GamePath.Parse(f.Path).Key, f);
+                if (f.Providers.Count <= 1) continue;
+                foreach (var pid in f.Providers)
+                {
+                    if (!_conflictFilesByPackage.TryGetValue(pid, out var list)) _conflictFilesByPackage[pid] = list = [];
+                    list.Add(f);
+                }
+            }
+        }
+
+        public PackageManifest? MainOf(string modId) => _mainByModId.GetValueOrDefault(modId);
+        public IEnumerable<string> OwnedPaths(string packageId) => _ledgerPathsByOwner.GetValueOrDefault(packageId) ?? [];
+        public List<Issue> IssuesOf(string packageId) => _issuesByPackage.TryGetValue(packageId, out var l) ? new List<Issue>(l) : [];
+        public IReadOnlyList<string> CollectionNames(string packageId) => _collectionNames.GetValueOrDefault(packageId) ?? [];
+        public bool IsCollectionOptional(string packageId) => _inCollectionOptional.Contains(packageId) && !_inCollectionRequired.Contains(packageId);
+        public bool IsOrderLocked(string packageId) => _orderLocked.Contains(packageId);
+        public List<PackageManifest> ProvidersOf(string capability) => _providersByCapability.GetValueOrDefault(capability) ?? [];
+        public PackageManifest? FirstWithNexusId(string nexusId) => _firstByNexusId.GetValueOrDefault(nexusId);
+        public IReadOnlyList<DesiredFile> ConflictFilesOf(string packageId) => _conflictFilesByPackage.GetValueOrDefault(packageId) ?? [];
+        public DesiredFile? FileAt(string key) => _fileByKey.GetValueOrDefault(key);
+        public NexusModInfo? PageOf(string? nexusId) => nexusId is null ? null : _pages.GetValueOrDefault(nexusId);
+        public NexusUpdate? UpdateOf(string packageId) => _updates.GetValueOrDefault(packageId);
+    }
 
     private static (ModState, string, Tone, string) Classify(PackageManifest p, bool wanted, bool inGame, bool included,
         List<Issue> issues, List<PlanStep> steps, bool modsOff)
@@ -353,14 +431,14 @@ public static class OverviewBuilder
         return (ModState.Off, "– OFF", Tone.Neutral, "In the library, not in this profile.");
     }
 
-    private static List<RequirementStatus> Requirements(PackageManifest p, ProfileState profile, IReadOnlyList<PackageManifest> all,
+    private static List<RequirementStatus> Requirements(PackageManifest p, ProfileState profile, Lookup lookup,
         HashSet<string> included, IReadOnlySet<string> external, Dictionary<string, int> ledgerOwners, NexusModInfo? page)
     {
         var list = new List<RequirementStatus>();
         foreach (var r in p.Requirements.Where(r => r.Mandatory))
         {
             var name = Capabilities.DisplayName(r.Capability);
-            var providers = all.Where(x => x.Provides.Contains(r.Capability)).ToList();
+            var providers = lookup.ProvidersOf(r.Capability);
             var includedProvider = providers.FirstOrDefault(x => included.Contains(x.PackageId));
             var overridden = profile.Overrides.Any(o => o.PackageId == p.PackageId && o.Capability == r.Capability);
             RequirementStatus s;
@@ -386,17 +464,17 @@ public static class OverviewBuilder
     }
 
     private static List<ConflictInfo> Conflicts(PackageManifest p, DeploymentSnapshot snapshot, List<Issue> issues,
-        Dictionary<string, PackageManifest> byId, ProfileState profile)
+        Dictionary<string, PackageManifest> byId, ProfileState profile, Lookup lookup)
     {
         string Name(string id) => byId.TryGetValue(id, out var x) ? x.ModName : id;
         var list = new List<ConflictInfo>();
-        foreach (var f in snapshot.Files.Where(f => f.Providers.Count > 1 && f.Providers.Contains(p.PackageId)))
+        foreach (var f in lookup.ConflictFilesOf(p.PackageId))
             list.Add(new ConflictInfo(f.Path, Name(f.OwnerPackageId), f.OwnerPackageId == p.PackageId, f.Providers.Select(Name).ToList()));
         foreach (var i in issues.Where(i => i.Kind == IssueKind.FileConflict && i.Path is not null))
         {
             if (list.Any(x => string.Equals(x.Path, i.Path, StringComparison.OrdinalIgnoreCase))) continue;
             var key = GamePath.Parse(i.Path!).Key;
-            var current = snapshot.Files.FirstOrDefault(f => GamePath.Parse(f.Path).Key == key);
+            var current = lookup.FileAt(key);
             var providers = profile.Entries.Where(e => e.Enabled && byId.TryGetValue(e.PackageId, out var x) && x.Files.Any(ff => GamePath.Parse(ff.Target).Key == key))
                 .Select(e => Name(e.PackageId)).ToList();
             list.Add(new ConflictInfo(i.Path!, current is null ? null : Name(current.OwnerPackageId), false, providers));
@@ -436,7 +514,7 @@ public static class OverviewBuilder
         return list;
     }
 
-    private static List<NexusRequirementStatus> NexusLinks(NexusModInfo? info, IReadOnlyList<PackageManifest> packages, Dictionary<string, int> ledgerOwners, IReadOnlySet<string> external)
+    private static List<NexusRequirementStatus> NexusLinks(NexusModInfo? info, Lookup lookup, Dictionary<string, int> ledgerOwners, IReadOnlySet<string> external)
     {
         if (info is null) return [];
         var list = new List<NexusRequirementStatus>();
@@ -444,7 +522,7 @@ public static class OverviewBuilder
         {
             if (FrameworkCatalog.CapabilityOfNexusId(r.ModId) is not null) continue; // P46: merged into the requirement list above
             if (r.External) { list.Add(new(r.Name, r.Url, "outside Nexus", Tone.Neutral, true, r.Notes)); continue; }
-            var have = packages.FirstOrDefault(p => NexusInfo.IdOf(p).Id == r.ModId);
+            var have = lookup.FirstWithNexusId(r.ModId);
             var manual = FrameworkCatalog.CapabilityOfNexusId(r.ModId) is { } cap && external.Contains(cap);
             var (status, tone) = have is null ? (manual ? ("installed by hand", Tone.Ok) : ("not in library", Tone.Warn))
                 : ledgerOwners.ContainsKey(have.PackageId) ? ("deployed", Tone.Ok) : ("in library · not deployed", Tone.Info);

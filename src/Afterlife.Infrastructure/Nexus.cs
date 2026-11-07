@@ -152,9 +152,20 @@ public static class NexusUpdates
     public static void Save(AfterlifeStore store, string packageId, NexusUpdate? u, DateTimeOffset now) =>
         store.SetMeta(Key(packageId), u is null ? None + "|" + now.ToUnixTimeSeconds() : Json.Serialize(u));
 
-    public static NexusUpdate? Load(AfterlifeStore store, string packageId)
+    public static NexusUpdate? Load(AfterlifeStore store, string packageId) => Parse(store.GetMeta(Key(packageId)));
+
+    /// <summary>Every stored update by package id, read in one query.</summary>
+    public static Dictionary<string, NexusUpdate> LoadAll(AfterlifeStore store)
     {
-        var v = store.GetMeta(Key(packageId));
+        var prefix = Key("");
+        var result = new Dictionary<string, NexusUpdate>(StringComparer.Ordinal);
+        foreach (var (key, value) in store.GetMetaByPrefix(prefix))
+            if (Parse(value) is { } u) result[key[prefix.Length..]] = u;
+        return result;
+    }
+
+    private static NexusUpdate? Parse(string? v)
+    {
         if (v is null || v.StartsWith(None, StringComparison.Ordinal)) return null;
         try { return Json.Deserialize<NexusUpdate>(v); } catch (JsonException) { return null; }
     }
@@ -198,10 +209,20 @@ public static class NexusInfo
 
     private static string Key(string modId) => "nexus:mod:" + modId;
 
-    public static NexusModInfo? Load(AfterlifeStore store, string? modId)
+    public static NexusModInfo? Load(AfterlifeStore store, string? modId) => modId is null ? null : Parse(store.GetMeta(Key(modId)));
+
+    /// <summary>Every cached Nexus page by mod id, read in one query.</summary>
+    public static Dictionary<string, NexusModInfo> LoadAll(AfterlifeStore store)
     {
-        if (modId is null) return null;
-        var json = store.GetMeta(Key(modId));
+        var prefix = Key("");
+        var result = new Dictionary<string, NexusModInfo>(StringComparer.Ordinal);
+        foreach (var (key, value) in store.GetMetaByPrefix(prefix))
+            if (Parse(value) is { } info) result[key[prefix.Length..]] = info;
+        return result;
+    }
+
+    private static NexusModInfo? Parse(string? json)
+    {
         if (json is null) return null;
         try { return Json.Deserialize<NexusModInfo>(json); } catch (JsonException) { return null; }
     }

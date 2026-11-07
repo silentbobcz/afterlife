@@ -136,6 +136,11 @@ public sealed class AfterlifeStore : IDisposable
     public string? GetMeta(string key) =>
         Query("SELECT value FROM meta WHERE key=$k", r => r.GetString(0), ("$k", key)).FirstOrDefault();
 
+    /// <summary>All meta rows whose key starts with <paramref name="prefix"/>, in one query (the overview reads hundreds of them).</summary>
+    public Dictionary<string, string> GetMetaByPrefix(string prefix) =>
+        Query("SELECT key,value FROM meta WHERE substr(key,1,length($p))=$p", r => (Key: r.GetString(0), Value: r.GetString(1)), ("$p", prefix))
+            .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+
     public void SetMeta(string key, string value) =>
         Exec("INSERT INTO meta(key,value) VALUES($k,$v) ON CONFLICT(key) DO UPDATE SET value=excluded.value", ("$k", key), ("$v", value));
 
