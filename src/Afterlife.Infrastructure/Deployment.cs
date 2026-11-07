@@ -30,7 +30,7 @@ public sealed record RecoveryOutcome(string OperationId, IReadOnlyList<Recovered
 
 /// <summary>
 /// Executes a stored plan with the write-ahead protocol (AFTERLIFE-architektura-v2.1.md, "Protokol nasazení"):
-/// temp file → hash → step Prepared (durable) → rename/delete → step Applied + ledger (one transaction).
+/// Temp file → hash → step Prepared (durable) → rename/delete → step Applied + ledger (one transaction).
 /// </summary>
 public sealed class DeploymentExecutor(AfterlifeStore store, LibraryPaths library, string gameRoot, IFileOps fs, Func<string?>? abortCheck = null)
 {

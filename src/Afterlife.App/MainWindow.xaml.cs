@@ -29,6 +29,7 @@ public partial class MainWindow : Window
             if (startLink is not null) await _vm.HandleExternalAsync(startLink);
             await _vm.StartAsync();
         };
+        Activated += async (_, _) => await _vm.OnActivatedAsync();
         Closed += (_, _) => _vm.Dispose();
         DragOver += OnDragOver;
         DragLeave += (_, _) => SetDragOver(false);
@@ -68,7 +69,7 @@ public partial class MainWindow : Window
         Fx.Lift(DropZone, on);
     }
 
-    // P4/P14: scan sweep over the header, decode of the titles, core table checked off one by one.
+    // scan sweep over the header, decode of the titles, core table checked off one by one.
     private void OnScanCompleted()
     {
         Dispatcher.BeginInvoke(() =>
@@ -79,13 +80,13 @@ public partial class MainWindow : Window
         }, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
-    // ---------------- selection (P22) ----------------
+    // ---------------- selection ----------------
     private void OnSelectAllClick(object sender, RoutedEventArgs e) => _vm.SetAllChecked(!_vm.AllChecked);
 
     /// <summary>Ctrl+click / Shift+click on a row toggle its checkbox; a plain click only shows details.</summary>
     private int _anchor = -1;
 
-    /// <summary>P76: double-click on the mod name renames it.</summary>
+    /// <summary>Double-click on the mod name renames it.</summary>
     private void OnModNameMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount != 2 || sender is not FrameworkElement { DataContext: ModRowVm row }) return;
@@ -93,7 +94,7 @@ public partial class MainWindow : Window
         _ = _vm.RenameModAsync(row.PackageId);
     }
 
-    /// <summary>P101: double-click on a category name renames it.</summary>
+    /// <summary>Double-click on a category name renames it.</summary>
     private void OnCategoryNameMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount != 2 || sender is not FrameworkElement { DataContext: CollectionChapterVm { IsCategory: true } h }) return;
@@ -101,7 +102,7 @@ public partial class MainWindow : Window
         _vm.RenameCategory(h.Slug);
     }
 
-    /// <summary>P101: double-click on a profile name renames it (Mods off cannot be renamed).</summary>
+    /// <summary>Double-click on a profile name renames it (Mods off cannot be renamed).</summary>
     private void OnProfileNameMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount != 2 || sender is not FrameworkElement { DataContext: ProfileVm p }) return;
@@ -136,7 +137,7 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>P103: a click into the column header (MOD · TAGS, VERSION, …) unchecks all mods.</summary>
+    /// <summary>A click into the column header (MOD · TAGS, VERSION, …) unchecks all mods.</summary>
     private void OnColumnHeaderClick(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is DependencyObject d && IsInside<CheckBox>(d)) return;
@@ -159,7 +160,7 @@ public partial class MainWindow : Window
         return false;
     }
 
-    // ---------------- load order by drag and drop (P25) ----------------
+    // ---------------- load order by drag and drop ----------------
     private Point _dragStart;
     private ModRowVm? _dragRow;
     private ModRowVm? _hintRow;
@@ -187,7 +188,7 @@ public partial class MainWindow : Window
         bool ok;
         if (header is not null)
         {
-            // P95: onto a MODS or category header: the mods go to its end
+            // onto a MODS or category header: the mods go to its end
             ok = !_vm.IsModsOff && _vm.CanDropOnChapter(moved, ChapterKeyOf(header));
             SetHint(null, 0);
         }
@@ -220,7 +221,7 @@ public partial class MainWindow : Window
         await _vm.MoveModsAsync(moved, row.PackageId, after);
     }
 
-    // ---------------- blocks by drag and drop (P97) ----------------
+    // ---------------- blocks by drag and drop ----------------
     private const string BlockFormat = "AFTERLIFE.Block";
     private Point _blockStart;
     private string? _blockKey;
@@ -369,7 +370,7 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// P93: the minimum is 1612 × 910, 30 % more than before; on a small or zoomed screen
+    /// The minimum is 1612 × 910, 30 % more than before; on a small or zoomed screen
     /// (1920 × 1080 at 150 % gives about 1280 × 720) it is cut to the work area, so the window always fits.
     /// </summary>
     private void FitMinimumToScreen()

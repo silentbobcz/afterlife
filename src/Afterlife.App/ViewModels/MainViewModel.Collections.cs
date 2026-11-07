@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Afterlife.App.ViewModels;
 
-// P50/P51: Nexus Mods collections (AFTERLIFE-souhrn-0.4.md, chapter 4).
+// Nexus Mods collections (AFTERLIFE-souhrn-0.4.md, chapter 4).
 public sealed partial class MainViewModel
 {
     /// <summary>The collection whose missing mods are being downloaded through the website (free accounts).</summary>
@@ -47,7 +47,7 @@ public sealed partial class MainViewModel
         string profileId;
         if (preview.NewProfile)
         {
-            // P80/P81: the core stays as it is: core mods switched on now are on in the new profile too
+            // the core stays as it is: core mods switched on now are on in the new profile too
             var coreOn = _overview.Mods.Where(m => m.IsCore && !IsModsOff && _overview.Status.Selected.IsEnabled(m.Package.PackageId)).Select(m => m.Package.PackageId).ToList();
             var p = await _host.RunAsync(c => c.CreateProfile(rev.Name));
             profileId = p.Id;
@@ -109,7 +109,7 @@ public sealed partial class MainViewModel
         return rev;
     }
 
-    // ---------------- P69/P70: download progress ----------------
+    // ---------------- download progress ----------------
     private CollectionProgressVm? _collectionProgress;
 
     private void ShowCollectionWindow(CollectionRecord r, IReadOnlyList<CollectionItemState> states)
@@ -354,7 +354,7 @@ public sealed partial class MainViewModel
         await RefreshAsync();
     });
 
-    // ---------------- P68: collection chapters ----------------
+    // ---------------- collection chapters ----------------
     [ObservableProperty] private IReadOnlyDictionary<string, CollectionChapterVm> _collectionChapters = new Dictionary<string, CollectionChapterVm>();
     private IReadOnlyList<CollectionRecord> _collections = [];
 
@@ -365,12 +365,12 @@ public sealed partial class MainViewModel
         if (_overview is null) { CollectionChapters = new Dictionary<string, CollectionChapterVm>(); return; }
         _collapsed ??= new HashSet<string>(StringComparer.Ordinal);
         var selected = _overview.Status.Selected;
-        var searching = !string.IsNullOrWhiteSpace(SearchText); // P83: a search shows what it finds, folded or not
+        var searching = !string.IsNullOrWhiteSpace(SearchText); // a search shows what it finds, folded or not
         var canEdit = !IsModsOff && _overview.Status.Unfinished is null;
         bool Folded(string key) => !searching && _collapsed.Contains(key);
         ICommand Fold(string key) => new RelayCommand(() => ToggleFold(key));
         var rows = Mods.ToList();
-        // P89: marks in the header; the click unfolds the chapter and selects the first such mod
+        // marks in the header; the click unfolds the chapter and selects the first such mod
         CollectionChapterVm Marks(CollectionChapterVm vm, Func<ModRowVm, bool> inIt)
         {
             var inChapter = rows.Where(inIt).ToList();
@@ -380,13 +380,13 @@ public sealed partial class MainViewModel
             static bool Mis(ModRowVm r) => r.Overview.Missing.Count > 0;
             vm.Updates = inChapter.Count(Upd); vm.Conflicts = inChapter.Count(Con); vm.Missing = inChapter.Count(Mis);
             vm.ShowUpdateCommand = Show(Upd); vm.ShowConflictCommand = Show(Con); vm.ShowMissingCommand = Show(Mis);
-            vm.WatchRows(inChapter); // P110
+            vm.WatchRows(inChapter); 
             return vm;
         }
         static bool Real(ModRowVm r) => r.Overview.Package.LayerOfModId is null;
         var map = new Dictionary<string, CollectionChapterVm>(StringComparer.Ordinal);
 
-        // P82: core mods as one block with a switch; never moves (P97)
+        // core mods as one block with a switch; never moves
         var core = _overview.Mods.Where(m => m.IsCore && m.Package.LayerOfModId is null).Select(m => m.Package.PackageId).ToList();
         var coreOn = core.Count(selected.IsEnabled);
         map[CoreChapter] = Marks(new CollectionChapterVm(ChapterKind.Core, CoreChapter, "CORE MODS", "Frameworks the other mods build on · always load first", coreOn, core.Count,
@@ -407,7 +407,7 @@ public sealed partial class MainViewModel
             { BlockKey = block, MoveUpCommand = up, MoveDownCommand = down }, x => x.Chapter == key);
         }
 
-        // P88/P94/P95: MODS = mods outside core and collections, with its categories; the switch takes all of them
+        // MODS = mods outside core and collections, with its categories; the switch takes all of them
         var family = rows.Where(r => r.InModsBlock && Real(r)).Select(r => r.PackageId).ToList();
         var familyOn = family.Count(selected.IsEnabled);
         var modsFolded = Folded(PlainChapter);
@@ -453,10 +453,10 @@ public sealed partial class MainViewModel
         SelectedMod = row; ScrollToSelected?.Invoke();
     }
 
-    /// <summary>Asks the window to bring the selected row into view (P89).</summary>
+    /// <summary>Asks the window to bring the selected row into view.</summary>
     public event Action? ScrollToSelected;
 
-    /// <summary>P88: all mods outside core and collections on or off; asks about requirements and dependents.</summary>
+    /// <summary>All mods outside core and collections on or off; asks about requirements and dependents.</summary>
     private Task SetPlainEnabledAsync(bool on) => RunUiAsync(async () =>
     {
         if (_overview is null || IsModsOff) return;
@@ -472,7 +472,7 @@ public sealed partial class MainViewModel
                : $"{all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
     });
 
-    /// <summary>P95: all mods of one category on or off; asks about requirements and dependents.</summary>
+    /// <summary>All mods of one category on or off; asks about requirements and dependents.</summary>
     private Task SetChapterEnabledAsync(string chapter, bool on) => RunUiAsync(async () =>
     {
         if (_overview is null || IsModsOff) return;
@@ -500,7 +500,7 @@ public sealed partial class MainViewModel
         BuildCollectionChapters();
     }
 
-    /// <summary>P82: all core mods on or off; off asks about the mods that need them (P54).</summary>
+    /// <summary>All core mods on or off; off asks about the mods that need them.</summary>
     private Task SetCoreEnabledAsync(bool on) => RunUiAsync(async () =>
     {
         if (_overview is null || IsModsOff) return;
@@ -516,7 +516,7 @@ public sealed partial class MainViewModel
                : $"{all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
     });
 
-    /// <summary>Packages of the collection that are in the library (required and the optional ones chosen); never core mods (P81).</summary>
+    /// <summary>Packages of the collection that are in the library (required and the optional ones chosen); never core mods.</summary>
     private List<string> MembersOf(CollectionRecord r)
     {
         var have = _overview?.Mods.Where(m => !m.IsCore).Select(m => m.Package.PackageId).ToHashSet(StringComparer.Ordinal) ?? [];
@@ -524,8 +524,8 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>
-    /// P68: the whole collection on or off in the selected profile. Off keeps mods another switched-on collection
-    /// uses, and asks about mods outside the collection that need it (P54); on asks about missing requirements (P53).
+    /// The whole collection on or off in the selected profile. Off keeps mods another switched-on collection
+    /// Uses, and asks about mods outside the collection that need it; on asks about missing requirements.
     /// </summary>
     public Task SetCollectionEnabledAsync(string slug, bool on) => RunUiAsync(async () =>
     {
@@ -546,7 +546,7 @@ public sealed partial class MainViewModel
         if (all is null) { await RefreshAsync(); return; }
         if (!on)
         {
-            // P81: mods outside the collection it needed (not core) that nothing else switched on needs any more
+            // mods outside the collection it needed (not core) that nothing else switched on needs any more
             var extra = OverviewBuilder.UnneededRequirements(_overview, all);
             if (extra.Count > 0)
             {

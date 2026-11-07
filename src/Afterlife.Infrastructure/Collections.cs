@@ -4,7 +4,7 @@ using Afterlife.Core;
 
 namespace Afterlife.Infrastructure;
 
-// P50/P51: Nexus Mods collections. A collection is its own record in the library; mods are not copied: a package is
+// Nexus Mods collections. A collection is its own record in the library; mods are not copied: a package is
 // shared by the user's own mods and any number of collections. See AFTERLIFE-souhrn-0.4.md, chapter 4.
 
 /// <summary>A link to a collection: nxm://cyberpunk2077/collections/slug/revisions/3 or a nexusmods.com page.</summary>
@@ -162,7 +162,7 @@ public static class CollectionLogic
             if (i.Source == CollectionSource.Bundle) { list.Add(new(i, ItemStatus.Bundled, null, "comes with the collection")); continue; }
             if (i.Source is CollectionSource.Browse or CollectionSource.Direct || i.ModId is null) { list.Add(new(i, ItemStatus.OutsideNexus, null, "outside Nexus · add by hand")); continue; }
             var other = packages.FirstOrDefault(p => p.LayerOfModId is null && p.NexusModId == i.ModId);
-            // P81: a core mod already in the library is used as it is (no second version, the core is not touched)
+            // a core mod already in the library is used as it is (no second version, the core is not touched)
             if (other is not null && other.Provides.Any(c => c.StartsWith("framework:", StringComparison.Ordinal)))
             { list.Add(new(i, ItemStatus.InLibrary, other.PackageId, $"core mod in library ({other.Version}) · kept as it is")); continue; }
             list.Add(other is null ? new(i, ItemStatus.Missing, null, "missing · download")
@@ -173,7 +173,7 @@ public static class CollectionLogic
 
     /// <summary>
     /// Load order for the collection's packages: modlist.txt of the collection first, then "before/after" rules,
-    /// then the collection's own item order. Returns package ids.
+    /// Then the collection's own item order. Returns package ids.
     /// </summary>
     public static IReadOnlyList<string> Order(CollectionRecord r, IReadOnlyList<PackageManifest> packages)
     {

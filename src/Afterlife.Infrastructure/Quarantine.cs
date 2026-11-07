@@ -12,9 +12,9 @@ public sealed record RemovedBatch(string Id, string Label, DateTimeOffset Remove
 public sealed record RemovalResult(string? BatchId, int Moved, IReadOnlyList<string> Skipped);
 
 /// <summary>
-/// Moves files that AFTERLIFE does not manage out of the game into <c>library/removed/&lt;batch&gt;</c> (P6),
-/// so that "remove" is always reversible. Copy → verify hash → delete original; the manifest is written first,
-/// so after a crash every file is still in the game, in the quarantine, or in both.
+/// Moves files that AFTERLIFE does not manage out of the game into <c>library/removed/&lt;batch&gt;</c>,
+/// So that "remove" is always reversible. Copy → verify hash → delete original; the manifest is written first,
+/// So after a crash every file is still in the game, in the quarantine, or in both.
 /// </summary>
 public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
 {
@@ -42,7 +42,7 @@ public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
         return list.OrderByDescending(b => b.RemovedAt).ToList();
     }
 
-    /// <summary>P57: deletes every removed batch for good (they can no longer be restored). Returns bytes freed.</summary>
+    /// <summary>Deletes every removed batch for good (they can no longer be restored). Returns bytes freed.</summary>
     public long PurgeAll()
     {
         if (!Directory.Exists(Root)) return 0;
@@ -174,7 +174,7 @@ public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
 }
 
 
-/// <summary>P57: what AFTERLIFE keeps besides the mods themselves, and cleaning it.</summary>
+/// <summary>What AFTERLIFE keeps besides the mods themselves, and cleaning it.</summary>
 public sealed record StorageInfo(int RemovedBatches, long RemovedBytes, int Downloads, long DownloadBytes, long TempBytes);
 
 public static class Storage

@@ -2,14 +2,14 @@ using System.Text.Json;
 
 namespace Afterlife.Core;
 
-/// <summary>P95: a user category inside the MODS block.</summary>
+/// <summary>A user category inside the MODS block.</summary>
 public sealed record ModCategory(string Id, string Name);
 
 /// <summary>
-/// P95/P97: how the library list is split into blocks and in which order they load.
+/// How the library list is split into blocks and in which order they load.
 /// CORE MODS always come first and are not part of the layout. After them the blocks
 /// (collections and MODS) load in <see cref="Blocks"/> order; inside MODS the mods without
-/// a category load first, then every category in <see cref="Categories"/> order.
+/// A category load first, then every category in <see cref="Categories"/> order.
 /// </summary>
 public sealed record BlockLayout(
     IReadOnlyList<string> Blocks,
@@ -56,7 +56,7 @@ public sealed record BlockLayout(
 
     /// <summary>
     /// Load order that follows the blocks: a stable sort of the current order by section,
-    /// so the order of mods inside one section does not change.
+    /// So the order of mods inside one section does not change.
     /// </summary>
     public static List<string> Compose(IReadOnlyList<string> currentOrder, Func<string, string> sectionOf, IReadOnlyList<string> sections)
     {

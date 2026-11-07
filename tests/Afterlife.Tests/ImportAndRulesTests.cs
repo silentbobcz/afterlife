@@ -82,7 +82,7 @@ public class ImportAnalyzerTests
     }
 
     [Fact]
-    public void Frameworks_import_like_any_mod_P36()
+    public void Frameworks_import_like_any_mod()
     {
         var r = A("red4ext/plugins/ArchiveXL/ArchiveXL.dll");
         Assert.Equal(ImportStatus.Ok, r.Status);

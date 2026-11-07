@@ -10,7 +10,7 @@ public sealed record AppSettings(string? LibraryRoot)
 {
     /// <summary>Turns off decorative motion (scan sweep, breach animation, travelling dots). Spec v2.1: Reduce motion.</summary>
     public bool ReduceMotion { get; init; }
-    /// <summary>P113: write an activity log (switches, imports, every planned file change with its reason) for finding problems.</summary>
+    /// <summary>Write an activity log (switches, imports, every planned file change with its reason) for finding problems.</summary>
     public bool ActivityLog { get; init; }
 
     public const string PortableLibraryFolderName = "AFTERLIFE Library";
@@ -55,8 +55,8 @@ public sealed record AppSettings(string? LibraryRoot)
     }
 
     /// <summary>
-    /// Library suggested on first run (P2): a folder next to AFTERLIFE.exe when that place is usable,
-    /// otherwise %LOCALAPPDATA%. Returns the reason when the exe folder is not used.
+    /// Library suggested on first run: a folder next to AFTERLIFE.exe when that place is usable,
+    /// Otherwise %LOCALAPPDATA%. Returns the reason when the exe folder is not used.
     /// </summary>
     public static (string Path, string? FallbackReason) SuggestLibrary(string? gameRoot, string? exeDirectory = null, Func<string, bool>? canWrite = null)
     {

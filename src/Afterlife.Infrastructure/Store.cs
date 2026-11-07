@@ -39,7 +39,7 @@ public static class Json
 
 /// <summary>
 /// SQLite state (WAL, synchronous=FULL). All writes that must be durable before touching the game folder
-/// are committed before the corresponding filesystem change.
+/// Are committed before the corresponding filesystem change.
 /// </summary>
 public sealed class AfterlifeStore : IDisposable
 {
@@ -99,7 +99,14 @@ public sealed class AfterlifeStore : IDisposable
     {
         using var cmd = Cmd(sql, args);
         cmd.ExecuteNonQuery();
+        if (sql.Contains("packages", StringComparison.Ordinal) || sql.Contains("ledger", StringComparison.Ordinal)) ScanVersion++;
     }
+
+    /// <summary>
+    /// Grows with every write to the packages or the ledger: the two tables a scan of the game folder depends on.
+    /// Lets the coordinator reuse the last scan while only profiles, settings or caches changed.
+    /// </summary>
+    public long ScanVersion { get; private set; }
 
     private List<T> Query<T>(string sql, Func<SqliteDataReader, T> map, params (string, object?)[] args)
     {
@@ -135,6 +142,11 @@ public sealed class AfterlifeStore : IDisposable
     // ---------- meta ----------
     public string? GetMeta(string key) =>
         Query("SELECT value FROM meta WHERE key=$k", r => r.GetString(0), ("$k", key)).FirstOrDefault();
+
+    /// <summary>All meta rows whose key starts with <paramref name="prefix"/>, in one query (the overview reads hundreds of them).</summary>
+    public Dictionary<string, string> GetMetaByPrefix(string prefix) =>
+        Query("SELECT key,value FROM meta WHERE substr(key,1,length($p))=$p", r => (Key: r.GetString(0), Value: r.GetString(1)), ("$p", prefix))
+            .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
 
     public void SetMeta(string key, string value) =>
         Exec("INSERT INTO meta(key,value) VALUES($k,$v) ON CONFLICT(key) DO UPDATE SET value=excluded.value", ("$k", key), ("$v", value));

@@ -28,9 +28,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public ObservableList<ModRowVm> Mods { get; } = new();
     public ICollectionView ModsView { get; }
     public ObservableList<FrameworkStatus> Frameworks { get; } = new();
-    /// <summary>P12: core table in the header (installed and missing base mods).</summary>
+    /// <summary>Core table in the header (installed and missing base mods).</summary>
     public ObservableList<CoreModVm> CoreMods { get; } = new();
-    /// <summary>P27: folders the scan looks at, with the number of files AFTERLIFE did not install.</summary>
+    /// <summary>Folders the scan looks at, with the number of files AFTERLIFE did not install.</summary>
     [ObservableProperty] private IReadOnlyList<Controls.ScanFolder> _scanFolders = ScanFoldersOf([]);
 
     public static readonly (string Prefix, string Label, string Short)[] ScanBuckets =
@@ -54,7 +54,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
         return ScanBuckets.Select((b, i) => new Controls.ScanFolder(b.Label, b.Short, counts[i])).ToList();
     }
-    /// <summary>P18: notices are a list, one thing per line.</summary>
+    /// <summary>Notices are a list, one thing per line.</summary>
     public ObservableCollection<string> NoticeLines { get; } = new();
 
     [ObservableProperty] private OverlayVm? _overlay;
@@ -75,7 +75,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private int _selectedCount;
     [ObservableProperty] private bool _hasMultiSelection;
 
-    // breach panel (P9)
+    // breach panel
     [ObservableProperty] private bool _showBreach;
     [ObservableProperty] private bool _breachActive;
     [ObservableProperty] private string _breachTitle = "";
@@ -98,7 +98,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _hasChanges;
     [ObservableProperty] private bool _canApply;
     [ObservableProperty] private string _applyBlockedReason = "";
-    /// <summary>P122: the mod behind the first blocker, so one click shows it in the list.</summary>
+    /// <summary>The mod behind the first blocker, so one click shows it in the list.</summary>
     [ObservableProperty] private string? _blockedPackageId;
     public bool CanShowBlocked => BlockedPackageId is not null;
     partial void OnBlockedPackageIdChanged(string? value) => OnPropertyChanged(nameof(CanShowBlocked));
@@ -156,7 +156,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await RunUiAsync(async () =>
         {
             await _host.OpenAsync(lib);
-            await RefreshAsync();
+            await RefreshAsync(rescan: true);
             ScanCompleted?.Invoke();
         });
         _ = AfterOpenAsync();
@@ -165,7 +165,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private string? _pendingLink;
 
-    /// <summary>After opening: new requirement rules for old mods (P40), Nexus account and mod pages (P43).</summary>
+    /// <summary>After opening: new requirement rules for old mods, Nexus account and mod pages.</summary>
     private async Task AfterOpenAsync()
     {
         try
@@ -173,15 +173,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (await _host.RunAsync(c => c.RefreshRequirements()) > 0) await RefreshAsync();
         }
         catch (Exception ex) when (IsExpected(ex)) { }
-        await CheckDuplicatesAsync(); // P99
-        await CheckOldVersionsAsync(); // P123
+        await CheckDuplicatesAsync(); 
+        await CheckOldVersionsAsync(); 
         await CheckNexusAsync(null);
         await FetchNexusInfoAsync(onlyMissing: true);
         await CheckUpdatesAsync(force: false);
         StartUpdateTimer();
     }
 
-    /// <summary>P43: reads summary, author and requirements from the Nexus page of every linked mod.</summary>
+    /// <summary>Reads summary, author and requirements from the Nexus page of every linked mod.</summary>
     private async Task FetchNexusInfoAsync(bool onlyMissing, string? onlyPackage = null)
     {
         var key = NexusKeyStore.Load();
@@ -211,8 +211,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// M4: newer files on Nexus at start and every hour. One request to the "updated mods" feed tells which mods changed;
-    /// files are read only for those, for new mods and for mods not checked in 4 weeks. Without the feed: once a day per mod.
+    /// Newer files on Nexus at start and every hour. One request to the "updated mods" feed tells which mods changed;
+    /// Files are read only for those, for new mods and for mods not checked in 4 weeks. Without the feed: once a day per mod.
     /// </summary>
     private async Task CheckUpdatesAsync(bool force)
     {
@@ -293,17 +293,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private Task CheckUpdates() => RunUiAsync(() => CheckUpdatesAsync(force: true));
 
-    /// <summary>M4: Premium downloads the newer file directly; free accounts open its page (Mod Manager Download comes back here).</summary>
+    /// <summary>Premium downloads the newer file directly; free accounts open its page (Mod Manager Download comes back here).</summary>
     public Task UpdateModAsync(string packageId) => RunUiAsync(async () =>
     {
         var m = _overview?.Mods.FirstOrDefault(x => x.Package.PackageId == packageId);
         if (m?.Update is not { } u) return;
         var key = NexusKeyStore.Load();
-        // P61: the account check may not have finished yet; without it a Premium account was sent to the website
+        // the account check may not have finished yet; without it a Premium account was sent to the website
         if (key is not null && _nexusAccount is null) await CheckNexusAsync(null);
         if (key is null || _nexusAccount is not { IsPremium: true })
         {
-            // P117: straight to the mod-manager download page; one click there and the file lands in AFTERLIFE.
+            // straight to the mod-manager download page; one click there and the file lands in AFTERLIFE.
             var viaManager = SafeNxmRegistered();
             AppLinks.Open(viaManager ? u.Url : u.FilesUrl);
             Say(viaManager
@@ -325,13 +325,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         return done.Count > 0;
     }
 
-    // ---------------- P59: update all (Premium) · P116: update all through the website (free) ----------------
+    // ---------------- update all (Premium) · update all through the website (free) ----------------
     [ObservableProperty] private int _updateCount;
-    /// <summary>P116: offered to every account; Premium downloads directly, others page by page through Mod Manager Download.</summary>
+    /// <summary>Offered to every account; Premium downloads directly, others page by page through Mod Manager Download.</summary>
     public bool CanUpdateAll => UpdateCount > 1 || _updateQueue is not null;
     public string UpdateAllLabel => _updateQueue is { } q ? $"UPDATES · {q.Count + (_updateWaiting is null ? 0 : 1)} LEFT" : $"UPDATE ALL ({UpdateCount})";
 
-    /// <summary>P116: pages still to open (free accounts); <see cref="_updateWaiting"/> is the update whose file is awaited.</summary>
+    /// <summary>Pages still to open (free accounts); <see cref="_updateWaiting"/> is the update whose file is awaited.</summary>
     private Queue<(string Name, NexusUpdate Update)>? _updateQueue;
     private (string Name, NexusUpdate Update)? _updateWaiting;
     private int _updateQueueTotal;
@@ -365,7 +365,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (failed.Count > 0) SayLines([.. NoticeLines, $"Not updated ({failed.Count}):", .. failed.Select(f => "  · " + f)], Tone.Warn);
     });
 
-    /// <summary>P116: free account: one download page after another; the next opens when the previous file has arrived.</summary>
+    /// <summary>Free account: one download page after another; the next opens when the previous file has arrived.</summary>
     private async Task UpdateAllViaWebsiteAsync()
     {
         if (_overview is null) return;
@@ -430,21 +430,21 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Say("Updates through the website stopped. What already arrived is in the library.", Tone.Neutral);
     }
 
-    // ---------------- P64: refresh ----------------
+    // ---------------- refresh ----------------
     [RelayCommand]
     private Task RefreshLibrary() => RunUiAsync(async () =>
     {
         Say("Refreshing: reading the game folder and the library again…", Tone.Info);
         try { await _host.RunAsync(c => c.RefreshRequirements()); }
         catch (Exception ex) when (IsExpected(ex)) { }
-        await RefreshAsync();
+        await RefreshAsync(rescan: true);
         ScanCompleted?.Invoke();
         await FetchNexusInfoAsync(onlyMissing: true);
         await CheckUpdatesAsync(force: false);
         Say("Refreshed. The list shows the game folder and the library as they are now.", Tone.Ok);
     });
 
-    /// <summary>P41/P43: links a manual import to its Nexus page by id or link.</summary>
+    /// <summary>Links a manual import to its Nexus page by id or link.</summary>
     public Task LinkToNexusAsync(string packageId, string? guess) => RunUiAsync(async () =>
     {
         var text = await AskAsync(new TextPromptVm("LINK TO NEXUS", "Nexus mod link or id (for example 107)", guess ?? ""));
@@ -459,7 +459,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Say($"Linked to Nexus mod {id}.", Tone.Ok);
     });
 
-    // ---------------- export (P52) ----------------
+    // ---------------- export ----------------
     [RelayCommand]
     private void ExportList()
     {
@@ -493,7 +493,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             .Replace(Environment.UserName, "<user>", StringComparison.OrdinalIgnoreCase));
     }
 
-    // ---------------- storage (P57) ----------------
+    // ---------------- storage ----------------
     private async Task LoadStorageAsync(SettingsVm vm)
     {
         if (!_host.IsOpen) return;
@@ -527,7 +527,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await LoadStorageAsync(vm);
     }
 
-    /// <summary>R9: undoes what AFTERLIFE set up in Windows; the game and the library stay unless chosen.</summary>
+    /// <summary>Undoes what AFTERLIFE set up in Windows; the game and the library stay unless chosen.</summary>
     private async Task RemoveFromPcAsync(SettingsVm vm)
     {
         var confirm = new ConfirmVm("REMOVE AFTERLIFE FROM THIS PC?",
@@ -551,7 +551,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    // ---------------- toast (P47) ----------------
+    // ---------------- toast ----------------
     [ObservableProperty] private string? _toast;
     private System.Windows.Threading.DispatcherTimer? _toastTimer;
 
@@ -574,7 +574,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         catch (System.Runtime.InteropServices.ExternalException) { ShowToast("The clipboard is busy; try again."); }
     }
 
-    // ---------------- download history (P48) ----------------
+    // ---------------- download history ----------------
     [RelayCommand]
     private Task OpenDownloads() => RunUiAsync(async () =>
     {
@@ -602,10 +602,25 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Overlay = new DownloadsVm(items) { CloseCommand = new RelayCommand(() => Overlay = null) };
     });
 
-    /// <summary>P39: the detail tab the user picked; kept while switching between mods.</summary>
+    /// <summary>The detail tab the user picked; kept while switching between mods.</summary>
     public DetailTab? PreferredTab { get; set; }
 
-    /// <summary>nxm:// link from the command line or from a second AFTERLIFE start (P24).</summary>
+    /// <summary>Nxm:// link from the command line or from a second AFTERLIFE start.</summary>
+    private DateTimeOffset _lastActivationScan = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// The window came back to the front: the user may have changed files by hand or the game has just closed.
+    /// A full scan, at most once in 15 seconds and never over a running operation or dialog.
+    /// </summary>
+    public async Task OnActivatedAsync()
+    {
+        if (!_host.IsOpen || IsBusy || IsOperating || Overlay is not null) return;
+        var now = DateTimeOffset.UtcNow;
+        if (now - _lastActivationScan < TimeSpan.FromSeconds(15)) return;
+        _lastActivationScan = now;
+        await RunUiAsync(() => RefreshAsync(rescan: true));
+    }
+
     public Task HandleExternalAsync(string message)
     {
         if (!message.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase)) return Task.CompletedTask;
@@ -622,7 +637,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             else await _host.InitializeAsync(vm.GameFolder, lib);
             new AppSettings(lib).Save();
             Overlay = null;
-            await RefreshAsync();
+            await RefreshAsync(rescan: true);
             ScanCompleted?.Invoke();
             if (!string.IsNullOrWhiteSpace(vm.NexusKey))
             {
@@ -647,11 +662,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     // ---------------- refresh ----------------
-    public async Task RefreshAsync()
+    /// <summary>
+    /// Rebuilds the window from the library. By default the last scan of the game folder is reused when only
+    /// Profiles changed (the coordinator walks the folder again as soon as packages or the ledger changed);
+    /// <paramref name="rescan"/> forces the walk, for the moments when files may have changed outside AFTERLIFE:
+    /// Start, REFRESH, Scan manual mods, the window coming back to the front.
+    /// </summary>
+    public async Task RefreshAsync(bool rescan = false)
     {
         if (!_host.IsOpen) return;
-        var o = await _host.RunAsync(OverviewBuilder.Build);
-        await LoadLayoutAsync(); // P95/P97: collections and the block layout decide the groups
+        var o = await _host.RunAsync(c => OverviewBuilder.Build(c, rescan));
+        await LoadLayoutAsync(); // collections and the block layout decide the groups
         Apply(o);
         BuildCollectionChapters();
         PruneLayout();
@@ -661,8 +682,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private bool _syncingOrder;
 
     /// <summary>
-    /// P124: with a custom load order (modlist.txt) the list is the load order. MODS and categories are now sorted by
-    /// name, so the profile follows the list once: same blocks, alphabetical inside them. Apply puts it in the game.
+    /// With a custom load order (modlist.txt) the list is the load order. MODS and categories are now sorted by
+    /// Name, so the profile follows the list once: same blocks, alphabetical inside them. Apply puts it in the game.
     /// </summary>
     private async Task SyncSortedOrderAsync(InstallOverview o)
     {
@@ -701,42 +722,56 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 $"The last change to the game did not finish ({st.Unfinished.Status}, {st.Unfinished.CreatedAt.LocalDateTime:g}). Finish it, or return to the previous working state. Unknown files are never deleted.";
             IsModsOff = st.Selected.IsSystemModsOff;
 
-            // P124: Mods off first, then the own profiles alphabetically
+            // Mods off first, then the own profiles alphabetically
             Profiles.Reset(o.Profiles.OrderBy(p => p.IsSystem ? 0 : 1).ThenBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).Select(p => new ProfileVm(p,
                 p.IsSystem ? "no managed mods in game" : $"{p.Wanted} mod{(p.Wanted == 1 ? "" : "s")} wanted",
-                // P67: a deployed profile with changes not applied yet is not "deployed" in the green sense
+                // a deployed profile with changes not applied yet is not "deployed" in the green sense
                 p.IsDeployed && p.Id == st.Selected.Id && o.PendingChanges > 0 ? "PENDING" : p.IsDeployed ? "DEPLOYED" : (p.IsSystem ? "SYSTEM" : null),
                 p.IsDeployed && p.Id == st.Selected.Id && o.PendingChanges > 0 ? Tone.Info : p.IsDeployed ? Tone.Ok : Tone.Neutral)));
             SelectedProfile = Profiles.FirstOrDefault(p => p.Id == st.Selected.Id);
 
             var keep = SelectedMod?.PackageId;
             var keepMulti = Mods.Where(m => m.IsChecked).Select(m => m.PackageId).ToHashSet();
-            var rows = o.Mods.Select(m => new ModRowVm(m, !st.Selected.IsSystemModsOff && st.Unfinished is null, OnWantChangedAsync)).ToList();
+            // rows survive a refresh: the same object is updated in place, so selection, checkbox and scroll position stay
+            var existing = Mods.ToDictionary(m => m.PackageId, StringComparer.Ordinal);
+            var editable = !st.Selected.IsSystemModsOff && st.Unfinished is null;
+            var rows = o.Mods.Select(m =>
+            {
+                if (existing.TryGetValue(m.Package.PackageId, out var row)) { row.Update(m, editable); return row; }
+                row = new ModRowVm(m, editable, OnWantChangedAsync);
+                row.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ModRowVm.IsChecked)) UpdateChecked(); };
+                return row;
+            }).ToList();
             AssignChapters(rows);
             MarkTwins(rows, o);
-            // P124: MODS and every category alphabetically by name (a layer "└ name" stays right below its mod).
+            // MODS and every category alphabetically by name (a layer "└ name" stays right below its mod).
             // Collections keep their (curator's) order and CORE MODS their fixed one: the stable sort leaves them as they are.
             var parentName = rows.Where(r => r.Overview.Package.LayerOfModId is null)
                 .GroupBy(r => r.Overview.Package.ModId).ToDictionary(g => g.Key, g => g.First().Overview.Package.ModName, StringComparer.Ordinal);
             string Group(ModRowVm r) => !r.InModsBlock ? "" : r.Overview.Package.LayerOfModId is { } of && parentName.TryGetValue(of, out var pn) ? pn : r.Overview.Package.ModName;
             var byName = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, ignoreCase: true);
-            Mods.Reset(rows.OrderBy(r => r.BlockRank).ThenBy(Group, byName)
+            var ordered = rows.OrderBy(r => r.BlockRank).ThenBy(Group, byName)
                 .ThenBy(r => !r.InModsBlock || r.Overview.Package.LayerOfModId is null ? 0 : 1)
                 .ThenBy(r => r.InModsBlock ? r.Overview.Package.ModName : "", byName)
-                .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase));
+                .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (ordered.SequenceEqual(Mods)) ModsView.Refresh(); // same rows in the same order: regroup only
+            else Mods.Reset(ordered);
             UpdateGroupNames();
-            foreach (var m in Mods)
-            {
-                m.IsChecked = keepMulti.Contains(m.PackageId);
-                m.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ModRowVm.IsChecked)) UpdateChecked(); };
-            }
+            foreach (var m in Mods) m.IsChecked = keepMulti.Contains(m.PackageId);
             IsEmptyLibrary = Mods.Count == 0;
             UpdateCount = o.Mods.Count(m => m.Update is not null);
             OnPropertyChanged(nameof(CanUpdateAll));
             OnPropertyChanged(nameof(UpdateAllLabel));
             SelectedMod = Mods.FirstOrDefault(m => m.PackageId == keep) ?? Mods.FirstOrDefault();
+            var previous = Details;
             Details = SelectedMod is null ? null : new DetailsVm(SelectedMod.Overview, this);
-            if (Details is not null) _ = LoadImageAsync(Details, SelectedMod!.Overview);
+            if (Details is not null)
+            {
+                // same mod, same picture: keep the decoded bitmap instead of reading the file again
+                if (previous?.Image is { } img && previous.Overview.Nexus?.PictureUrl is { } url && url == SelectedMod!.Overview.Nexus?.PictureUrl) Details.Image = img;
+                else _ = LoadImageAsync(Details, SelectedMod!.Overview);
+            }
             UpdateChecked();
 
             var wanted = o.Mods.Count(m => m.Wanted);
@@ -746,7 +781,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Frameworks.Reset(o.Frameworks);
             CoreMods.Reset(o.CoreMods.Select(c =>
             {
-                // P118: update of a core mod shows quietly in the header table too
+                // update of a core mod shows quietly in the header table too
                 var row = c.PackageId is null ? null : o.Mods.FirstOrDefault(m => m.Package.PackageId == c.PackageId);
                 return new CoreModVm(c, row?.Update, row?.Update is null ? null : new AsyncRelayCommand(() => UpdateModAsync(c.PackageId!)));
             }));
@@ -762,14 +797,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             ChangesSummary = o.PendingChanges > 0 ? o.ChangesSummary : (profileSwitch ? $"Switch the game to {st.Selected.Name}" : o.ChangesSummary);
             CanApply = HasChanges && blocking.Count == 0 && !IsOperating;
             ApplyBlockedReason = blocking.Count == 0 ? "" : blocking[0].Message + (blocking.Count > 1 ? $" (+{blocking.Count - 1} more)" : "");
-            // P122: a blocker tied to a mod gets a SHOW button; environment issues (game running, ...) have none
+            // a blocker tied to a mod gets a SHOW button; environment issues (game running, ...) have none
             var blockedId = blocking.Select(b => b.PackageId).FirstOrDefault(id => id is not null && o.Mods.Any(m => m.Package.PackageId == id));
             BlockedPackageId = blockedId;
             CanLaunch = o.CanLaunch && !IsOperating;
             LaunchHint = o.LaunchHint;
         }
         finally { _building = false; }
-        UpdateChecked(); // P67: the count must follow the rebuilt list (deleted mods drop out)
+        UpdateChecked(); // the count must follow the rebuilt list (deleted mods drop out)
         OnPropertyChanged(nameof(CanDeleteProfile));
     }
 
@@ -781,9 +816,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             var ids = await WithRelatedAsync([row.PackageId], want);
             if (ids is null) { row.ResetWant(!want); return; }
-            // P98: another version of the same mod is on: offer to switch it off
+            // another version of the same mod is on: offer to switch it off
             var twinsOff = want ? await OtherVersionsToSwitchOffAsync(row.PackageId) : [];
-            if (twinsOff is null) { row.ResetWant(!want); return; } // P121: Cancel → nothing changes
+            if (twinsOff is null) { row.ResetWant(!want); return; } // Cancel → nothing changes
             if (twinsOff.Count > 0) await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, twinsOff, false));
             if (ids.Count == 1) await _host.RunAsync(c => c.SetEnabled(row.PackageId, want));
             else
@@ -810,8 +845,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     });
 
     /// <summary>
-    /// P53: switching on asks to switch on the needed mods that are off. P54: switching off asks to switch off the
-    /// switched-on mods that need it. Returns the ids to change, or null when cancelled.
+    /// Switching on asks to switch on the needed mods that are off. switching off asks to switch off the
+    /// Switched-on mods that need it. Returns the ids to change, or null when cancelled.
     /// </summary>
     private async Task<IReadOnlyList<string>?> WithRelatedAsync(IReadOnlyList<string> ids, bool on)
     {
@@ -844,7 +879,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await RefreshAsync();
     });
 
-    /// <summary>P62: this mod wins every conflict it has, with one click.</summary>
+    /// <summary>This mod wins every conflict it has, with one click.</summary>
     public Task SetWinnersAsync(IReadOnlyList<string> paths, string packageId, string name) => RunUiAsync(async () =>
     {
         await _host.RunAsync(c => c.UpdateSelected(p => paths.Aggregate(p, (acc, path) => acc.WithWinner(GamePath.Parse(path).Key, packageId))));
@@ -862,8 +897,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public Task RemoveFromLibraryAsync(string packageId, string name) => DeleteManyAsync([packageId]);
 
     /// <summary>
-    /// P21: one question, then everything: switched off in every profile, taken out of the game (deck) and deleted
-    /// from the library. Core mods also list the mods that need them (P15).
+    /// One question, then everything: switched off in every profile, taken out of the game (deck) and deleted
+    /// From the library. Core mods also list the mods that need them.
     /// </summary>
     private Task DeleteManyAsync(IReadOnlyCollection<string> ids) => RunUiAsync(async () =>
     {
@@ -916,8 +951,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     });
 
-    // ---------------- multi-select (P11, P19, P22) ----------------
-    /// <summary>Selection is the checkboxes only (P22): clicking a row shows its details and keeps the selection.</summary>
+    // ---------------- multi-select ----------------
+    /// <summary>Selection is the checkboxes only: clicking a row shows its details and keeps the selection.</summary>
     private void UpdateChecked()
     {
         if (_building) return;
@@ -971,7 +1006,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ClearSelection() => SetAllChecked(false);
 
-    // ---------------- load order (P25) ----------------
+    // ---------------- load order ----------------
     [RelayCommand]
     private Task ResetOrder() => RunUiAsync(async () =>
     {
@@ -981,10 +1016,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Say("Back to the game's default order (alphabetical). Apply to update the game.", Tone.Info);
     });
 
-    // ---------------- inbox (P6) ----------------
+    // ---------------- inbox ----------------
     public Task RescanAsync() => RunUiAsync(async () =>
     {
-        await RefreshAsync();
+        await RefreshAsync(rescan: true);
         ScanCompleted?.Invoke();
     });
 
@@ -1028,8 +1063,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     });
 
     /// <summary>
-    /// P30 REPLACE: the files in the way are moved into the library ("removed", restorable in Scan manual mods);
-    /// then the usual apply question installs the mod.
+    /// REPLACE: the files in the way are moved into the library ("removed", restorable in Scan manual mods);
+    /// Then the usual apply question installs the mod.
     /// </summary>
     public Task ReplaceForeignAsync(string packageId, string name, IReadOnlyList<string> paths) => RunUiAsync(async () =>
     {
@@ -1070,7 +1105,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         catch { EndBreach(false, "stopped"); throw; }
     });
 
-    // ---------------- settings (P7) ----------------
+    // ---------------- settings ----------------
     [RelayCommand]
     private void OpenSettings()
     {
@@ -1105,7 +1140,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    // ---------------- Nexus Mods (P24) ----------------
+    // ---------------- Nexus Mods ----------------
     private static string AppVersion => AppInfo.Version;
 
     private async Task SaveNexusKeyAsync(SettingsVm vm, string key)
@@ -1220,7 +1255,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await ImportDownloadedAsync(link, dest, info);
     });
 
-    /// <summary>Downloads one Nexus file into library/downloads and records it in the history (P48). Null when it failed (message shown).</summary>
+    /// <summary>Downloads one Nexus file into library/downloads and records it in the history. Null when it failed (message shown).</summary>
     private async Task<(string Dest, NexusFileInfo Info)?> DownloadNexusFileAsync(NxmLink link, string key, Action<double>? onPercent = null)
     {
         using var client = new NexusClient(key, AppVersion);
@@ -1259,17 +1294,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         return (dest, info);
     }
 
-    /// <summary>Imports a downloaded Nexus file; a newer file of a mod already in the library replaces it in the profile (M4).</summary>
+    /// <summary>Imports a downloaded Nexus file; a newer file of a mod already in the library replaces it in the profile.</summary>
     private async Task<List<PackageManifest>> ImportDownloadedAsync(NxmLink link, string dest, NexusFileInfo info,
         IReadOnlyList<FomodChoice>? presetChoices = null, bool enable = true, bool quiet = false)
     {
-        // P51: a file a collection is waiting for goes to that collection
+        // a file a collection is waiting for goes to that collection
         if (_collectionWaiting is { } waiting && waiting(link, dest, info)) return [];
         var older = OlderVersionOf(link.ModId, link.FileId);
         var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, info.ModName ?? older?.ModName, info.Version ?? info.ModVersion, older?.ModId),
             presetChoices ?? older?.FomodChoices, enable, quiet);
         if (older is not null && imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet);
-        if (imported.Count > 0) UpdateQueueArrived(link); // P116
+        if (imported.Count > 0) UpdateQueueArrived(link); 
         return imported;
     }
 
@@ -1279,11 +1314,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             .Where(p => p.LayerOfModId is null && NexusInfo.IdOf(p).Id == nexusModId && (fileId is null || p.NexusFileId != fileId))
             .OrderByDescending(p => p.ImportedAt).FirstOrDefault();
 
-    /// <summary>M4/P63: the new version takes the place of the old one in the profile; the old one stays in the library, switched off.</summary>
+    /// <summary>The new version takes the place of the old one in the profile; the old one stays in the library, switched off.</summary>
     /// <summary>
-    /// P123: an update replaces the old version completely: the new one takes its place in every profile, collection
-    /// and category, the game is updated at once (when the profile is the one in the game) and the old version is
-    /// deleted from the library. In a batch (<see cref="_updateBatch"/>) the apply and the clean-up run once at the end.
+    /// An update replaces the old version completely: the new one takes its place in every profile, collection
+    /// And category, the game is updated at once (when the profile is the one in the game) and the old version is
+    /// Deleted from the library. In a batch (<see cref="_updateBatch"/>) the apply and the clean-up run once at the end.
     /// </summary>
     private async Task ReplaceOlderAsync(PackageManifest older, PackageManifest newer, bool quiet)
     {
@@ -1293,7 +1328,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             c.ReplaceVersion(older.PackageId, newer.PackageId);
             NexusUpdates.Save(c.Store, older.PackageId, null, DateTimeOffset.UtcNow);
         });
-        // P95: the new version keeps the category of the old one
+        // the new version keeps the category of the old one
         if (_layout.CategoryIdOf(older.PackageId) is { } cat) await SaveLayoutAsync(_layout.Assign([newer.PackageId], cat));
         _replacedOld.Add((older.PackageId, $"{older.ModName} {older.Version} → {newer.Version}"));
         await RefreshAsync();
@@ -1301,12 +1336,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await FinishUpdatesAsync(quiet);
     }
 
-    /// <summary>P123: old versions replaced since the last <see cref="FinishUpdatesAsync"/>.</summary>
+    /// <summary>Old versions replaced since the last <see cref="FinishUpdatesAsync"/>.</summary>
     private readonly List<(string OldId, string Line)> _replacedOld = [];
-    /// <summary>P123: true while Update all / Replace all runs: apply and clean-up wait for the end.</summary>
+    /// <summary>True while Update all / Replace all runs: apply and clean-up wait for the end.</summary>
     private bool _updateBatch;
 
-    /// <summary>P123: puts the updates in the game (no extra question) and deletes the old versions from the library.</summary>
+    /// <summary>Puts the updates in the game (no extra question) and deletes the old versions from the library.</summary>
     private async Task FinishUpdatesAsync(bool quiet)
     {
         if (_replacedOld.Count == 0 || _overview is null) return;
@@ -1337,7 +1372,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// P63: a dropped archive named like a Nexus download of a mod already in the library is an update of that mod
+    /// A dropped archive named like a Nexus download of a mod already in the library is an update of that mod
     /// (old "Name-4885-0-2-27-1761517000" and new "Name-4885-0.2.27-2026-10-26T22-14Z-xxxx" file names).
     /// </summary>
     private async Task<List<string>> ImportUpdatesFromFilesAsync(IReadOnlyList<string> files)
@@ -1354,7 +1389,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (updates.Count == 0) return plain;
 
         // the same Nexus page can also have optional files: ask, do not guess.
-        // P120: several files → one list, one answer (replace all, or add all as separate mods), not a question per file.
+        // several files → one list, one answer (replace all, or add all as separate mods), not a question per file.
         bool replaceAll;
         if (updates.Count == 1)
         {
@@ -1373,7 +1408,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
         if (!replaceAll) { plain.AddRange(updates.Select(u => u.File)); return plain; }
 
-        // P123: all replacements first, then one apply and one clean-up
+        // all replacements first, then one apply and one clean-up
         _updateBatch = true;
         try
         {
@@ -1389,7 +1424,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         return plain;
     }
 
-    /// <summary>P51: set while a collection downloads; returns true when it took the file.</summary>
+    /// <summary>Set while a collection downloads; returns true when it took the file.</summary>
     private Func<NxmLink, string, NexusFileInfo, bool>? _collectionWaiting;
 
     private void SetReduceMotion(bool reduce)
@@ -1399,7 +1434,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         (current with { LibraryRoot = current.LibraryRoot ?? AppSettings.ResolveLibrary(null), ReduceMotion = reduce }).Save();
     }
 
-    /// <summary>P113: activity log on/off, saved with the settings and effective at once.</summary>
+    /// <summary>Activity log on/off, saved with the settings and effective at once.</summary>
     private void SetActivityLog(bool on)
     {
         var current = AppSettings.Load();
@@ -1420,7 +1455,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Say($"Profile {name} created{(copyFrom is null ? "" : " as a copy")}. The game changes only when you apply.", Tone.Info);
     });
 
-    // ---------------- P86: mod picture ----------------
+    // ---------------- mod picture ----------------
     private async Task LoadImageAsync(DetailsVm details, ModOverview o)
     {
         if (o.Nexus is not { PictureUrl: { } url } n || _host.Library is not { } lib) return;
@@ -1440,7 +1475,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex) when (ex is IOException or System.Net.Http.HttpRequestException or TaskCanceledException or UnauthorizedAccessException or NotSupportedException or UriFormatException or InvalidOperationException) { }
     }
 
-    // ---------------- P122: jump to the mod behind the blocker ----------------
+    // ---------------- jump to the mod behind the blocker ----------------
     [RelayCommand]
     private void ShowBlocked()
     {
@@ -1450,7 +1485,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ShowInChapter(row);
     }
 
-    // ---------------- P76: rename a mod ----------------
+    // ---------------- rename a mod ----------------
     public Task RenameModAsync(string packageId) => RunUiAsync(async () =>
     {
         var m = _overview?.Mods.FirstOrDefault(x => x.Package.PackageId == packageId);
@@ -1461,10 +1496,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await RefreshAsync();
     });
 
-    // ---------------- P72: delete a profile ----------------
+    // ---------------- delete a profile ----------------
     /// <summary>
-    /// P75/P112: Rename and Delete are offered for every own profile (not Mods off). Deleting the profile that is
-    /// in the game first switches the game to Mods off (its mods are taken out), then deletes it.
+    /// Rename and Delete are offered for every own profile (not Mods off). Deleting the profile that is
+    /// In the game first switches the game to Mods off (its mods are taken out), then deletes it.
     /// </summary>
     public bool CanDeleteProfile => SelectedProfile is { IsSystem: false };
 
@@ -1475,7 +1510,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var summary = _overview.Profiles.FirstOrDefault(x => x.Id == p.Id);
         if (summary is { IsDeployed: true } && _overview.Mods.Any(m => m.InGame))
         {
-            // P112: in the game right now → offer the two steps as one action instead of a dead end.
+            // in the game right now → offer the two steps as one action instead of a dead end.
             var go = await AskAsync(new ConfirmVm($"{p.Name.ToUpperInvariant()} IS IN THE GAME",
                 $"To delete {p.Name}, AFTERLIFE first switches the game to Mods off (its mods are taken out of the game, every file verified), then deletes the profile. The mods stay in the library and in other profiles.",
                 "MODS OFF, THEN DELETE", true) { CancelLabel = "Keep it" });
@@ -1556,7 +1591,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 }
                 if (r.Analysis.Status == ImportStatus.NeedsFomod && r.Analysis.FomodConfigPath is { } cfgPath)
                 {
-                    // R3: the mod's own installer
+                    // the mod's own installer
                     FomodConfig cfg;
                     try { cfg = await _host.RunAsync(c => c.ReadFomod(file, cfgPath)); }
                     catch (ImportException ex) { failed.Add($"{Path.GetFileName(file)}: {ex.Message}"); break; }
@@ -1593,7 +1628,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             await RefreshAsync();
             _ = FetchNexusInfoAsync(onlyMissing: true);
         }
-        // P18: one line per mod, or nothing when there is nothing to say
+        // one line per mod, or nothing when there is nothing to say
         var lines = new List<string>();
         if (imported.Count > 0)
             lines.Add(IsModsOff ? $"Added to the library ({imported.Count}) · select a profile to use them:"
@@ -1606,7 +1641,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     // ---------------- apply / recovery / launch ----------------
-    /// <summary>P20a: asks before writing to the game (deck).</summary>
+    /// <summary>Asks before writing to the game (deck).</summary>
     [RelayCommand]
     private Task ApplyChanges() => RunUiAsync(async () =>
     {
@@ -1617,7 +1652,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var lines = new List<string>();
         if (added > 0) lines.Add($"+ {added} mod(s) into the game");
         if (removed > 0) lines.Add($"− {removed} mod(s) out of the game");
-        // P114: mods held back because a framework they need is off lose their files too; name the reason
+        // mods held back because a framework they need is off lose their files too; name the reason
         var heldBack = _overview.Preview.Snapshot.Issues
             .Where(i => i.Kind == IssueKind.MissingRequirement && i.Severity == Severity.Blocking && i.PackageId is not null
                         && _overview.Preview.Plan.Steps.Any(s => s.Kind == StepKind.Remove && s.Owner == i.PackageId))
@@ -1625,12 +1660,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         foreach (var g in heldBack)
             lines.Add($"− {g.Count()} mod(s) held back: {Capabilities.DisplayName(g.Key)} is off, so their files leave the game too");
         if (_overview.OrderIsCustom) lines.Add("load order from the list (modlist.txt)");
-        lines.AddRange(TwinWarnings()); // P98: two versions of one mod would go into the game
+        lines.AddRange(TwinWarnings()); // two versions of one mod would go into the game
         foreach (var n in LeavingCore().Select(c => c.Name)) lines.Add($"{n}: files it made itself (logs, settings) go to the library, restorable");
         var msg = IsModsOff
             ? "Every mod AFTERLIFE put in the game will be taken out. Manually installed mods stay."
             : $"Load {name} to the deck? Only files AFTERLIFE knows are written; every file is verified afterwards.";
-        // P78: "Load to deck"
+        // "Load to deck"
         if (!await AskAsync(new ConfirmVm(IsModsOff ? "SWITCH THE GAME TO MODS OFF?" : $"LOAD {name.ToUpperInvariant()} TO THE DECK?", msg,
                 IsModsOff ? "MODS OFF" : "LOAD TO DECK", lines: lines))) return;
         await ApplyCoreAsync(PlanDecisions.None);
@@ -1644,7 +1679,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             { CloseCommand = new RelayCommand(() => Overlay = null) };
     });
 
-    /// <summary>Core mods that the next apply takes out of the game (P37).</summary>
+    /// <summary>Core mods that the next apply takes out of the game.</summary>
     private List<(string Capability, string Name)> LeavingCore()
     {
         if (_overview is null) return [];
@@ -1653,7 +1688,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             .Distinct().Select(c => (c, Capabilities.DisplayName(c))).ToList();
     }
 
-    /// <summary>P37: after a core mod left the game, its own runtime files are moved aside (restorable).</summary>
+    /// <summary>After a core mod left the game, its own runtime files are moved aside (restorable).</summary>
     private async Task<List<string>> CleanLeftoversAsync(IEnumerable<string> capabilities)
     {
         var lines = new List<string>();
@@ -1775,7 +1810,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private Task LaunchCoreAsync(bool allowChangedBuild) => RunUiAsync(async () =>
     {
-        // R2: REDmods are compiled by redMod.exe and need -modded
+        // REDmods are compiled by redMod.exe and need -modded
         var mods = await _host.RunAsync(c => c.DeployedRedMods());
         var args = "--launcher-skip";
         string? note = null;
@@ -1832,14 +1867,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void OpenAbout() => Overlay = new AboutVm { CloseCommand = new RelayCommand(() => Overlay = null) };
 
-    /// <summary>P96: the legend left the bottom bar; it lives in a guide behind the GUIDE tab.</summary>
+    /// <summary>The legend left the bottom bar; it lives in a guide behind the GUIDE tab.</summary>
     [RelayCommand]
     private void OpenGuide() => Overlay = new GuideVm { CloseCommand = new RelayCommand(() => Overlay = null) };
 
     [RelayCommand] private void OpenSupport() => AppLinks.Open(AppLinks.Sponsors);
     [RelayCommand] private void OpenContact() => AppLinks.Open(AppLinks.ContactMailto);
     private void OpenGameFolder() { if (Directory.Exists(GameFolder)) AppLinks.OpenFolder(GameFolder); }
-    [RelayCommand] private Task Refresh() => RunUiAsync(RefreshAsync);
+    [RelayCommand] private Task Refresh() => RunUiAsync(() => RefreshAsync(rescan: true));
     [RelayCommand] private void DismissNotice() { Notice = null; NoticeLines.Clear(); }
 
     // ---------------- helpers ----------------
@@ -1859,7 +1894,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private void Say(string text, Tone tone) => SayLines([text], tone);
 
-    /// <summary>P18: each item on its own line; long reports are cut to 12 lines.</summary>
+    /// <summary>Each item on its own line; long reports are cut to 12 lines.</summary>
     private void SayLines(IReadOnlyList<string> lines, Tone tone)
     {
         NoticeLines.Clear();

@@ -22,7 +22,7 @@ public sealed record DeploymentSnapshot(
 public static class ModlistFormat
 {
     public const string RelativePath = "archive/pc/mod/modlist.txt";
-    /// <summary>Line ending and encoding must be confirmed in M0 on game build 2.5.</summary>
+    /// <summary>Line ending and encoding must be confirmed on game build 2.5.</summary>
     public const string NewLine = "\r\n";
 
     public static string Render(IEnumerable<string> archiveNames) =>
@@ -38,7 +38,7 @@ public sealed record SnapshotInputs(
 
 /// <summary>
 /// Computes the desired game tree from a profile. Packages that cannot be deployed (missing requirement,
-/// unresolved file conflict) are excluded with a package-scoped blocking issue; the rest still deploys.
+/// Unresolved file conflict) are excluded with a package-scoped blocking issue; the rest still deploys.
 /// </summary>
 public static class SnapshotBuilder
 {
@@ -140,7 +140,7 @@ public static class SnapshotBuilder
             foreach (var r in p.Requirements.Where(r => r.Mandatory && !finalProvided.Contains(r.Capability)))
                 issues.Add(new Issue(IssueKind.EnabledWithOverride, Severity.Warning,
                     $"enabled with override: {Capabilities.DisplayName(r.Capability)} is missing", p.PackageId, Capability: r.Capability));
-            // P36/P38: frameworks install like any other mod; no "unverified" warning any more.
+            // frameworks install like any other mod; no "unverified" warning any more.
         }
 
         // Desired files.

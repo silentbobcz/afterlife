@@ -21,7 +21,7 @@
             <Color x:Key="T3Color">#80869A</Color>
             <Color x:Key="TagTextColor">#C9C7BB</Color>
             <Color x:Key="TagLineColor">#3A4256</Color>
-            <!-- P95: categories inside MODS; not cyan (collections) and not yellow (core) -->
+            <!-- categories inside MODS; not cyan (collections) and not yellow (core) -->
             <Color x:Key="VColor">#B98CFF</Color>
             <Color x:Key="LineColor">#1D2230</Color>
             <Color x:Key="Line2Color">#2A3142</Color>
@@ -192,7 +192,7 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            <!-- P92: marks in chapter headers (updates, conflicts, missing): small bevelled tags, icon + count -->
+            <!-- marks in chapter headers (updates, conflicts, missing): small bevelled tags, icon + count -->
             <Style x:Key="MarkButton" TargetType="Button">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
                 <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
@@ -232,7 +232,7 @@
                 <Setter Property="Fill" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
             </Style>
 
-            <!-- P96: small bevelled buttons for the secondary actions of the bottom bar -->
+            <!-- small bevelled buttons for the secondary actions of the bottom bar -->
             <Style x:Key="SmallButton" TargetType="Button">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
                 <Setter Property="Foreground" Value="{StaticResource T2}" />
@@ -272,7 +272,7 @@
                 <Setter Property="BorderBrush" Value="{StaticResource C}" />
                 <Setter Property="Background" Value="{StaticResource CTint}" />
             </Style>
-            <!-- P97: tiny arrow buttons next to the drag handle of a block -->
+            <!-- tiny arrow buttons next to the drag handle of a block -->
             <Style x:Key="TinyIconButton" TargetType="Button">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
                 <Setter Property="Foreground" Value="{StaticResource T3}" />
@@ -403,7 +403,7 @@
                                 <Border x:Name="Box" Width="18" Height="18" BorderBrush="{StaticResource T3}" BorderThickness="1.5" Background="{StaticResource Bg3}" VerticalAlignment="Center">
                                     <Grid>
                                         <Rectangle x:Name="Mark" Width="10" Height="10" Fill="{StaticResource Y}" Visibility="Collapsed" />
-                                        <!-- P110: part of the group is selected -->
+                                        <!-- part of the group is selected -->
                                         <Rectangle x:Name="Dash" Width="10" Height="3" Fill="{StaticResource Y}" Visibility="Collapsed" />
                                     </Grid>
                                 </Border>
@@ -428,7 +428,7 @@
             </Style>
 
             <!-- round choice in the same look -->
-            <!-- P70: progress bar in the Cyberpunk style: cut corner frame, segmented neon fill, the colour comes from Foreground -->
+            <!-- progress bar in the Cyberpunk style: cut corner frame, segmented neon fill, the colour comes from Foreground -->
             <Style x:Key="NeonBar" TargetType="ProgressBar">
                 <Setter Property="Height" Value="14" />
                 <Setter Property="Minimum" Value="0" />
@@ -665,7 +665,7 @@
             </Style>
 
             <!-- Panel frame -->
-            <!-- P17: panels are slightly see-through so the EDDIES background shows at the edges -->
+            <!-- panels are slightly see-through so the EDDIES background shows at the edges -->
             <SolidColorBrush x:Key="PanelBg" Color="#0A0C12" Opacity="0.80" />
             <Style x:Key="Panel" TargetType="c:CutBorder">
                 <Setter Property="Background" Value="{StaticResource PanelBg}" />
@@ -678,7 +678,7 @@
             </Style>
 
 
-            <!-- Contact: message icon in a chamfered frame (footer and About, P1) -->
+            <!-- Contact: message icon in a chamfered frame (footer and About) -->
             <Style x:Key="MailIconButton" TargetType="Button">
                 <Setter Property="Width" Value="32" />
                 <Setter Property="Height" Value="32" />

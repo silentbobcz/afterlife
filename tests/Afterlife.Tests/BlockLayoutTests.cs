@@ -2,7 +2,7 @@ using Afterlife.Core;
 
 namespace Afterlife.Tests;
 
-/// <summary>P95/P97: blocks, categories and the load order that follows them.</summary>
+/// <summary>Blocks, categories and the load order that follows them.</summary>
 public class BlockLayoutTests
 {
     private static readonly string[] Slugs = ["night-city", "ui-pack"];

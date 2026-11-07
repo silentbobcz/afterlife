@@ -6,8 +6,8 @@ using CommunityToolkit.Mvvm.Input;
 namespace Afterlife.App.ViewModels;
 
 /// <summary>
-/// P95/P97: blocks of the mod list and their load order. CORE MODS stay on top; collections and MODS
-/// can be moved; MODS holds the mods without category first and then the user's categories.
+/// Blocks of the mod list and their load order. CORE MODS stay on top; collections and MODS
+/// Can be moved; MODS holds the mods without category first and then the user's categories.
 /// The list order is the load order: every change here reorders the selected profile.
 /// </summary>
 public sealed partial class MainViewModel
@@ -58,7 +58,7 @@ public sealed partial class MainViewModel
         return CollectionChapterPrefix + (_collections.FirstOrDefault(c => c.Slug == slug)?.Name ?? slug);
     }
 
-    /// <summary>Chapter, section and rank of every row; a collection without a record falls back to MODS (P94).</summary>
+    /// <summary>Chapter, section and rank of every row; a collection without a record falls back to MODS.</summary>
     private void AssignChapters(IEnumerable<ModRowVm> rows)
     {
         var slugOfName = SlugOfName();
@@ -73,8 +73,8 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>
-    /// P94/P95: the groups are declared up front, so MODS and empty categories keep their header
-    /// and the groups appear in the load order. A search shows only the groups with matches (P83).
+    /// The groups are declared up front, so MODS and empty categories keep their header
+    /// And the groups appear in the load order. A search shows only the groups with matches.
     /// </summary>
     private void UpdateGroupNames()
     {
@@ -135,7 +135,7 @@ public sealed partial class MainViewModel
                (first.Old is null ? "" : $" (for example {first.New} now wins over {first.Old})") + ".";
     }
 
-    /// <summary>P97: load position of a block or category (for drag and drop between blocks).</summary>
+    /// <summary>Load position of a block or category (for drag and drop between blocks).</summary>
     public int BlockRankOf(string section)
     {
         var sections = _layout.Sections(CollectionSlugs);
@@ -150,8 +150,8 @@ public sealed partial class MainViewModel
         chapter.StartsWith(CategoryChapterPrefix, StringComparison.Ordinal) ? chapter[CategoryChapterPrefix.Length..] : null;
 
     /// <summary>
-    /// P95: mods of MODS and its categories move between them; collection mods only inside their own collection;
-    /// core mods never. Returns null when the drop is fine, otherwise why not.
+    /// Mods of MODS and its categories move between them; collection mods only inside their own collection;
+    /// Core mods never. Returns null when the drop is fine, otherwise why not.
     /// </summary>
     public string? WhyNotDrop(IReadOnlyList<string> moved, string targetChapter)
     {
@@ -163,14 +163,14 @@ public sealed partial class MainViewModel
         return rows.All(r => r.Chapter == targetChapter) ? null : "a collection holds only its own mods";
     }
 
-    /// <summary>Drag and drop onto a row: before or after it; into its category (P95).</summary>
+    /// <summary>Drag and drop onto a row: before or after it; into its category.</summary>
     public Task MoveModsAsync(IReadOnlyList<string> moved, string targetId, bool after) => RunUiAsync(async () =>
     {
         if (_overview is null || IsModsOff) return;
         var target = Mods.FirstOrDefault(m => m.PackageId == targetId);
         if (target is null) return;
         if (WhyNotDrop(moved, target.Chapter) is { } why) { Say("Not moved: " + why + ".", Tone.Warn); return; }
-        // P124: inside MODS and categories the order is alphabetical; a drop there only changes the category
+        // inside MODS and categories the order is alphabetical; a drop there only changes the category
         if (InModsFamily(target.Chapter) && Mods.Where(m => moved.Contains(m.PackageId)).All(m => m.Chapter == target.Chapter))
         {
             Say("Inside MODS and categories mods are sorted by name. To load a mod earlier, put it in a category and move the category up.", Tone.Info);
@@ -193,10 +193,10 @@ public sealed partial class MainViewModel
             if (changes.Count > 0) into = $"{changes.Count} mod(s) moved to {(cat is null ? "MODS" : CategoryName(cat))}.";
         }
         await ApplyLayoutAsync(layout, order, into.Length > 0 ? into : "Load order changed.");
-        if (into.Length > 0) SetAllChecked(false); // P100: moved into a category, selection done
+        if (into.Length > 0) SetAllChecked(false); // moved into a category, selection done
     });
 
-    /// <summary>P95: drop onto a header (or MOVE TO CATEGORY): the mods go to the end of that category / MODS.</summary>
+    /// <summary>Drop onto a header (or MOVE TO CATEGORY): the mods go to the end of that category / MODS.</summary>
     public Task MoveModsToChapterAsync(IReadOnlyList<string> moved, string chapter) => RunUiAsync(async () =>
     {
         if (_overview is null || IsModsOff || !InModsFamily(chapter)) return;
@@ -209,14 +209,14 @@ public sealed partial class MainViewModel
         order.AddRange(movedSet); // the stable sort by section puts them at the end of their section
         await ApplyLayoutAsync(_layout.Assign(movedSet, cat), order,
             $"{movedSet.Count} mod(s) moved to {(cat is null ? "MODS" : CategoryName(cat))}.");
-        SetAllChecked(false); // P100
+        SetAllChecked(false); 
     });
 
     public bool CanDropOnChapter(IReadOnlyList<string> moved, string chapter) => InModsFamily(chapter) && WhyNotDrop(moved, chapter) is null;
 
     private string CategoryName(string id) => _layout.Categories.FirstOrDefault(c => c.Id == id)?.Name ?? "category";
 
-    // ---------------- blocks (P97) ----------------
+    // ---------------- blocks ----------------
     /// <summary>Moves a block (collection, MODS) or a category before or after another one.</summary>
     public Task MoveBlockAsync(string block, string target, bool after) => RunUiAsync(async () =>
     {
@@ -267,7 +267,7 @@ public sealed partial class MainViewModel
                 new AsyncRelayCommand(() => StepBlockAsync(block, 1), () => canEdit && i >= 0 && i < siblings.Count - 1));
     }
 
-    // ---------------- categories (P95) ----------------
+    // ---------------- categories ----------------
     private async Task<string?> AskCategoryNameAsync(string title, string initial, string? exceptId)
     {
         while (true)
@@ -315,7 +315,7 @@ public sealed partial class MainViewModel
         await ApplyLayoutAsync(layout, CurrentOrder(), $"Category {current.Name} removed; its mods are back in MODS.");
     });
 
-    /// <summary>P95: bulk action for the checked mods: choose the category.</summary>
+    /// <summary>Bulk action for the checked mods: choose the category.</summary>
     [RelayCommand]
     private Task BulkMoveToCategory() => RunUiAsync(async () =>
     {

@@ -16,7 +16,7 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += (_, args) => Log(args.ExceptionObject as Exception);
         TaskScheduler.UnobservedTaskException += (_, args) => { Log(args.Exception); args.SetObserved(); };
 
-        // P24: nxm:// links (Mod Manager Download) start AFTERLIFE with the link as argument.
+        // nxm:// links (Mod Manager Download) start AFTERLIFE with the link as argument.
         var link = e.Args.FirstOrDefault(a => a.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase));
         _instance = new Services.SingleInstance();
         if (!_instance.IsFirst)

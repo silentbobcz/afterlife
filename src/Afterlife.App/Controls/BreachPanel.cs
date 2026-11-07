@@ -8,9 +8,9 @@ using System.Windows.Threading;
 namespace Afterlife.App.Controls;
 
 /// <summary>
-/// "Breach protocol" while AFTERLIFE writes into the game (P9): a code matrix with a moving selection,
-/// a buffer that fills with progress, and the live log of written files. Decorative only; the real
-/// progress and result are always also in the text and in the footer.
+/// "Breach protocol" while AFTERLIFE writes into the game: a code matrix with a moving selection,
+/// A buffer that fills with progress, and the live log of written files. Decorative only; the real
+/// Progress and result are always also in the text and in the footer.
 /// </summary>
 public sealed class BreachPanel : Border
 {

@@ -7,7 +7,7 @@ namespace Afterlife.Infrastructure;
 public enum ExportScope { InGameNow, SelectedAfterApply }
 
 /// <summary>
-/// P52: list of the active mods with versions, for finding a problem mod (forum, Discord, mod author, bug report).
+/// List of the active mods with versions, for finding a problem mod (forum, Discord, mod author, bug report).
 /// Never contains the Nexus key, the account name or paths outside the game folder.
 /// </summary>
 public static class ModListExport
