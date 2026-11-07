@@ -107,6 +107,8 @@ public static class UnmanagedGrouping
         ["input_loader"] = "Input Loader",
         ["mod_settings"] = "Mod Settings",
         ["RedFileSystem"] = "RedFileSystem",
+        ["audioware"] = "Audioware",
+        ["virtual-atelier-full"] = "Virtual Atelier",
     };
 
     /// <summary>Group name → capability, so the window can warn about mods that need a framework before it is removed.</summary>
@@ -122,6 +124,8 @@ public static class UnmanagedGrouping
         ["Mod Settings"] = Capabilities.ModSettings,
         ["Native Settings UI"] = Capabilities.NativeSettings,
         ["RedFileSystem"] = Capabilities.RedFileSystem,
+        ["Audioware"] = Capabilities.Audioware,
+        ["Virtual Atelier"] = Capabilities.VirtualAtelier,
     };
 
     /// <summary>

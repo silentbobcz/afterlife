@@ -61,7 +61,7 @@ If the game already contains mods installed by hand, the *Scan manual mods* card
 
 Each block header has:
 
-- a **checkbox** that selects every mod of the block or category for the bulk actions below (it shows a dash when only some are selected),
+- a **checkbox** that selects every mod of the block or category for the bulk actions below (it shows a dash when only some are selected); while you search, it takes only the mods the search shows,
 - an **arrow** to fold the block (the state is remembered; a search unfolds everything),
 - small **marks** when something inside needs you: **▲** updates, **⚠** conflicts, **✕** missing requirements. Click a mark to jump to the first such mod,
 - the number of mods switched on, for example `7 / 7 ON`,
@@ -74,6 +74,8 @@ Each row has:
 - the version, with **UPDATE vX** when Nexus has a newer one (core mods also show a small cyan arrow next to their version in the CORE MODS table at the top; one click updates),
 - the **DEPLOYED** column: what is really in the game (**DEPLOYED**, **+ PENDING · APPLY**, **− PENDING · APPLY**, **! CONFLICT · DECIDE** and so on),
 - the **IN PROFILE** switch: whether the mod is on in the selected profile.
+
+The **search** box above the list filters by name and tag; **✕** or Esc clears it. **Select all** (the checkbox above the list, Ctrl+A) selects exactly the mods the search shows, so you can, for example, move all found mods into a category at once.
 
 When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
@@ -157,7 +159,7 @@ Each requirement shows its state: **deployed** (green), **in library · not depl
 
 Switching a mod **on** offers to also switch on what it needs (if it is in the library). Switching a mod **off** offers to also switch off mods that need it. The same questions appear for whole blocks.
 
-**Core mods** are the frameworks other mods build on. They have their own yellow block and are never changed by collections. Turning all core mods off asks about every mod that depends on them, because most mods will not run without them.
+**Core mods** are the frameworks other mods build on: Cyber Engine Tweaks, RED4ext, redscript, ArchiveXL, TweakXL, Codeware, Input Loader and, optional, Mod Settings, Native Settings UI, RedFileSystem, Audioware and Virtual Atelier. They have their own yellow block and are never changed by collections. Turning all core mods off asks about every mod that depends on them, because most mods will not run without them.
 
 ## 10. Conflicts and load order
 
