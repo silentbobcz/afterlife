@@ -588,7 +588,12 @@
                                 <TextBlock Style="{StaticResource Meta}" Text="{Binding LibrarySubtitle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding LibrarySubtitle}" VerticalAlignment="Center" />
                                 <Grid Grid.Column="1" Width="220" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBox x:Name="Search" Style="{StaticResource DarkTextBox}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" />
+                                    <TextBox x:Name="Search" Style="{StaticResource DarkTextBox}" Padding="8,0,26,0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search mods" />
+                                    <Button Style="{StaticResource TinyIconButton}" Width="22" Height="22" Margin="0,0,4,0" HorizontalAlignment="Right"
+                                            Command="{Binding ClearSearchCommand}" ToolTip="Clear the search (Esc)" AutomationProperties.Name="Clear search"
+                                            Visibility="{Binding Text, ElementName=Search, Converter={StaticResource NullToVis}}">
+                                        <TextBlock Text="✕" FontSize="11" />
+                                    </Button>
                                     <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Text="Search mods, tags…">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource Meta}">

@@ -164,13 +164,21 @@ public sealed partial class MainViewModel
         _multi = Mods.Where(m => m.IsChecked).ToList();
         SelectedCount = _multi.Count;
         HasMultiSelection = _multi.Count > 0;
-        AllChecked = Mods.Count > 0 && _multi.Count == Mods.Count;
+        var visible = Mods.Where(Visible).ToList();
+        AllChecked = visible.Count > 0 && visible.All(m => m.IsChecked);
     }
 
+    /// <summary>The row passes the search filter, so "select all" (list header, chapter header, Ctrl+A) takes it.</summary>
+    private bool Visible(ModRowVm row) => ModsView.Filter?.Invoke(row) ?? true;
+
+    [RelayCommand]
+    private void ClearSearch() => SearchText = "";
+
+    /// <summary>Select all = exactly the rows the search shows (hidden rows are cleared); false clears everything.</summary>
     public void SetAllChecked(bool value)
     {
         _building = true;
-        try { foreach (var m in Mods) m.IsChecked = value && ModsView.Filter(m); }
+        try { foreach (var m in Mods) m.IsChecked = value && Visible(m); }
         finally { _building = false; }
         UpdateChecked();
     }

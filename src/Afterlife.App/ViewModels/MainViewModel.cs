@@ -172,7 +172,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _seg2Label = "Applying";
 
-    partial void OnSearchTextChanged(string value) { UpdateGroupNames(); ModsView.Refresh(); BuildCollectionChapters(); }
+    partial void OnSearchTextChanged(string value) { UpdateGroupNames(); ModsView.Refresh(); BuildCollectionChapters(); UpdateChecked(); }
 
     partial void OnSelectedModChanged(ModRowVm? value)
     {

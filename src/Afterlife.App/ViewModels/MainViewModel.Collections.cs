@@ -378,7 +378,7 @@ public sealed partial class MainViewModel
             static bool Mis(ModRowVm r) => r.Overview.Missing.Count > 0;
             vm.Updates = inChapter.Count(Upd); vm.Conflicts = inChapter.Count(Con); vm.Missing = inChapter.Count(Mis);
             vm.ShowUpdateCommand = Show(Upd); vm.ShowConflictCommand = Show(Con); vm.ShowMissingCommand = Show(Mis);
-            vm.WatchRows(inChapter); 
+            vm.WatchRows(inChapter.Where(Visible).ToList()); // the header selects what the search shows
             return vm;
         }
         static bool Real(ModRowVm r) => r.Overview.Package.LayerOfModId is null;
