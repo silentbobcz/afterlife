@@ -369,6 +369,9 @@ public sealed class LibraryService
                         });
                     foreach (var r in FrameworkCatalog.InferFromContent(scripts, provides))
                         if (reqs.All(x => x.Capability != r.Capability)) reqs.Add(r);
+                    // what FIXER listed for its own quest cannot be read from the files again
+                    foreach (var r in p.Requirements.Where(o => o.Origin == FixerService.RequirementOrigin))
+                        if (!provides.Contains(r.Capability) && reqs.All(x => x.Capability != r.Capability)) reqs.Add(r);
                 }
                 if (p.NexusModId is { } nexusId && pages.TryGetValue(nexusId, out var info))
                     foreach (var nr in info.Requirements)

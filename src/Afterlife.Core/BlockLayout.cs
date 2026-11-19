@@ -20,6 +20,8 @@ public sealed record BlockLayout(
     public const string CollectionPrefix = "collection:";
     public const string CategoryPrefix = "category:";
     public const int MaxNameLength = 32;
+    /// <summary>Key of the saved layout in the meta table of the library.</summary>
+    public const string StoreKey = "ui.layout";
 
     public static BlockLayout Empty { get; } = new([], [], new Dictionary<string, string>());
 

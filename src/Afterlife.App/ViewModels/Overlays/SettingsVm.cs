@@ -24,7 +24,8 @@ public sealed record SettingsActions(
     Func<SettingsVm, Task> LoadStorage,
     Func<SettingsVm, string, Task> Purge,
     Action CopyDiagnostics,
-    Func<SettingsVm, Task> RemoveFromPc);
+    Func<SettingsVm, Task> RemoveFromPc,
+    Func<SettingsVm, bool, Task> SetFixer);
 
 /// <summary>Game, library, Nexus Mods, display, diagnostics.</summary>
 public sealed partial class SettingsVm : OverlayVm
@@ -88,6 +89,25 @@ public sealed partial class SettingsVm : OverlayVm
     {
         _loading = true;
         NxmHandler = value;
+        _loading = false;
+    }
+
+    // ---------------- FIXER ----------------
+    [ObservableProperty] private bool _fixerInbox;
+
+    public string FixerFolder => Path.Combine(Library, "fixer", "inbox");
+    public string FixerHint => "For FIXER, the quest editor for Cyberpunk 2077. While this is on, AFTERLIFE takes the quests FIXER leaves in the fixer\\inbox folder of the library: "
+        + "they arrive in the category FIXER, switched on in the selected profile, and go into the game with APPLY CHANGES like any other mod. Off: the folder is not read.";
+
+    partial void OnFixerInboxChanged(bool value)
+    {
+        if (!_loading) _ = _a.SetFixer(this, value);
+    }
+
+    public void SetFixerSilently(bool value)
+    {
+        _loading = true;
+        FixerInbox = value;
         _loading = false;
     }
 

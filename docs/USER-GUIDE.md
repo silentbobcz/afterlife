@@ -275,6 +275,7 @@ Attach it to bug reports, or use it to find the mod that breaks something (switc
 | **Log what AFTERLIFE does** | Off by default. Writes switches, imports, every planned file change with its reason, blockers and results into `activity-YYYYMMDD.log`, one file per day. Switch it on when something looks wrong and attach the file to your report. |
 | **Open log folder** | Logs are in `%LOCALAPPDATA%\AFTERLIFE\logs`. |
 | **Remove AFTERLIFE from this PC…** | See [section 21](#21-removing-afterlife). |
+| **06 · FIXER** | Off by default. For FIXER, a quest editor for Cyberpunk 2077: while this is on, AFTERLIFE takes the quests FIXER leaves in the `fixer\inbox` folder of the library. They arrive in the category **FIXER**, switched on in the selected profile, and go into the game with **APPLY CHANGES** like any other mod. A new build of a quest takes the place of the previous one; a quest FIXER withdraws is switched off in every profile. |
 
 ## 18. After a game update
 
@@ -300,7 +301,7 @@ More in the [FAQ](FAQ.md).
 |---|---|
 | Settings | `%APPDATA%\AFTERLIFE` |
 | Library (default) | `%LOCALAPPDATA%\AFTERLIFE\Library`, or the folder you chose. A folder named `AFTERLIFE Library` next to `AFTERLIFE.exe` is used automatically (portable use). |
-| Inside the library | `afterlife.db` (database), `packages` (mods), `downloads`, `removed`, `staging`, `backups`, `locks`, `cache/images` |
+| Inside the library | `afterlife.db` (database), `packages` (mods), `downloads`, `removed`, `staging`, `backups`, `locks`, `cache/images`, and `fixer` once the FIXER drop box was switched on |
 | Logs | `%LOCALAPPDATA%\AFTERLIFE\logs` |
 | Nexus key | encrypted with Windows DPAPI for your user, in the settings folder |
 

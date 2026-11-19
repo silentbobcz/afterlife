@@ -206,6 +206,8 @@ public sealed class InstallCoordinator : IDisposable
     public LibraryService LibraryService { get; }
     public DeployService DeployService { get; }
     public BundleService BundleService { get; }
+    /// <summary>The drop box for FIXER (off unless switched on in Settings).</summary>
+    public FixerService Fixer { get; }
 
     private InstallCoordinator(LibraryPaths lib, AfterlifeStore store, IFileOps fs, IGameEnvironment env)
     {
@@ -215,6 +217,7 @@ public sealed class InstallCoordinator : IDisposable
         LibraryService = new LibraryService(_ctx);
         DeployService = new DeployService(_ctx);
         BundleService = new BundleService(_ctx);
+        Fixer = new FixerService(_ctx);
         _ctx.Profiles = ProfileService;
         _ctx.Scanner = ScanService;
         _ctx.Library = LibraryService;

@@ -94,6 +94,7 @@ public sealed partial class MainViewModel
                 EndBreach(true, r.Execution is null ? "nothing to write" : $"{r.Execution.StepsApplied} change(s) verified");
                 var done = new List<string> { r.Message == "already deployed" ? "The game already matches this profile." : "Done. The game matches the profile and every file was verified." };
                 done.AddRange(await CleanLeftoversAsync(leaving));
+                await FixerAfterApplyAsync();
                 SayLines(done, Tone.Ok);
                 ScanCompleted?.Invoke();
             }

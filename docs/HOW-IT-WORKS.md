@@ -37,6 +37,20 @@ The requirements of a package are derived from its scripts once per `FrameworkCa
 
 `dotnet publish -p:Edition=Offline` builds **AFTERLIFE Offline** (`AppEdition.Offline`, compile symbol `OFFLINE`): `NexusKeyStore.Load` always returns nothing, nxm:// is never registered, mod pictures are never downloaded, and every entry point that needs the Nexus Mods API calls `LockedOffline` first, which explains the lock (`OfflineInfoVm`). The workflow builds both editions and fails when the two executables are identical.
 
+## The FIXER drop box
+
+FIXER (a quest editor) hands its quests to AFTERLIFE through a folder in the library instead of copying them into the game. `FixerService` (`Fixer.cs`) owns it; it is off until switched on in Settings (`fixer.enabled` in the meta table) and a library that never used it gets no folder.
+
+| Path in the library | Written by | What |
+|---|---|---|
+| `fixer/status.json` | AFTERLIFE | `schema`, `enabled`, edition, version. Written on start and when the switch changes. |
+| `fixer/inbox/<id>-<version>.zip` | FIXER | Game folder layout plus `fixer.json` (`schema`, `kind` quest or tool, `id`, `name`, `version`, `requires`). Written as `.zip.part` and renamed; a `.part` is never read. |
+| `fixer/inbox/remove-<id>-<time>.json` | FIXER | `kind: remove`: the quest is switched off in every profile. |
+| `fixer/outbox/<file>.result.json` | AFTERLIFE | `status`: `imported`, `applied`, `removed` or `rejected`, with a message. |
+| `fixer/done/` | AFTERLIFE | Files taken from the inbox; the newest 20 are kept (the same in `outbox`). |
+
+`Process` imports a package through the ordinary import (so paths are validated the same way), gives it the mod id `fixer-<id>`, adds the requirements FIXER listed (origin `fixer`, kept by `RefreshRequirements`), puts it into the category FIXER and switches it on in the selected profile. A new build replaces the previous one with `ReplaceVersion`; the old build is deleted once the game no longer has it. Nothing here touches the game: that is still APPLY, after which `AfterApply` rewrites the result to `applied`. The window (`MainViewModel.Fixer.cs`) looks into the inbox every three seconds while the switch is on and never takes anything over a running operation, an open dialog or a pending recovery. The contract is schema 1; the same description lives in the FIXER repository, and both sides raise `schema` together.
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.

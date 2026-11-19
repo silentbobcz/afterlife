@@ -223,7 +223,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (await _host.RunAsync(c => c.RefreshRequirements()) > 0) await RefreshAsync();
         }
         catch (Exception ex) when (IsExpected(ex)) { }
-        await CheckDuplicatesAsync(); 
+        await StartFixerAsync();
+        await CheckDuplicatesAsync();
         await CheckOldVersionsAsync(); 
         await CheckNexusAsync(null);
         await FetchNexusInfoAsync(onlyMissing: true);
@@ -638,5 +639,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ex is InvalidOperationException or IOException or UnauthorizedAccessException or ImportException or InstallBusyException
             or DirectoryNotFoundException or Microsoft.Data.Sqlite.SqliteException;
 
-    public void Dispose() => _host.Dispose();
+    public void Dispose()
+    {
+        _fixerTimer?.Stop();
+        _host.Dispose();
+    }
 }

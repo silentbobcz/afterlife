@@ -13,7 +13,7 @@ namespace Afterlife.App.ViewModels;
 public sealed partial class MainViewModel
 {
     public const string CategoryChapterPrefix = "CATEGORY · ";
-    private const string LayoutKey = "ui.layout";
+    private const string LayoutKey = BlockLayout.StoreKey;
     private BlockLayout _layout = BlockLayout.Empty;
 
     private IReadOnlyList<string> CollectionSlugs => _collections.Select(c => c.Slug).ToList();
