@@ -39,7 +39,11 @@ public sealed record NexusAccount(string Name, bool IsPremium, bool IsSupporter)
 
 public sealed record NexusFileInfo(string FileName, string? Version, string? ModName, string? ModVersion);
 
-public sealed class NexusException(string message) : Exception(message);
+public sealed class NexusException(string message) : Exception(message)
+{
+    /// <summary>Nexus Mods answered 429: no further request gets through until its limit resets.</summary>
+    public bool RateLimited { get; init; }
+}
 
 /// <summary>A mod the Nexus page lists as required.</summary>
 public sealed record NexusRequirement(string ModId, string Name, string Url, bool External, string? Notes);
@@ -116,13 +120,23 @@ public static class NexusUpdates
     }
 
     /// <summary>When the package was last checked (with or without a result).</summary>
-    public static DateTimeOffset? CheckedAt(AfterlifeStore store, string packageId)
+    public static DateTimeOffset? CheckedAt(AfterlifeStore store, string packageId) =>
+        store.GetMeta(Key(packageId)) is { } v ? CheckedAtOf(v) : null;
+
+    /// <summary>When every package was last checked, by package id, read in one query.</summary>
+    public static Dictionary<string, DateTimeOffset> CheckedAll(AfterlifeStore store)
     {
-        var v = store.GetMeta(Key(packageId));
-        if (v is null) return null;
-        if (v.StartsWith(None, StringComparison.Ordinal))
-            return long.TryParse(v[(None.Length + 1)..], out var t) ? DateTimeOffset.FromUnixTimeSeconds(t) : null;
-        return Load(store, packageId)?.CheckedAt;
+        var prefix = Key("");
+        var result = new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal);
+        foreach (var (key, value) in store.GetMetaByPrefix(prefix))
+            if (CheckedAtOf(value) is { } at) result[key[prefix.Length..]] = at;
+        return result;
+    }
+
+    private static DateTimeOffset? CheckedAtOf(string stored)
+    {
+        if (!stored.StartsWith(None, StringComparison.Ordinal)) return Parse(stored)?.CheckedAt;
+        return stored.Length > None.Length + 1 && long.TryParse(stored[(None.Length + 1)..], out var t) ? DateTimeOffset.FromUnixTimeSeconds(t) : null;
     }
 
     /// <summary>The smallest period of the "updated mods" feed that covers every check since <paramref name="oldest"/>; null = too old, read the files.</summary>
@@ -496,7 +510,7 @@ public sealed class NexusClient : IDisposable
                     410 => "the download link expired; click Mod Manager Download again",
                     429 => "Nexus Mods rate limit reached; try again later",
                     var c => $"Nexus Mods answered {c}",
-                });
+                }) { RateLimited = (int)resp.StatusCode == 429 };
             try { return JsonDocument.Parse(body); }
             catch (JsonException) { throw new NexusException("unexpected answer from Nexus Mods"); }
         }

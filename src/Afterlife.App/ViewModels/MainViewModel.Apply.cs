@@ -86,7 +86,7 @@ public sealed partial class MainViewModel
         SetPhase(DeployPhase.Preparing, 0, 0);
         try
         {
-            var progress = new Progress<DeployProgress>(p => SetPhase(p.Phase, p.Done, p.Total, p.Path, p.Kind));
+            var progress = DeployProgressSink();
             var r = await _host.RunAsync(c => c.Apply(null, decisions, progress));
             if (r.Succeeded)
             {
@@ -153,7 +153,7 @@ public sealed partial class MainViewModel
         BeginBreach(choice == RecoveryChoice.Finish ? "RECOVERY · finishing" : "RECOVERY · returning", 0);
         try
         {
-            var progress = new Progress<DeployProgress>(p => SetPhase(p.Phase, p.Done, p.Total, p.Path, p.Kind));
+            var progress = DeployProgressSink();
             var (outcome, follow) = await _host.RunAsync(c => c.Recover(choice, progress));
             EndBreach(follow.Succeeded && outcome.UnknownPaths.Count == 0, follow.Succeeded ? "state verified" : "needs attention");
             if (outcome.UnknownPaths.Count > 0)

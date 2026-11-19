@@ -103,6 +103,26 @@ public class DeleteTests
         Assert.False(File.Exists(settings));
         Assert.Contains(t.C.Removed.List(), b => b.Label.Contains("Changed files of Truck"));
     }
+
+    [Fact]
+    public void A_delete_the_game_cannot_follow_leaves_every_profile_as_it_was()
+    {
+        using var t = new TestEnv();
+        var a = t.ImportZip("A", ("archive/pc/mod/a.archive", "a"));
+        var b = t.ImportZip("B", ("archive/pc/mod/b.archive", "b"));
+        t.C.UpdateSelected(p => p.WithEntry(a.PackageId, true).WithEntry(b.PackageId, true));
+        t.C.Reorder(t.C.SelectedProfile.Id, [b.PackageId, a.PackageId]);
+        t.ApplyOk();
+        // the load order file was edited by hand: the plan that takes A out of the game is blocked
+        t.Write("archive/pc/mod/modlist.txt", "edited by hand");
+
+        var r = t.C.DeleteEverywhere([a.PackageId]);
+        Assert.Empty(r.Deleted);
+        Assert.Single(r.Kept);
+        Assert.True(t.C.SelectedProfile.IsEnabled(a.PackageId));
+        Assert.NotNull(t.C.Store.GetPackage(a.PackageId));
+        Assert.Equal("a", t.Read("archive/pc/mod/a.archive"));
+    }
 }
 
 public class LoadOrderTests

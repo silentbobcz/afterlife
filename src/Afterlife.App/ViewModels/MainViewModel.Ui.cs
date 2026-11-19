@@ -112,6 +112,28 @@ public sealed partial class MainViewModel
         _ => "SYNC   ",
     };
 
+    /// <summary>
+    /// Progress of a deployment for the footer and the BREACH panel. Call on the UI thread. A step is reported at
+    /// most twenty times a second (thousands of files would otherwise queue thousands of redraws); the change of a
+    /// phase and the last step always get through.
+    /// </summary>
+    private IProgress<DeployProgress> DeployProgressSink() =>
+        new ThrottledDeployProgress(new Progress<DeployProgress>(p => SetPhase(p.Phase, p.Done, p.Total, p.Path, p.Kind)));
+
+    private sealed class ThrottledDeployProgress(IProgress<DeployProgress> inner) : IProgress<DeployProgress>
+    {
+        private readonly System.Diagnostics.Stopwatch _clock = System.Diagnostics.Stopwatch.StartNew();
+        private long _next;
+
+        public void Report(DeployProgress p)
+        {
+            var always = p.Phase != DeployPhase.Applying || p.Done >= p.Total;
+            if (!always && _clock.ElapsedMilliseconds < _next) return;
+            _next = _clock.ElapsedMilliseconds + 50;
+            inner.Report(p);
+        }
+    }
+
     private void SetPhase(DeployPhase phase, int done, int total, string? path = null, StepKind? kind = null)
     {
         if (ShowBreach)

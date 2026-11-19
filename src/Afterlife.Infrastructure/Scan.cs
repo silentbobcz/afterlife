@@ -123,11 +123,15 @@ public sealed class ScanService
         // logs and settings that mods deployed by AFTERLIFE write into their own folders are theirs, not manual mods
         // (kept while the mod is in the library, also when it is switched off: they are its settings)
         var candidates = unmanaged.Select(u => u.Item1).Where(u => !inTheWay.ContainsKey(u) && !same.ContainsKey(u)).ToList();
-        var runtime = RuntimeOwners(candidates, ledger);
+        var runtime = RuntimeOwners(candidates, ledger, packages);
         var known = packages.Select(p => p.PackageId).ToHashSet(StringComparer.Ordinal);
-        foreach (var (path, owner) in LoadRuntimeOwners())
-            if (!runtime.ContainsKey(path) && known.Contains(owner) && candidates.Contains(path, StringComparer.OrdinalIgnoreCase)) runtime[path] = owner;
-        Store.SetMeta(RuntimeOwnersKey, Json.Serialize(runtime));
+        var candidateSet = candidates.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var remembered = LoadRuntimeOwners();
+        foreach (var (path, owner) in remembered)
+            if (!runtime.ContainsKey(path) && known.Contains(owner) && candidateSet.Contains(path)) runtime[path] = owner;
+        // a scan runs every time the window comes back to the front: write only when the owners really changed
+        if (runtime.Count != remembered.Count || runtime.Any(r => !remembered.TryGetValue(r.Key, out var o) || o != r.Value))
+            Store.SetMeta(RuntimeOwnersKey, Json.Serialize(runtime));
         if (runtime.Count > 0) unmanaged = unmanaged.Where(u => !runtime.ContainsKey(u.Item1)).ToList();
         var external = new HashSet<string>(StringComparer.Ordinal);
         var versions = new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -144,7 +148,6 @@ public sealed class ScanService
             .Where(p => string.Equals(p.ParentValue, "archive/pc/mod", StringComparison.OrdinalIgnoreCase) && p.Extension == ".archive")
             .Select(p => p.FileName)
             .ToList();
-        Store.ReplaceUnmanaged(unmanaged);
         return new RawScan(unmanaged, inTheWay, same, samePackages, runtime, external, versions, archives);
     }
 
@@ -172,7 +175,7 @@ public sealed class ScanService
     /// Which deployed package a file AFTERLIFE did not write belongs to: the nearest own (not shared) folder of
     /// One deployed package, or a runtime folder of a core mod deployed by AFTERLIFE.
     /// </summary>
-    private Dictionary<string, string> RuntimeOwners(IEnumerable<string> paths, Dictionary<string, LedgerEntry> ledger)
+    private static Dictionary<string, string> RuntimeOwners(IEnumerable<string> paths, IReadOnlyDictionary<string, LedgerEntry> ledger, IReadOnlyList<PackageManifest> library)
     {
         var subtree = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var direct = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
@@ -190,12 +193,12 @@ public sealed class ScanService
         }
         var runtimeFolders = new List<(string Folder, IReadOnlyList<string> Exclude, string Owner)>();
         var runtimeFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var owners = ledger.Values.Select(l => l.Owner).Distinct().ToList();
-        var library = Store.GetPackages();
+        var byId = library.ToDictionary(p => p.PackageId, StringComparer.Ordinal);
+        var deployed = ledger.Values.Select(l => l.Owner).Distinct().Select(id => byId.GetValueOrDefault(id)).OfType<PackageManifest>().ToList();
         foreach (var c in FrameworkCatalog.Contracts.Where(c => c.RuntimeFolders.Count > 0 || c.RuntimeFiles.Count > 0))
         {
             // the deployed copy first; else a copy in the library (its files stay its settings)
-            var owner = owners.Select(Store.GetPackage).FirstOrDefault(p => p is not null && p.Provides.Contains(c.Capability))
+            var owner = deployed.FirstOrDefault(p => p.Provides.Contains(c.Capability))
                         ?? library.FirstOrDefault(p => p.Provides.Contains(c.Capability));
             if (owner is null) continue;
             foreach (var f in c.RuntimeFolders) runtimeFolders.Add((f, c.RuntimeExclude, owner.PackageId));

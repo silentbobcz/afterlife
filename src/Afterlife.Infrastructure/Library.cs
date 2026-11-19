@@ -84,11 +84,29 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
         var result = ImportAnalyzer.Analyze(infos, req.Options, limits);
         if (result.Status != ImportStatus.Ok) return new ImportResult(result, null);
 
-        var wanted = result.Mapped.ToDictionary(m => m.RawPath, StringComparer.Ordinal);
+        // a FOMOD installer may copy one file of the archive to several places: one entry, several targets
+        var wanted = result.Mapped.ToLookup(m => m.RawPath, StringComparer.Ordinal);
         return Store(req, file, result, staging =>
         {
             var written = new List<PackageFile>();
             long total = 0;
+            void Take(string key, Func<Stream> open)
+            {
+                MappedEntry? first = null;
+                PackageFile? stored = null;
+                foreach (var m in wanted[key])
+                {
+                    if (stored is null)
+                    {
+                        using var es = open();
+                        stored = WriteEntry(staging, m, es, limits.MaxTotalBytes - total);
+                        first = m;
+                        written.Add(stored);
+                    }
+                    else written.Add(CopyEntry(staging, first!, stored, m, limits.MaxTotalBytes - total));
+                    total += stored.Size;
+                }
+            }
             if (archive.IsSolid || archive.Type == SharpCompress.Common.ArchiveType.SevenZip)
             {
                 // Solid archives must be read sequentially.
@@ -96,27 +114,28 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
                 while (reader.MoveToNextEntry())
                 {
                     if (reader.Entry.IsDirectory || reader.Entry.Key is null) continue;
-                    if (!wanted.TryGetValue(reader.Entry.Key, out var m)) continue;
-                    using var es = reader.OpenEntryStream();
-                    var pf = WriteEntry(staging, m, es, limits.MaxTotalBytes - total);
-                    total += pf.Size;
-                    written.Add(pf);
+                    Take(reader.Entry.Key, reader.OpenEntryStream);
                 }
             }
             else
             {
                 foreach (var e in entries)
-                {
-                    if (e.Key is null || !wanted.TryGetValue(e.Key, out var m)) continue;
-                    using var es = e.OpenEntryStream();
-                    var pf = WriteEntry(staging, m, es, limits.MaxTotalBytes - total);
-                    total += pf.Size;
-                    written.Add(pf);
-                }
+                    if (e.Key is not null) Take(e.Key, e.OpenEntryStream);
             }
-            if (written.Count != wanted.Count) throw new ImportException("archive could not be read completely");
+            if (written.Count != result.Mapped.Count) throw new ImportException("archive could not be read completely");
             return written;
         });
+    }
+
+    /// <summary>The same archive entry at a second target: a copy of the file that was just extracted.</summary>
+    private static PackageFile CopyEntry(string stagingFiles, MappedEntry from, PackageFile stored, MappedEntry to, long budget)
+    {
+        if (stored.Size > budget) throw new ImportException("archive expands beyond the size limit");
+        var source = Path.Combine(stagingFiles, from.Target.Value.Replace('/', Path.DirectorySeparatorChar));
+        var dest = Path.Combine(stagingFiles, to.Target.Value.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+        File.Copy(source, dest, overwrite: false);
+        return new PackageFile(to.Target.Value, to.Target.Value, stored.Hash, stored.Size);
     }
 
     /// <summary>Paths of all files in an archive.</summary>
@@ -199,9 +218,10 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
         Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
         var hasher = new System.IO.Hashing.XxHash128();
         long size = 0;
-        var buffer = new byte[1 << 20];
-        using (var dst = new FileStream(dest, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(1 << 20);
+        try
         {
+            using var dst = new FileStream(dest, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             int read;
             while ((read = source.Read(buffer, 0, buffer.Length)) > 0)
             {
@@ -212,6 +232,7 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
             }
             dst.Flush(flushToDisk: true);
         }
+        finally { System.Buffers.ArrayPool<byte>.Shared.Return(buffer); }
         File.SetAttributes(dest, File.GetAttributes(dest) | FileAttributes.ReadOnly);
         return new PackageFile(m.Target.Value, m.Target.Value, Convert.ToHexStringLower(hasher.GetHashAndReset()), size);
     }

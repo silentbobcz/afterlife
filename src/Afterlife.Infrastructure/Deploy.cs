@@ -95,8 +95,14 @@ public sealed class DeployService
             StepState.Planned, null)).ToList();
         Store.CreateOperation(new OperationRecord(opId, DateTimeOffset.UtcNow, OperationStatus.Planned, snapshot.ProfileId, snapshot.ProfileRevision,
             Json.Serialize(snapshot), Store.GetLastGeneration()?.Id, fpBefore is null ? null : Json.Serialize(fpBefore), null), steps);
+        // Asked before every step, answered at most four times a second: listing the processes of the machine and
+        // reading the version of the executable for each of thousands of files costs more than writing them.
+        var clock = Stopwatch.StartNew();
+        long nextCheck = 0;
         var executor = new DeploymentExecutor(Store, Library, GameRoot, _fs, () =>
         {
+            if (clock.ElapsedMilliseconds < nextCheck) return null;
+            nextCheck = clock.ElapsedMilliseconds + 250;
             if (_env.IsGameRunning()) return "the game was started during deployment";
             var fp = _env.Fingerprint(GameRoot);
             if (fp != fpBefore) return "the game files changed during deployment";

@@ -110,6 +110,30 @@ public class RemoveUnmanagedTests
     }
 
     [Fact]
+    public void A_restore_that_fails_half_way_remembers_what_went_back()
+    {
+        using var t = new TestEnv();
+        t.Write("archive/pc/mod/one.archive", "1");
+        t.Write("archive/pc/mod/two.archive", "2");
+        var removed = t.C.RemoveUnmanaged(["archive/pc/mod/one.archive", "archive/pc/mod/two.archive"], "Manual");
+        Assert.Equal(2, removed.Moved);
+
+        var moves = 0;
+        t.Fs.BeforeMutation = (op, _) => { if (op == "move" && ++moves == 2) throw new IOException("the disk went away"); };
+        Assert.Throws<IOException>(() => t.C.RestoreRemoved(removed.BatchId!));
+        t.Fs.BeforeMutation = null;
+        Assert.Equal("1", t.Read("archive/pc/mod/one.archive"));
+        Assert.Null(t.Read("archive/pc/mod/two.archive"));
+        Assert.Equal(1, Assert.Single(t.C.Removed.List()).Pending);
+
+        var again = t.C.RestoreRemoved(removed.BatchId!);
+        Assert.Equal(1, again.Moved);
+        Assert.Empty(again.Skipped);
+        Assert.Equal("2", t.Read("archive/pc/mod/two.archive"));
+        Assert.Empty(t.C.Removed.List());
+    }
+
+    [Fact]
     public void Managed_files_outside_paths_and_running_game_are_refused()
     {
         using var t = new TestEnv();

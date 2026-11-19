@@ -113,29 +113,37 @@ public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
         var skipped = new List<string>();
         var updated = new List<RemovedFile>();
         int restored = 0;
-        foreach (var f in batch.Files)
+        try
         {
-            if (f.Restored) { updated.Add(f); continue; }
-            var gp = GamePath.Parse(f.Path);
-            var target = gp.ToOsPath(gameRoot);
-            var stored = Stored(batchId, f.Path);
-            if (!File.Exists(stored)) { skipped.Add(f.Path); updated.Add(f); continue; }
-            if (fs.FileExists(target)) { skipped.Add(f.Path); updated.Add(f); continue; }
-            var dir = Path.GetDirectoryName(target)!;
-            fs.EnsureNoReparsePoints(gameRoot, dir);
-            if (!fs.DirectoryExists(dir)) fs.CreateDirectory(dir);
-            var tmp = target + ".afl-restore.tmp";
-            if (fs.FileExists(tmp)) fs.Delete(tmp);
-            fs.CopyToTemp(stored, tmp);
-            if (fs.Hash(tmp) != f.Hash) { fs.Delete(tmp); skipped.Add(f.Path); updated.Add(f); continue; }
-            fs.MoveNoOverwrite(tmp, target);
-            File.Delete(stored);
-            updated.Add(f with { Restored = true });
-            restored++;
+            foreach (var f in batch.Files)
+            {
+                if (f.Restored) { updated.Add(f); continue; }
+                var gp = GamePath.Parse(f.Path);
+                var target = gp.ToOsPath(gameRoot);
+                var stored = Stored(batchId, f.Path);
+                if (!File.Exists(stored)) { skipped.Add(f.Path); updated.Add(f); continue; }
+                if (fs.FileExists(target)) { skipped.Add(f.Path); updated.Add(f); continue; }
+                var dir = Path.GetDirectoryName(target)!;
+                fs.EnsureNoReparsePoints(gameRoot, dir);
+                if (!fs.DirectoryExists(dir)) fs.CreateDirectory(dir);
+                var tmp = target + ".afl-restore.tmp";
+                if (fs.FileExists(tmp)) fs.Delete(tmp);
+                fs.CopyToTemp(stored, tmp);
+                if (fs.Hash(tmp) != f.Hash) { fs.Delete(tmp); skipped.Add(f.Path); updated.Add(f); continue; }
+                fs.MoveNoOverwrite(tmp, target);
+                // the file is back in the game from here on, whatever happens to the stored copy
+                updated.Add(f with { Restored = true });
+                restored++;
+                try { File.Delete(stored); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            }
         }
-        var after = batch with { Files = updated };
-        if (after.Pending == 0) TryDeleteTree(BatchDir(batchId));
-        else WriteManifest(after);
+        finally
+        {
+            // a failure in the middle must not forget what already went back: files not reached keep their state
+            var after = batch with { Files = updated.Concat(batch.Files.Skip(updated.Count)).ToList() };
+            if (after.Pending == 0) TryDeleteTree(BatchDir(batchId));
+            else WriteManifest(after);
+        }
         return new RemovalResult(batchId, restored, skipped);
     }
 

@@ -72,6 +72,13 @@ public sealed record FrameworkContract(
 
 public static class FrameworkCatalog
 {
+    /// <summary>
+    /// Raise this whenever a rule that derives requirements or provided frameworks changes (a new contract, a new
+    /// signature path, a new pattern in <see cref="InferFromContent"/>): every package in the library is then read
+    /// again once with the new rules.
+    /// </summary>
+    public const int RulesVersion = 1;
+
     public static IReadOnlyList<FrameworkContract> Contracts { get; } = new[]
     {
         new FrameworkContract(Capabilities.Cet, new[] { "bin/x64/plugins/cyber_engine_tweaks.asi" }, false, false, true,

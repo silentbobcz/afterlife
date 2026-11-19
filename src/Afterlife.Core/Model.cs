@@ -65,6 +65,12 @@ public sealed record PackageManifest(
 {
     /// <summary>Options chosen in the mod's FOMOD installer (to reinstall or to replay a collection).</summary>
     public IReadOnlyList<FomodChoice>? FomodChoices { get; init; }
+
+    /// <summary>
+    /// <see cref="FrameworkCatalog.RulesVersion"/> the scripts of this package were last read with. The files of a
+    /// package never change, so its scripts are read again only when the rules do.
+    /// </summary>
+    public int? RequirementRules { get; init; }
 }
 
 public sealed record ProfileEntry(string PackageId, bool Enabled);
@@ -148,10 +154,15 @@ public static class ContentHash
     public static string Of(Stream stream)
     {
         var h = new XxHash128();
-        var buffer = new byte[1 << 20];
-        int read;
-        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0) h.Append(buffer.AsSpan(0, read));
-        return Convert.ToHexStringLower(h.GetHashAndReset());
+        // one megabyte per file would land on the large object heap for every hashed file; borrow it instead
+        var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(1 << 20);
+        try
+        {
+            int read;
+            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0) h.Append(buffer.AsSpan(0, read));
+            return Convert.ToHexStringLower(h.GetHashAndReset());
+        }
+        finally { System.Buffers.ArrayPool<byte>.Shared.Return(buffer); }
     }
 
     public static string ManifestDigest(IEnumerable<PackageFile> files)

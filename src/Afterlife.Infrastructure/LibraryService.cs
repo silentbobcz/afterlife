@@ -229,7 +229,9 @@ public sealed class LibraryService
         var ids = packageIds.ToHashSet();
         var names = ids.ToDictionary(id => id, id => Store.GetPackage(id)?.ModName ?? id);
         ActivityLog.Write("delete", $"delete everywhere: {string.Join(", ", names.Values)}");
-        Store.InTransaction(() =>
+        // Profiles lose the packages only once it is known that the game can let them go: a blocked plan must
+        // leave every profile as it was, or the mods would stay in the game and the library but in no profile.
+        void DropFromProfiles() => Store.InTransaction(() =>
         {
             foreach (var p in Store.GetProfiles().Where(p => !p.IsSystemModsOff && p.Entries.Any(e => ids.Contains(e.PackageId))))
             {
@@ -271,6 +273,7 @@ public sealed class LibraryService
             if (!preview.CanApply)
                 return new DeleteOutcome([], ids.Select(id => (names[id], "could not be taken out of the game: " +
                     string.Join("; ", preview.Plan.Blockers.Concat(preview.EnvironmentIssues.Where(i => i.Severity == Severity.Blocking)).Select(i => i.Message)))).ToList(), null);
+            DropFromProfiles();
             if (!preview.Plan.IsNoop)
             {
                 exec = _ctx.Deployer.Run(preview.Snapshot, preview.Plan, progress);
@@ -278,6 +281,7 @@ public sealed class LibraryService
                     return new DeleteOutcome([], ids.Select(id => (names[id], "taking it out of the game did not finish; run recovery")).ToList(), exec);
             }
         }
+        else DropFromProfiles();
 
         var deleted = new List<string>();
         var kept = new List<(string, string)>();
@@ -331,35 +335,52 @@ public sealed class LibraryService
     /// Recomputes what every library package provides and needs with the current rules: paths, script content
     /// (Codeware, Mod Settings, RedFileSystem, Native Settings UI) and the mod's Nexus page when it is known.
     /// Old packages get new rules too. Returns the number of packages whose requirements changed.
+    /// The files of a package never change, so its paths and scripts are read once per
+    /// <see cref="FrameworkCatalog.RulesVersion"/>; after that only the Nexus page can add or drop a requirement.
     /// </summary>
     public int RefreshRequirements()
     {
         var changed = 0;
-        foreach (var p in Store.GetPackages())
+        var pages = NexusInfo.LoadAll(Store);
+        Store.InTransaction(() =>
         {
-            var targets = p.Files.Select(f => GamePath.Parse(f.Target)).ToList();
-            var provides = FrameworkCatalog.DetectProvided(targets).Union(p.Provides.Where(c => !c.StartsWith("framework:", StringComparison.Ordinal))).ToList();
-            var reqs = FrameworkCatalog.InferRequirements(targets, provides).ToList();
-            var scripts = p.Files.Where(f => f.Size < 1_000_000 && (f.Target.EndsWith(".reds", StringComparison.OrdinalIgnoreCase) || f.Target.EndsWith(".lua", StringComparison.OrdinalIgnoreCase)))
-                .Select(f =>
+            foreach (var p in Store.GetPackages())
+            {
+                var read = p.RequirementRules == FrameworkCatalog.RulesVersion;
+                List<string> provides;
+                List<RequirementSpec> reqs;
+                if (read)
                 {
-                    var path = Library.PackageFile(p.PackageId, f.StoredPath);
-                    try { return (GamePath.Parse(f.Target), File.Exists(path) ? File.ReadAllText(path) : ""); }
-                    catch (IOException) { return (GamePath.Parse(f.Target), ""); }
-                });
-            foreach (var r in FrameworkCatalog.InferFromContent(scripts, provides))
-                if (reqs.All(x => x.Capability != r.Capability)) reqs.Add(r);
-            if (NexusInfo.Load(Store, p.NexusModId) is { } info)
-                foreach (var nr in info.Requirements)
-                    if (FrameworkCatalog.CapabilityOfNexusId(nr.ModId) is { } cap && !provides.Contains(cap) && reqs.All(x => x.Capability != cap))
-                        reqs.Add(new RequirementSpec(cap, !NexusInfo.IsOptionalNote(nr.Notes), "nexus", $"listed on the Nexus page → {Capabilities.DisplayName(cap)}"));
-            reqs = reqs.OrderBy(r => r.Capability, StringComparer.Ordinal).ToList();
-            var same = reqs.Select(r => r.Capability + r.Origin).SequenceEqual(p.Requirements.Select(r => r.Capability + r.Origin))
-                && provides.OrderBy(x => x).SequenceEqual(p.Provides.OrderBy(x => x));
-            if (same) continue;
-            Store.UpdatePackage(p with { Requirements = reqs, Provides = provides });
-            changed++;
-        }
+                    provides = p.Provides.ToList();
+                    reqs = p.Requirements.Where(r => r.Origin != "nexus").ToList();
+                }
+                else
+                {
+                    var targets = p.Files.Select(f => GamePath.Parse(f.Target)).ToList();
+                    provides = FrameworkCatalog.DetectProvided(targets).Union(p.Provides.Where(c => !c.StartsWith("framework:", StringComparison.Ordinal))).ToList();
+                    reqs = FrameworkCatalog.InferRequirements(targets, provides).ToList();
+                    var scripts = p.Files.Where(f => f.Size < 1_000_000 && (f.Target.EndsWith(".reds", StringComparison.OrdinalIgnoreCase) || f.Target.EndsWith(".lua", StringComparison.OrdinalIgnoreCase)))
+                        .Select(f =>
+                        {
+                            var path = Library.PackageFile(p.PackageId, f.StoredPath);
+                            try { return (GamePath.Parse(f.Target), File.Exists(path) ? File.ReadAllText(path) : ""); }
+                            catch (IOException) { return (GamePath.Parse(f.Target), ""); }
+                        });
+                    foreach (var r in FrameworkCatalog.InferFromContent(scripts, provides))
+                        if (reqs.All(x => x.Capability != r.Capability)) reqs.Add(r);
+                }
+                if (p.NexusModId is { } nexusId && pages.TryGetValue(nexusId, out var info))
+                    foreach (var nr in info.Requirements)
+                        if (FrameworkCatalog.CapabilityOfNexusId(nr.ModId) is { } cap && !provides.Contains(cap) && reqs.All(x => x.Capability != cap))
+                            reqs.Add(new RequirementSpec(cap, !NexusInfo.IsOptionalNote(nr.Notes), "nexus", $"listed on the Nexus page → {Capabilities.DisplayName(cap)}"));
+                reqs = reqs.OrderBy(r => r.Capability, StringComparer.Ordinal).ToList();
+                var same = reqs.Select(r => r.Capability + r.Origin).SequenceEqual(p.Requirements.Select(r => r.Capability + r.Origin))
+                    && provides.OrderBy(x => x).SequenceEqual(p.Provides.OrderBy(x => x));
+                if (same && read) continue;
+                Store.UpdatePackage(p with { Requirements = reqs, Provides = provides, RequirementRules = FrameworkCatalog.RulesVersion });
+                if (!same) changed++;
+            }
+        });
         return changed;
     }
 

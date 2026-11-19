@@ -83,7 +83,9 @@ public sealed partial class MainViewModel
         if (force) due = packages;
         else
         {
-            var items = await _host.RunAsync(c => packages.Select(p => (p.PackageId, ModId: NexusInfo.IdOf(p).Id!, CheckedAt: NexusUpdates.CheckedAt(c.Store, p.PackageId))).ToList());
+            var checkedAt = await _host.RunAsync(c => NexusUpdates.CheckedAll(c.Store));
+            var items = packages.Select(p => (p.PackageId, ModId: NexusInfo.IdOf(p).Id!,
+                CheckedAt: checkedAt.TryGetValue(p.PackageId, out var at) ? at : (DateTimeOffset?)null)).ToList();
             var known = items.Where(i => i.CheckedAt is not null).Select(i => i.CheckedAt!.Value).ToList();
             var period = known.Count == 0 ? null : NexusUpdates.FeedPeriod(known.Min(), now);
             IReadOnlyDictionary<string, long>? feed = null;
@@ -91,35 +93,62 @@ public sealed partial class MainViewModel
                 try { feed = await feedClient.UpdatedAsync(period); }
                 catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException) { }
             if (feed is null)
-                due = await _host.RunAsync(c => packages.Where(p => !NexusUpdates.IsFresh(c.Store, p.PackageId, now)).ToList());
+                due = packages.Where(p => !(checkedAt.TryGetValue(p.PackageId, out var at) && now - at < TimeSpan.FromHours(24))).ToList();
             else
             {
                 var ids = NexusUpdates.DueAfterFeed(items, feed, now).ToHashSet();
-                await _host.RunAsync(c => { foreach (var p in packages.Where(p => !ids.Contains(p.PackageId))) NexusUpdates.MarkChecked(c.Store, p.PackageId, now); });
+                await _host.RunAsync(c => c.Store.InTransaction(() =>
+                {
+                    foreach (var p in packages.Where(p => !ids.Contains(p.PackageId))) NexusUpdates.MarkChecked(c.Store, p.PackageId, now);
+                }));
                 due = packages.Where(p => ids.Contains(p.PackageId)).ToList();
             }
         }
         if (due.Count == 0) return;
-        using var client = new NexusClient(key, AppVersion);
+        var groups = due.GroupBy(p => NexusInfo.IdOf(p).Id!).ToList();
+        // The hourly check reads the files of at most 60 mods; the rest stay due and come with the next one.
+        // A check the user asked for reads them all, and says so when some could not be read.
+        var batch = force ? groups : groups.Take(60).ToList();
         var found = 0;
-        foreach (var group in due.GroupBy(p => NexusInfo.IdOf(p).Id!).Take(60))
+        var unread = 0;
+        for (var i = 0; i < batch.Count; i++)
         {
+            var group = batch[i];
             NexusFiles files;
-            try { files = await client.FilesAsync(group.Key); }
-            catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException) { continue; }
+            try { files = await feedClient.FilesAsync(group.Key); }
+            catch (NexusException ex) when (ex.RateLimited)
+            {
+                unread += batch.Skip(i).Sum(g => g.Count()); // no further request gets through for now
+                break;
+            }
+            catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+            {
+                unread += group.Count();
+                continue;
+            }
+            var results = new List<(string PackageId, NexusUpdate? Update)>();
             foreach (var p in group)
             {
                 var u = NexusUpdates.Find(files, p.NexusFileId, p.Version, now);
                 // a newer file of this mod already in the library is not an update to offer again
                 if (u is not null && _overview.Mods.Any(m => m.Package.NexusFileId == u.FileId)) u = null;
-                await _host.RunAsync(c => NexusUpdates.Save(c.Store, p.PackageId, u, now));
+                results.Add((p.PackageId, u));
                 if (u is not null) found++;
             }
+            await _host.RunAsync(c => c.Store.InTransaction(() =>
+            {
+                foreach (var (id, u) in results) NexusUpdates.Save(c.Store, id, u, now);
+            }));
         }
         if (found > 0 || force)
         {
             await RefreshAsync();
-            if (force) Say(found == 0 ? "All mods from Nexus are up to date." : $"{found} mod(s) have a newer version on Nexus.", found == 0 ? Tone.Ok : Tone.Info);
+            if (!force) return;
+            var newer = found == 0 ? null : $"{found} mod(s) have a newer version on Nexus";
+            if (unread > 0)
+                Say($"{newer ?? "No newer versions found so far"}, but {unread} mod(s) could not be checked (Nexus Mods did not answer or its request limit was reached). Try again later.", Tone.Warn);
+            else
+                Say(newer is null ? "All mods from Nexus are up to date." : newer + ".", newer is null ? Tone.Ok : Tone.Info);
         }
     }
 

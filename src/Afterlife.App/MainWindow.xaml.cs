@@ -30,6 +30,10 @@ public partial class MainWindow : Window
             await _vm.StartAsync();
         };
         Activated += async (_, _) => await _vm.OnActivatedAsync();
+        // the background animation rests while the window is not in front, so it takes nothing from the game
+        Activated += (_, _) => FxClock.SetPaused(WindowState == WindowState.Minimized);
+        Deactivated += (_, _) => FxClock.SetPaused(true);
+        StateChanged += (_, _) => FxClock.SetPaused(WindowState == WindowState.Minimized || !IsActive);
         Closed += (_, _) => _vm.Dispose();
         DragOver += OnDragOver;
         DragLeave += (_, _) => SetDragOver(false);

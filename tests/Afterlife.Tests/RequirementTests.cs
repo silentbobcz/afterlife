@@ -88,6 +88,24 @@ public class RequirementSourceTests
         Assert.Contains(t.C.Store.GetPackage(p.PackageId)!.Requirements, r => r.Capability == Capabilities.Codeware);
         Assert.Equal(0, t.C.RefreshRequirements());
     }
+
+    [Fact]
+    public void Scripts_of_a_package_are_read_once_per_rules_version()
+    {
+        using var t = new TestEnv();
+        var p = t.ImportZip("X", ("r6/scripts/X/a.reds", "import Codeware.*\nfunc f() {}"));
+        Assert.Null(p.RequirementRules);
+        Assert.Equal(1, t.C.RefreshRequirements());
+        var stored = t.C.Store.GetPackage(p.PackageId)!;
+        Assert.Equal(FrameworkCatalog.RulesVersion, stored.RequirementRules);
+
+        // the script is gone from the library: a later pass must not need it and keeps what the first one found
+        var script = t.C.Library.PackageFile(p.PackageId, stored.Files.Single().StoredPath);
+        File.SetAttributes(script, FileAttributes.Normal);
+        File.Delete(script);
+        Assert.Equal(0, t.C.RefreshRequirements());
+        Assert.Contains(t.C.Store.GetPackage(p.PackageId)!.Requirements, r => r.Capability == Capabilities.Codeware && r.Origin == "content");
+    }
 }
 
 /// <summary>Requirements listed on the Nexus page of a mod.</summary>

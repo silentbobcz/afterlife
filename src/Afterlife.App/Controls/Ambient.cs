@@ -8,8 +8,8 @@ using System.Windows.Threading;
 namespace Afterlife.App.Controls;
 
 /// <summary>
-/// One shared ~30 fps clock for every looping effect. Runs only while something listens and motion is on,
-/// So a hidden or reduced-motion window costs nothing.
+/// One shared ~30 fps clock for every looping effect. Runs only while something listens, motion is on and the
+/// Window is in front, so a minimized, background or reduced-motion window costs nothing (the game may be running).
 /// </summary>
 public static class FxClock
 {
@@ -17,6 +17,15 @@ public static class FxClock
     private static readonly Stopwatch Watch = Stopwatch.StartNew();
     private static event Action<double>? TickEvent;
     private static int _listeners;
+    private static bool _paused;
+
+    /// <summary>The window went to the background or was minimized (true), or came back (false).</summary>
+    public static void SetPaused(bool paused)
+    {
+        if (_paused == paused) return;
+        _paused = paused;
+        Update();
+    }
 
     static FxClock() => Timer.Tick += (_, _) => TickEvent?.Invoke(Now);
 
@@ -27,7 +36,7 @@ public static class FxClock
 
     public static void Update()
     {
-        var run = _listeners > 0 && Fx.MotionEnabled;
+        var run = _listeners > 0 && Fx.MotionEnabled && !_paused;
         if (run && !Timer.IsEnabled) Timer.Start();
         else if (!run && Timer.IsEnabled) Timer.Stop();
     }

@@ -128,4 +128,32 @@ public class FomodTests
         Assert.Equal(["archive/pc/mod/lights.archive", "archive/pc/mod/neon.archive", "r6/scripts/BL/core.reds"], r.Package!.Files.Select(f => f.Target).Order().ToArray());
         Assert.Equal("Bright", t.C.Store.GetPackage(r.Package.PackageId)!.FomodChoices![0].Plugins[0]);
     }
+
+    [Fact]
+    public void An_installer_may_copy_one_file_to_two_places()
+    {
+        const string twice = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <config>
+              <moduleName>Twice</moduleName>
+              <requiredInstallFiles>
+                <file source="shared.archive" destination="archive\pc\mod\one.archive" />
+                <file source="shared.archive" destination="archive\pc\mod\two.archive" />
+              </requiredInstallFiles>
+            </config>
+            """;
+        using var t = new TestEnv();
+        var zip = t.Zip("twice", ("fomod/ModuleConfig.xml", twice), ("shared.archive", "same content"));
+        var first = t.C.Import(new ImportRequest(zip, "Twice", "1.0"));
+        Assert.Equal(ImportStatus.NeedsFomod, first.Analysis.Status);
+        var cfg = t.C.ReadFomod(zip, first.Analysis.FomodConfigPath!);
+        var r = t.C.Import(new ImportRequest(zip, "Twice", "1.0", Options: new ImportOptions { FomodFiles = cfg.Resolve([]) }));
+        Assert.True(r.Succeeded, string.Join("; ", r.Analysis.Problems));
+        Assert.Equal(["archive/pc/mod/one.archive", "archive/pc/mod/two.archive"], r.Package!.Files.Select(f => f.Target).Order().ToArray());
+        Assert.Single(r.Package.Files.Select(f => f.Hash).Distinct());
+        t.C.SetEnabled(r.Package.PackageId, true);
+        t.ApplyOk();
+        Assert.Equal("same content", t.Read("archive/pc/mod/one.archive"));
+        Assert.Equal("same content", t.Read("archive/pc/mod/two.archive"));
+    }
 }

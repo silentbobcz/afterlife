@@ -135,7 +135,7 @@ public sealed partial class MainViewModel
         if (inGame > 0) BeginBreach($"PURGE · {title}", rows.Sum(r => r.InstallMap.Count));
         try
         {
-            var progress = new Progress<DeployProgress>(p => SetPhase(p.Phase, p.Done, p.Total, p.Path, p.Kind));
+            var progress = DeployProgressSink();
             var r = await _host.RunAsync(c => c.DeleteEverywhere(ids, progress));
             if (inGame > 0) EndBreach(r.Kept.Count == 0, r.Kept.Count == 0 ? "removed from game" : "needs attention");
             if (r.Execution is not null && r.Kept.Count == 0) SetPhase(DeployPhase.Done, 0, 0);
