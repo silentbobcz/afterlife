@@ -2,7 +2,7 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## Unreleased
+## 1.0.0-alpha.5
 
 Fixes and speed-ups from a review of the whole code.
 

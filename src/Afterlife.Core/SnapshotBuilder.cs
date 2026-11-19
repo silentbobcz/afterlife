@@ -22,7 +22,7 @@ public sealed record DeploymentSnapshot(
 public static class ModlistFormat
 {
     public const string RelativePath = "archive/pc/mod/modlist.txt";
-    /// <summary>Line ending and encoding must be confirmed on game build 2.5.</summary>
+    /// <summary>One archive name per line, CRLF, UTF-8 without BOM (confirmed in game 2.5).</summary>
     public const string NewLine = "\r\n";
 
     public static string Render(IEnumerable<string> archiveNames) =>
