@@ -23,6 +23,16 @@ The game folder is never the source of truth for a mod. Mods are imported into t
 
 `InstallCoordinator.Scan` walks the mod folders of the game and compares what it finds with the ledger and the library: manual mods, files in the way of a library mod, identical copies, runtime files of core mods. The walk is the expensive part, so the coordinator keeps the last result and reuses it (`CachedScan`) while only profiles change; it walks again as soon as packages or the ledger changed (`AfterlifeStore.ScanVersion`), the game root changed, or AFTERLIFE itself touched the game folder (apply, launch, REDmod deploy). The window asks for a full scan on start, on REFRESH, in *Scan manual mods* and when it comes back to the front.
 
+## What is kept in memory
+
+Three things are remembered between refreshes of the window, each with a clear moment when it is dropped:
+
+- **Packages and the ledger** (`AfterlifeStore.GetPackages`, `GetLedger`): kept as read; dropped by a write to their table, by a rolled back transaction and when another connection committed to the database (`PRAGMA data_version`). `GetLedger` hands out a read-only view shared by all callers.
+- **What the planner saw of each game file** (`ScanService.SeenFiles`, size and time of the last write): lives exactly as long as the cached scan, so a preview after a profile change asks the disk only about files it has not seen yet.
+- **Hashes of game files** (`HashCache`, by path, size and time of the last write): spares reading a file a mod keeps rewriting on every refresh. A file written in the last two seconds is never remembered. Used for previews only: `Apply`, recovery and *Delete everywhere* empty it first, and the deployment checks every file it touches against the disk anyway.
+
+The requirements of a package are derived from its scripts once per `FrameworkCatalog.RulesVersion` (stored in the package as `RequirementRules`); raise the version when a rule changes.
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.

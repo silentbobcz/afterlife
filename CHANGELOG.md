@@ -2,6 +2,19 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## Unreleased
+
+Fixes and speed-ups from a review of the whole code.
+
+- **Check updates** on request reads every mod, not only the first 60, and says how many could not be checked instead of reporting that everything is up to date.
+- **Delete everywhere** leaves every profile as it was when the game cannot let the mods go (a file in the way, a load order file edited by hand). Before, the mods stayed in the game and the library but dropped out of every profile.
+- **FOMOD installers** that copy one file of the archive to two places import instead of failing.
+- **Restore** of removed files that fails half-way remembers which files already went back, so the batch can be finished later.
+- **Faster APPLY**: the check for a running game and a changed executable no longer runs for every single file.
+- **Faster refresh**: packages and the record of deployed files are read from the database once, not several times per click; files a mod keeps rewriting (settings, databases) are not read in full on every refresh; a refresh after a mere profile change does not ask the disk about every file of the profile again.
+- **Faster start and import**: the scripts of a mod are read for its requirements once, not on every start, import and refresh of the whole library.
+- **Quiet in the background**: the background animation rests while the window is minimized or not in front; a scan no longer writes to the database when nothing changed.
+
 ## 1.0.0-alpha.4
 
 - **Files a mod changes in its own folder** (settings, AMM's database, caches) no longer block anything: they are left alone while the mod stays, and a copy goes to the library as *Changed files of …* when the mod is switched off, deleted or updated. An edit directly in a shared folder shows CHANGED OUTSIDE on its row without holding other mods back; APPLY asks Keep / Discard only when that file is about to be replaced or removed. Before, one changed file could block APPLY and every deletion.
