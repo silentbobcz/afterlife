@@ -177,6 +177,11 @@
                             <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Text="{Binding NexusTier}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" />
                         </Border>
                     </Grid>
+                    <StackPanel Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Margin="0,6,0,0" Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource O}" Text="OFFLINE EDITION · NO API KEY · NO CONNECTION TO NEXUS MODS" TextWrapping="Wrap" />
+                        <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding OfflineNote}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IsOnline, Converter={StaticResource BoolToVis}}">
                     <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding NexusHint}" TextWrapping="Wrap" />
                     <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}" Command="{Binding LoginNexusCommand}" Content="LOG IN WITH NEXUS MODS"
                             Visibility="{Binding SsoAvailable, Converter={StaticResource BoolToVis}}" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
@@ -215,6 +220,7 @@
                     </StackPanel>
                     <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding NxmHandler}" Content="Open Mod Manager Download links in AFTERLIFE (nxm://)" />
                     <TextBlock Margin="28,2,0,0" Style="{StaticResource Meta}" Text="{Binding NxmHint}" TextWrapping="Wrap" />
+                    </StackPanel>
                 </StackPanel>
             </c:CutBorder>
 

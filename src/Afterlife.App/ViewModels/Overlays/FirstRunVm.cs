@@ -35,6 +35,9 @@ public sealed partial class FirstRunVm : OverlayVm
     [ObservableProperty] private string? _libraryNote;
     /// <summary>Optional personal Nexus Mods API key, asked together with the folders.</summary>
     [ObservableProperty] private string _nexusKey = "";
+    public bool IsOffline => AppEdition.Offline;
+    public bool IsOnline => !AppEdition.Offline;
+    public string OfflineNote => $"This is AFTERLIFE Offline: it does not connect to Nexus Mods and needs no API key. Downloads, updates and collections from Nexus Mods come once Nexus Mods registers AFTERLIFE (requested {AppEdition.RegistrationRequested}). Until then download mods on nexusmods.com with Manual download and drop them into the window.";
     public string NexusHint => "Optional. Your personal key from nexusmods.com (Settings → API Keys) lets AFTERLIFE download mods, read their descriptions and requirements. You can add it later in Settings.";
     [RelayCommand] private void OpenKeyPage() => AppLinks.Open(NexusClient.KeyPage);
     private bool _libraryEdited, _suggesting;

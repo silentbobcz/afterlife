@@ -194,6 +194,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     public async Task StartAsync()
     {
+        if (AppEdition.Offline) ShowOfflineBadge();
         Controls.Fx.SetReduceMotion(AppSettings.Load().ReduceMotion);
         ActivityLog.Directory = App.LogDirectory;
         ActivityLog.Enabled = AppSettings.Load().ActivityLog;
@@ -254,6 +255,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var id = m.Success ? (m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value) : "";
         await _host.RunAsync(c => c.LinkToNexus(packageId, id));
         await RefreshAsync();
+        if (AppEdition.Offline) { Say($"Linked to Nexus mod {id}: its page opens from the details.", Tone.Ok); return; }
         if (NexusKeyStore.Load() is null) { Say("Linked. Add your Nexus key in Settings to show its description and requirements.", Tone.Info); return; }
         Say($"Linked to Nexus mod {id}. Reading its page…", Tone.Info);
         await FetchNexusInfoAsync(onlyMissing: false, onlyPackage: packageId);
@@ -541,7 +543,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (o.Nexus is not { PictureUrl: { } url } n || _host.Library is not { } lib) return;
         try
         {
-            var path = ModImageCache.Cached(lib, n.ModId, url) ?? await ModImageCache.EnsureAsync(lib, n.ModId, url);
+            // the Offline edition shows pictures the full edition already saved, it never downloads one
+            var path = ModImageCache.Cached(lib, n.ModId, url) ?? (AppEdition.Offline ? null : await ModImageCache.EnsureAsync(lib, n.ModId, url));
             if (path is null || Details != details) return;
             var bmp = new System.Windows.Media.Imaging.BitmapImage();
             bmp.BeginInit();

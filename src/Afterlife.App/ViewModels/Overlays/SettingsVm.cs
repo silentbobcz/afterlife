@@ -51,6 +51,9 @@ public sealed partial class SettingsVm : OverlayVm
     public string Library { get; }
     public string GameVersion { get; }
     public string GameFolderHint => "To use another install: switch to Mods off and apply first. If you only moved the same install (new drive letter, new disk), AFTERLIFE recognizes its files and keeps them.";
+    public bool IsOffline => AppEdition.Offline;
+    public bool IsOnline => !AppEdition.Offline;
+    public string OfflineNote => $"This is AFTERLIFE Offline: it does not connect to Nexus Mods and needs no API key. Downloads, updates and collections from Nexus Mods come once Nexus Mods registers AFTERLIFE (requested {AppEdition.RegistrationRequested}). Until then download mods on nexusmods.com with Manual download and drop them into the window.";
     public string NexusHint => "Your personal API key from your Nexus Mods account (Settings → API Keys). It is stored encrypted for your Windows user and only sent to api.nexusmods.com.";
     public string? OtherNxmHandler { get; }
     public string NxmHint => OtherNxmHandler is null

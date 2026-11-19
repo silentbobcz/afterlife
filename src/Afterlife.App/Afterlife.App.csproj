@@ -9,6 +9,11 @@
     <Product>AFTERLIFE</Product>
     <Description>Unofficial mod manager for Cyberpunk 2077</Description>
   </PropertyGroup>
+  <!-- -p:Edition=Offline builds AFTERLIFE Offline (see AppEdition.cs) -->
+  <PropertyGroup Condition="'$(Edition)' == 'Offline'">
+    <DefineConstants>$(DefineConstants);OFFLINE</DefineConstants>
+    <Product>AFTERLIFE Offline</Product>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>

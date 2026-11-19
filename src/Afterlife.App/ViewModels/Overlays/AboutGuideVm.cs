@@ -13,7 +13,7 @@ namespace Afterlife.App.ViewModels;
 public sealed class AboutVm : OverlayVm
 {
     public override string Title => "ABOUT AFTERLIFE";
-    public string Version => "Version " + AppInfo.DisplayVersion + " · unsigned";
+    public string Version => AppEdition.Name + " · version " + AppInfo.DisplayVersion + " · unsigned";
     public string Copyright => "© 2026 Silentbobcz · MIT License · free & open source";
     public string Disclaimer => "This is an unofficial fan work and is not approved/endorsed by CD PROJEKT RED.";
     public string Trademarks => "Cyberpunk 2077 and related marks are trademarks of CD PROJEKT S.A. AFTERLIFE uses no game assets.";

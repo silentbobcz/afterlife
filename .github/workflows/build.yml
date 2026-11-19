@@ -32,6 +32,10 @@ jobs:
       - name: Publish AFTERLIFE
         run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish/app
 
+      # the edition for Nexus Mods while AFTERLIFE is not registered there: no API key, no connection (AppEdition.cs)
+      - name: Publish AFTERLIFE Offline
+        run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:Edition=Offline -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish/offline
+
       - name: Package
         shell: pwsh
         run: |
@@ -40,17 +44,20 @@ jobs:
           $v = if ($pg.VersionSuffix) { "$($pg.VersionPrefix)-$($pg.VersionSuffix)" } else { "$($pg.VersionPrefix)" }
           # a tag must match the version in Directory.Build.props (v1.0.0-alpha <-> 1.0.0-alpha)
           if ($env:GITHUB_REF -like 'refs/tags/v*' -and $env:GITHUB_REF_NAME -ne "v$v") { throw "Tag $env:GITHUB_REF_NAME does not match version $v in Directory.Build.props" }
-          $dir = "dist/AFTERLIFE-$v"
-          New-Item -ItemType Directory -Force $dir | Out-Null
-          Copy-Item publish/app/AFTERLIFE.exe, README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
-          Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt $dir
-          New-Item -ItemType Directory -Force "$dir/licenses" | Out-Null
-          Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt "$dir/licenses"
-          $zip = "dist/AFTERLIFE-$v-win-x64.zip"
-          Compress-Archive -Path "$dir/*" -DestinationPath $zip
-          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-          "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
-          "ZIP=$zip" >> $env:GITHUB_ENV
+          # the two executables must differ: the Offline one was really built without the Nexus features
+          if ((Get-FileHash publish/app/AFTERLIFE.exe).Hash -eq (Get-FileHash publish/offline/AFTERLIFE.exe).Hash) { throw "AFTERLIFE Offline is the same file as the full edition" }
+          foreach ($e in @(@{ Name = "AFTERLIFE"; Exe = "publish/app" }, @{ Name = "AFTERLIFE-Offline"; Exe = "publish/offline" })) {
+            $dir = "dist/$($e.Name)-$v"
+            New-Item -ItemType Directory -Force $dir | Out-Null
+            Copy-Item "$($e.Exe)/AFTERLIFE.exe", README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
+            Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt $dir
+            New-Item -ItemType Directory -Force "$dir/licenses" | Out-Null
+            Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt "$dir/licenses"
+            $zip = "dist/$($e.Name)-$v-win-x64.zip"
+            Compress-Archive -Path "$dir/*" -DestinationPath $zip
+            $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+            "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
+          }
 
       - uses: actions/upload-artifact@v4
         with:
@@ -93,6 +100,9 @@ jobs:
             echo
             echo "---"
             echo "**Download:** \`AFTERLIFE-$v-win-x64.zip\` below, unzip anywhere outside the game folder and run \`AFTERLIFE.exe\` (Windows 10/11 64-bit, .NET included)."
+            if [ -f "dist/AFTERLIFE-Offline-$v-win-x64.zip" ]; then
+              echo "\`AFTERLIFE-Offline-$v-win-x64.zip\` is the edition published on Nexus Mods: the same app without the Nexus Mods features (no API key, no connection to Nexus Mods) until Nexus Mods registers AFTERLIFE."
+            fi
             echo "Not code-signed yet: on the SmartScreen warning click *More info* → *Run anyway*. Check the download with the \`.sha256\` file."
           } >> notes.md
           case "$v" in *-*) echo "PRERELEASE=true" >> "$GITHUB_ENV";; *) echo "PRERELEASE=false" >> "$GITHUB_ENV";; esac

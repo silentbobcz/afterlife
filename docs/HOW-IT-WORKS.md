@@ -33,6 +33,10 @@ Three things are remembered between refreshes of the window, each with a clear m
 
 The requirements of a package are derived from its scripts once per `FrameworkCatalog.RulesVersion` (stored in the package as `RequirementRules`); raise the version when a rule changes.
 
+## Editions
+
+`dotnet publish -p:Edition=Offline` builds **AFTERLIFE Offline** (`AppEdition.Offline`, compile symbol `OFFLINE`): `NexusKeyStore.Load` always returns nothing, nxm:// is never registered, mod pictures are never downloaded, and every entry point that needs the Nexus Mods API calls `LockedOffline` first, which explains the lock (`OfflineInfoVm`). The workflow builds both editions and fails when the two executables are identical.
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.

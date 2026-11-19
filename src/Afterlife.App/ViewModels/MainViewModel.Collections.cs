@@ -19,6 +19,7 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private Task AddCollection() => RunUiAsync(async () =>
     {
+        if (LockedOffline("Collections")) return;
         var text = await AskAsync(new TextPromptVm("ADD COLLECTION", "Link to a Cyberpunk 2077 collection on nexusmods.com", ""));
         if (text is null) return;
         if (!CollectionLink.TryParse(text, out var link)) { Say("This is not a link to a Nexus Mods collection.", Tone.Block); return; }
@@ -28,6 +29,7 @@ public sealed partial class MainViewModel
     /// <summary>From the ADD COLLECTION button or an nxm://…/collections/… link.</summary>
     internal async Task OpenCollectionAsync(CollectionLink link)
     {
+        if (LockedOffline("Collections")) return;
         if (!link.Game.Equals(NxmLink.Cyberpunk, StringComparison.OrdinalIgnoreCase)) { Say($"This collection is for {link.Game}, not Cyberpunk 2077.", Tone.Block); return; }
         var key = NexusKeyStore.Load();
         if (key is null) { Say("Collections come from Nexus Mods: add your personal API key in Settings first.", Tone.Warn); OpenSettings(); return; }
@@ -201,6 +203,7 @@ public sealed partial class MainViewModel
             _collectionWaiting = null;
             return;
         }
+        if (LockedOffline("Downloading a collection")) return;
         var key = NexusKeyStore.Load();
         if (key is null) { OpenSettings(); return; }
         progress.PauseRequested = false;
@@ -609,6 +612,7 @@ public sealed partial class MainViewModel
     /// <summary>New revision: added / updated / removed, then the same download and removal rules (4.7).</summary>
     public Task UpdateCollectionAsync(string slug) => RunUiAsync(async () =>
     {
+        if (LockedOffline("Updating a collection")) return;
         var key = NexusKeyStore.Load();
         if (key is null || _overview is null) { OpenSettings(); return; }
         var all = await _host.RunAsync(c => c.Collections());

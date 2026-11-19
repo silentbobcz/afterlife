@@ -18,6 +18,7 @@ public static class NexusKeyStore
 
     public static string? Load()
     {
+        if (AppEdition.Offline) return null; // a key saved by the full edition stays where it is, unused
         try
         {
             if (!File.Exists(FilePath)) return null;
@@ -31,6 +32,7 @@ public static class NexusKeyStore
 
     public static void Save(string key)
     {
+        if (AppEdition.Offline) throw new InvalidOperationException("AFTERLIFE Offline does not use a Nexus Mods API key");
         Directory.CreateDirectory(AppSettings.SettingsDirectory);
         var data = ProtectedData.Protect(Encoding.UTF8.GetBytes(key.Trim()), Entropy, DataProtectionScope.CurrentUser);
         var tmp = FilePath + ".tmp";
@@ -76,6 +78,7 @@ public static class NxmProtocol
 
     public static void Register()
     {
+        if (AppEdition.Offline) return; // Mod Manager Download needs the API
         var previous = CurrentCommand();
         if (previous is not null && !IsRegistered)
         {

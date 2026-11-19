@@ -18,6 +18,7 @@ public sealed partial class MainViewModel
     /// <summary>Downloads a Mod Manager Download link into the library and imports it like a dropped archive.</summary>
     private Task HandleNxmAsync(string text) => RunUiAsync(async () =>
     {
+        if (LockedOffline("Mod Manager Download")) return;
         if (CollectionLink.TryParse(text, out var collection)) { await OpenCollectionAsync(collection); return; }
         if (!NxmLink.TryParse(text, out var link)) { Say("This Nexus link could not be read.", Tone.Block); return; }
         if (!link.IsCyberpunk) { Say($"This link is for {link.Game}, not Cyberpunk 2077.", Tone.Block); return; }

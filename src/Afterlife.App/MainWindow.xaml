@@ -4,7 +4,7 @@
         xmlns:c="clr-namespace:Afterlife.App.Controls"
         xmlns:vm="clr-namespace:Afterlife.App.ViewModels"
         xmlns:fx="clr-namespace:Afterlife.App.Controls"
-        Title="AFTERLIFE · mod manager for Cyberpunk 2077"
+        Title="{Binding WindowTitle}"
         Width="1680" Height="960" MinWidth="1612" MinHeight="910"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource Bg}"
@@ -248,6 +248,17 @@
                                        AutomationProperties.Name="Mod manager for Cyberpunk 2077" />
                             <Rectangle Width="7" Height="12" Margin="6,0,0,0" Fill="{StaticResource C}" VerticalAlignment="Center" fx:Fx.Loop="Blink" />
                         </StackPanel>
+                        <!-- AFTERLIFE Offline: the edition under the name; a click explains what waits for Nexus Mods -->
+                        <Button Margin="2,6,0,0" HorizontalAlignment="Left" Cursor="Hand" Command="{Binding OpenOfflineInfoCommand}" ToolTip="{Binding LockedNote}"
+                                Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" AutomationProperties.Name="Offline edition: what waits for Nexus Mods">
+                            <Button.Template><ControlTemplate TargetType="Button"><ContentPresenter /></ControlTemplate></Button.Template>
+                            <Border BorderThickness="1" BorderBrush="{StaticResource O}" Padding="6,1">
+                                <StackPanel Orientation="Horizontal">
+                                    <ContentControl Template="{StaticResource LockIcon}" Margin="0,0,6,0" VerticalAlignment="Center" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" />
+                                    <TextBlock Style="{StaticResource Mono}" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource O}" Text="OFFLINE EDITION" />
+                                </StackPanel>
+                            </Border>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
                 <!-- core mods as a table: name · version · source · get -->
@@ -282,9 +293,15 @@
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Style="{StaticResource Mono}" FontWeight="Bold" Foreground="{StaticResource O}" Text="! BUILD CHANGED" Margin="0,0,12,0"
                                                Visibility="{Binding BuildChanged, Converter={StaticResource BoolToVis}}" fx:Fx.Loop="Flicker" />
-                                    <Border BorderThickness="1" Padding="6,1" BorderBrush="{Binding NexusTone, Converter={StaticResource ToneBrush}}" ToolTip="Nexus Mods account (Settings)">
-                                        <TextBlock Style="{StaticResource Mono}" FontSize="10.5" FontWeight="Bold" Text="{Binding NexusBadge}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" />
-                                    </Border>
+                                    <Button Cursor="Hand" Command="{Binding OpenNexusStatusCommand}" ToolTip="Nexus Mods account (Settings)" AutomationProperties.Name="{Binding NexusBadge}">
+                                        <Button.Template><ControlTemplate TargetType="Button"><ContentPresenter /></ControlTemplate></Button.Template>
+                                        <Border BorderThickness="1" Padding="6,1" BorderBrush="{Binding NexusTone, Converter={StaticResource ToneBrush}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ContentControl Template="{StaticResource LockIcon}" Margin="0,0,6,0" VerticalAlignment="Center" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" />
+                                                <TextBlock Style="{StaticResource Mono}" FontSize="10.5" FontWeight="Bold" Text="{Binding NexusBadge}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                             <Grid Margin="0,0,0,3">
@@ -570,8 +587,13 @@
                                 <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
                                 <Button Style="{StaticResource AccentButton}" Command="{Binding AddModCommand}" Content="+ ADD MOD" Margin="10,0,0,8" ToolTip="Ctrl+O" />
                                 <!-- -->
-                                <Button Style="{StaticResource AccentButton}" Command="{Binding AddCollectionCommand}" Content="+ ADD COLLECTION" Margin="10,0,0,8"
-                                        ToolTip="Paste a link to a Nexus Mods collection; AFTERLIFE compares it with your library and adds what is missing" />
+                                <Button Style="{StaticResource AccentButton}" Command="{Binding AddCollectionCommand}" Margin="10,0,0,8"
+                                        ToolTip="Paste a link to a Nexus Mods collection; AFTERLIFE compares it with your library and adds what is missing">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Template="{StaticResource LockIcon}" Margin="0,0,6,0" VerticalAlignment="Center" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" />
+                                        <TextBlock Text="+ ADD COLLECTION" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                                 <Button Style="{StaticResource AccentButton}" Margin="10,0,0,8" Command="{Binding GetNewModsCommand}" ToolTip="Opens Cyberpunk 2077 mods on nexusmods.com. Mod Manager Download sends them here.">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="GET NEW MODS" VerticalAlignment="Center" />
@@ -851,6 +873,8 @@
                                     </TextBlock.Style>
                                 </TextBlock>
                                 <TextBlock Style="{StaticResource Meta}" Text="or use + ADD MOD. Archives are checked before anything reaches the game; installers are never run." />
+                                <TextBlock Style="{StaticResource Meta}" Foreground="{StaticResource O}" TextWrapping="Wrap" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}"
+                                           Text="On Nexus Mods choose Files → Manual download and drop the file here. Mod Manager Download comes with the online features." />
                             </StackPanel>
                         </Grid>
 
@@ -911,8 +935,13 @@
                                 <!-- always visible -->
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding RefreshLibraryCommand}" Content="REFRESH"
                                         ToolTip="Read the game folder and the library again (F5)" />
-                                <Button Style="{StaticResource SmallButton}" Command="{Binding CheckUpdatesCommand}" Content="CHECK UPDATES"
-                                        ToolTip="Look for newer versions on Nexus Mods (needs your Nexus key)" />
+                                <Button Style="{StaticResource SmallButton}" Command="{Binding CheckUpdatesCommand}"
+                                        ToolTip="Look for newer versions on Nexus Mods (needs your Nexus key)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Template="{StaticResource LockIcon}" Margin="0,0,6,0" VerticalAlignment="Center" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" />
+                                        <TextBlock Text="CHECK UPDATES" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                                 <!-- Premium downloads directly; other accounts get the download pages one after another -->
                                 <Button Style="{StaticResource SmallAccentButton}" Command="{Binding UpdateAllCommand}" Content="{Binding UpdateAllLabel}"
                                         Visibility="{Binding CanUpdateAll, Converter={StaticResource BoolToVis}}" ToolTip="Put every newer version in the profile instead of the old one: Premium downloads directly, other accounts get the download pages one after another" />

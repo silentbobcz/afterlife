@@ -32,13 +32,17 @@
                 <Button Grid.Column="1" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Command="{Binding BrowseLibraryCommand}" Content="BROWSE" />
             </Grid>
             <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding LibraryNote}" TextWrapping="Wrap" />
-            <!-- Nexus key right away (optional) -->
+            <!-- Nexus key right away (optional); AFTERLIFE Offline has none -->
+            <TextBlock Margin="0,16,0,0" Style="{StaticResource Meta}" Text="{Binding OfflineNote}" TextWrapping="Wrap"
+                       Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" />
+            <StackPanel Visibility="{Binding IsOnline, Converter={StaticResource BoolToVis}}">
             <Grid Margin="0,16,0,6">
                 <TextBlock Style="{StaticResource MonoLabel}" Text="NEXUS MODS API KEY · OPTIONAL" />
                 <Button HorizontalAlignment="Right" Style="{StaticResource LinkButton}" FontSize="11.5" Command="{Binding OpenKeyPageCommand}" Content="Get my key ↗" />
             </Grid>
             <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding NexusKey, UpdateSourceTrigger=PropertyChanged}" FontFamily="{StaticResource MonoFont}" AutomationProperties.Name="Nexus Mods API key" />
             <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding NexusHint}" TextWrapping="Wrap" />
+            </StackPanel>
             <Border Margin="0,14,0,0" Padding="12,9" BorderBrush="{StaticResource O}" BorderThickness="1" Background="{StaticResource OTint}"
                     Visibility="{Binding Warning, Converter={StaticResource NullToVis}}">
                 <TextBlock Style="{StaticResource Body}" FontSize="12.5" Text="{Binding Warning}" />
@@ -397,6 +401,52 @@
             <TextBlock Margin="0,16,0,6" Style="{StaticResource MonoLabel}" Text="LICENSE" />
             <TextBox Height="170" IsReadOnly="True" Text="{Binding License, Mode=OneWay}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                      Background="{StaticResource Bg3}" Foreground="{StaticResource T}" BorderBrush="{StaticResource Line2}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Padding="8" />
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- AFTERLIFE Offline: what waits for Nexus Mods (orange), what works (green), core mods to download by hand -->
+    <DataTemplate x:Key="OfflineLineTemplate" DataType="{x:Type vm:LineVm}">
+        <Border BorderThickness="2,0,0,0" BorderBrush="{StaticResource O}" Padding="10,3" Margin="0,0,12,6">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Body}" FontSize="13" FontWeight="SemiBold" Text="{Binding Left}" />
+                <TextBlock Style="{StaticResource Meta}" FontSize="11.5" Text="{Binding Right}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="WorksLineTemplate" DataType="{x:Type vm:LineVm}">
+        <Border BorderThickness="2,0,0,0" BorderBrush="{StaticResource G}" Padding="10,3" Margin="0,0,12,6">
+            <StackPanel>
+                <TextBlock Style="{StaticResource Body}" FontSize="13" FontWeight="SemiBold" Text="{Binding Left}" />
+                <TextBlock Style="{StaticResource Meta}" FontSize="11.5" Text="{Binding Right}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    <ItemsPanelTemplate x:Key="TwoColumns">
+        <UniformGrid Columns="2" />
+    </ItemsPanelTemplate>
+    <ItemsPanelTemplate x:Key="ThreeColumns">
+        <UniformGrid Columns="3" />
+    </ItemsPanelTemplate>
+    <DataTemplate DataType="{x:Type vm:OfflineInfoVm}">
+        <StackPanel Width="700">
+            <TextBlock Style="{StaticResource Body}" FontSize="13" Text="{Binding Intro}" TextWrapping="Wrap" />
+            <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Foreground="{StaticResource O}" Text="WAITING" />
+            <ItemsControl ItemsSource="{Binding Waiting}" ItemTemplate="{StaticResource OfflineLineTemplate}" ItemsPanel="{StaticResource TwoColumns}" Focusable="False" />
+            <TextBlock Margin="0,10,0,6" Style="{StaticResource MonoLabel}" Foreground="{StaticResource G}" Text="WORKS NOW" />
+            <ItemsControl ItemsSource="{Binding Works}" ItemTemplate="{StaticResource WorksLineTemplate}" ItemsPanel="{StaticResource TwoColumns}" Focusable="False" />
+            <TextBlock Margin="0,10,0,0" Style="{StaticResource Body}" FontSize="12.5" Text="{Binding HowTo}" TextWrapping="Wrap" />
+            <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Text="CORE MODS ON NEXUS MODS" />
+            <ItemsControl ItemsSource="{Binding CoreMods}" ItemsPanel="{StaticResource ThreeColumns}" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:CoreLinkVm}">
+                        <Button HorizontalAlignment="Left" Margin="0,0,0,4" Style="{StaticResource LinkButton}" FontSize="12.5" Command="{Binding Open}" Content="{Binding Name}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <WrapPanel Margin="0,14,0,0">
+                <TextBlock Style="{StaticResource Meta}" FontSize="12" Text="{Binding FullEdition}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                <Button Style="{StaticResource LinkButton}" FontSize="12" Command="{Binding SourceCommand}" Content="github.com/silentbobcz/afterlife ↗" VerticalAlignment="Center" />
+            </WrapPanel>
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

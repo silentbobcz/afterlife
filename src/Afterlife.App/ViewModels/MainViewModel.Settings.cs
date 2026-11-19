@@ -147,6 +147,7 @@ public sealed partial class MainViewModel
 
     private void ForgetNexusKey()
     {
+        if (AppEdition.Offline) { _nexusAccount = null; ShowOfflineBadge(); return; } // a key of the full edition stays
         NexusKeyStore.Clear();
         _nexusAccount = null;
         NexusBadge = "NEXUS · no key";

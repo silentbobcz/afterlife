@@ -153,11 +153,12 @@ public sealed partial class MainViewModel
     }
 
     [RelayCommand]
-    private Task CheckUpdates() => RunUiAsync(() => CheckUpdatesAsync(force: true));
+    private Task CheckUpdates() => LockedOffline("Checking for updates") ? Task.CompletedTask : RunUiAsync(() => CheckUpdatesAsync(force: true));
 
     /// <summary>Premium downloads the newer file directly; free accounts open its page (Mod Manager Download comes back here).</summary>
     public Task UpdateModAsync(string packageId) => RunUiAsync(async () =>
     {
+        if (LockedOffline("Updating from Nexus Mods")) return;
         var m = _overview?.Mods.FirstOrDefault(x => x.Package.PackageId == packageId);
         if (m?.Update is not { } u) return;
         var key = NexusKeyStore.Load();
@@ -202,7 +203,7 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private Task UpdateAll() => RunUiAsync(async () =>
     {
-        if (_overview is null) return;
+        if (_overview is null || LockedOffline("Updating from Nexus Mods")) return;
         if (_updateQueue is not null) { await UpdateQueueMenuAsync(); return; }
         if (NexusKeyStore.Load() is not null && _nexusAccount is null) await CheckNexusAsync(null);
         if (_nexusAccount is not { IsPremium: true }) { await UpdateAllViaWebsiteAsync(); return; }
