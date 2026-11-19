@@ -2,7 +2,7 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## Unreleased
+## 1.0.0-alpha.7
 
 - **FIXER drop box** (Settings → 06 · FIXER, off by default, in both editions): FIXER, a quest editor for Cyberpunk 2077, can hand its quests to AFTERLIFE instead of copying them into the game. A quest left in `fixer\inbox` of the library is imported like any other mod, lands in the category FIXER switched on in the selected profile, and goes into the game with APPLY CHANGES. A new build takes the place of the previous one, a withdrawn quest is switched off in every profile, and FIXER reads what happened from `fixer\outbox`.
 
