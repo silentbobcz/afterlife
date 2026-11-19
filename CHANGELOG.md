@@ -2,7 +2,7 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## Unreleased
+## 1.0.0-alpha.6
 
 - **AFTERLIFE Offline**: a second edition built from the same code (`-p:Edition=Offline`), published on Nexus Mods while Nexus Mods has not registered AFTERLIFE as an app. It never reads an API key, never registers for Mod Manager Download links and never connects to Nexus Mods. The features that need Nexus Mods (Mod Manager Download, updates, collections, the Nexus page in the details, download history) stay visible with a lock; a click explains what is waiting and what works, with links to the pages of every core mod. Each release now carries both zips.
 
