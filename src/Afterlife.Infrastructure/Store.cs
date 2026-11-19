@@ -99,7 +99,37 @@ public sealed class AfterlifeStore : IDisposable
     {
         using var cmd = Cmd(sql, args);
         cmd.ExecuteNonQuery();
-        if (sql.Contains("packages", StringComparison.Ordinal) || sql.Contains("ledger", StringComparison.Ordinal)) ScanVersion++;
+        var packages = sql.Contains("packages", StringComparison.Ordinal);
+        var ledger = sql.Contains("ledger", StringComparison.Ordinal);
+        if (packages) { _packages = null; _packagesById = null; }
+        if (ledger) _ledger = null;
+        if (packages || ledger) ScanVersion++;
+    }
+
+    // ---------- what is read over and over ----------
+    // Every refresh of the window asks for all packages and the whole ledger several times. Both are kept as read
+    // (the records are immutable) and dropped by the write that changes them, by a rolled back transaction and
+    // when another connection, a second AFTERLIFE window, committed to the database.
+    private IReadOnlyList<PackageManifest>? _packages;
+    private Dictionary<string, PackageManifest>? _packagesById;
+    private IReadOnlyDictionary<string, LedgerEntry>? _ledger;
+    private long _dataVersion = -1;
+
+    private void DropCaches()
+    {
+        _packages = null;
+        _packagesById = null;
+        _ledger = null;
+    }
+
+    private void DropCachesIfChangedElsewhere()
+    {
+        using var cmd = Cmd("PRAGMA data_version;");
+        var version = Convert.ToInt64(cmd.ExecuteScalar());
+        if (version == _dataVersion) return;
+        if (_dataVersion != -1) ScanVersion++; // the other window may have changed packages or the ledger
+        _dataVersion = version;
+        DropCaches();
     }
 
     /// <summary>
@@ -130,6 +160,7 @@ public sealed class AfterlifeStore : IDisposable
         catch
         {
             _tx.Rollback();
+            DropCaches(); // they may hold what the transaction wrote
             throw;
         }
         finally
@@ -155,11 +186,18 @@ public sealed class AfterlifeStore : IDisposable
     public void AddPackage(PackageManifest m) =>
         Exec("INSERT INTO packages(id,mod_id,json) VALUES($i,$m,$j)", ("$i", m.PackageId), ("$m", m.ModId), ("$j", Json.Serialize(m)));
 
-    public PackageManifest? GetPackage(string id) =>
-        Query("SELECT json FROM packages WHERE id=$i", r => Json.Deserialize<PackageManifest>(r.GetString(0)), ("$i", id)).FirstOrDefault();
+    public PackageManifest? GetPackage(string id)
+    {
+        var all = GetPackages(); // drops the lookup too when the packages changed
+        _packagesById ??= all.ToDictionary(p => p.PackageId, StringComparer.Ordinal);
+        return _packagesById.GetValueOrDefault(id);
+    }
 
-    public IReadOnlyList<PackageManifest> GetPackages() =>
-        Query("SELECT json FROM packages ORDER BY rowid", r => Json.Deserialize<PackageManifest>(r.GetString(0)));
+    public IReadOnlyList<PackageManifest> GetPackages()
+    {
+        DropCachesIfChangedElsewhere();
+        return _packages ??= Query("SELECT json FROM packages ORDER BY rowid", r => Json.Deserialize<PackageManifest>(r.GetString(0)));
+    }
 
     /// <summary>Updates metadata of a package (requirements, provides, Nexus link); files and digest never change.</summary>
     public void UpdatePackage(PackageManifest m) =>
@@ -180,10 +218,14 @@ public sealed class AfterlifeStore : IDisposable
         Query("SELECT json FROM profiles ORDER BY rowid", r => Json.Deserialize<ProfileState>(r.GetString(0)));
 
     // ---------- ledger ----------
-    public Dictionary<string, LedgerEntry> GetLedger() =>
-        Query("SELECT path,kind,owner,hash,size,mtime FROM ledger", r => new LedgerEntry(
+    /// <summary>Every file AFTERLIFE wrote to the game, by path key. Shared between callers: read only.</summary>
+    public IReadOnlyDictionary<string, LedgerEntry> GetLedger()
+    {
+        DropCachesIfChangedElsewhere();
+        return _ledger ??= Query("SELECT path,kind,owner,hash,size,mtime FROM ledger", r => new LedgerEntry(
                 r.GetString(0), Enum.Parse<ArtifactKind>(r.GetString(1)), r.GetString(2), r.GetString(3), r.GetInt64(4), r.GetInt64(5)))
             .ToDictionary(e => e.Path.ToUpperInvariant(), StringComparer.Ordinal);
+    }
 
     public void UpsertLedger(LedgerEntry e) =>
         Exec("""
@@ -276,18 +318,6 @@ public sealed class AfterlifeStore : IDisposable
         foreach (var s in snaps) foreach (var id in Json.Deserialize<DeploymentSnapshot>(s).IncludedPackages) set.Add(id);
         return set;
     }
-
-    // ---------- unmanaged inventory ----------
-    public void ReplaceUnmanaged(IEnumerable<(string Path, long Size)> items) => InTransaction(() =>
-    {
-        Exec("DELETE FROM unmanaged");
-        var now = DateTimeOffset.UtcNow.ToString("O");
-        foreach (var (p, s) in items)
-            Exec("INSERT OR REPLACE INTO unmanaged(key,path,size,seen) VALUES($k,$p,$s,$n)", ("$k", p.ToUpperInvariant()), ("$p", p), ("$s", s), ("$n", now));
-    });
-
-    public List<(string Path, long Size)> GetUnmanaged() =>
-        Query("SELECT path,size FROM unmanaged ORDER BY path", r => (r.GetString(0), r.GetInt64(1)));
 
     public void Dispose()
     {

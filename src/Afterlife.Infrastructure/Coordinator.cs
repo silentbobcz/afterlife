@@ -379,6 +379,7 @@ public sealed class InstallContext
         GameRoot = store.GetMeta("game.root") ?? throw new InvalidOperationException("library is not initialized");
         Packages = new PackageLibrary(lib, store);
         Removed = new Quarantine(lib, fs);
+        Hashes = new HashCache(fs);
     }
 
     public LibraryPaths LibraryPaths { get; }
@@ -387,6 +388,8 @@ public sealed class InstallContext
     public IGameEnvironment Env { get; }
     public PackageLibrary Packages { get; }
     public Quarantine Removed { get; }
+    /// <summary>Hashes of game files remembered between previews; emptied before anything is applied.</summary>
+    public HashCache Hashes { get; }
     public string GameRoot { get; internal set; }
 
     public ProfileService Profiles { get; internal set; } = null!;

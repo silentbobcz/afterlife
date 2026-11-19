@@ -28,7 +28,7 @@ public sealed class DeployService
     internal PreviewResult MakePreview(DeploymentSnapshot snapshot, ScanResult scan, PlanDecisions? decisions)
     {
         var ledger = Store.GetLedger();
-        var observer = new GameStateObserver(GameRoot, _fs);
+        var observer = new GameStateObserver(GameRoot, _fs, _ctx.Hashes, _ctx.Scanner.SeenFiles());
         var plan = Planner.Create(snapshot, ledger, observer, Store.GetBaseline(ModlistFormat.RelativePath), decisions);
         return new PreviewResult(snapshot, plan, scan, EnvironmentIssues());
     }
@@ -70,6 +70,7 @@ public sealed class DeployService
     {
         using var _ = InstallLock.Acquire(Library, GameRoot);
         progress?.Report(new DeployProgress(DeployPhase.Preparing, 0, 0));
+        _ctx.Hashes.Clear(); // a plan that is carried out is built from the disk, not from memory
         var preview = Preview(profileId, decisions);
         ActivityLog.Plan($"apply profile {preview.Snapshot.ProfileId} ({preview.Snapshot.IncludedPackages.Count} mod(s) included, {preview.Snapshot.ExcludedPackages.Count} held back)", preview.Plan);
         if (!preview.CanApply)
@@ -138,6 +139,7 @@ public sealed class DeployService
         var op = Store.GetUnfinishedOperation() ?? throw new InvalidOperationException("nothing to recover");
         var executor = new DeploymentExecutor(Store, Library, GameRoot, _fs);
         var outcome = executor.Recover(op.Id);
+        _ctx.Hashes.Clear();
 
         DeploymentSnapshot target;
         if (choice == RecoveryChoice.Finish) target = Json.Deserialize<DeploymentSnapshot>(op.TargetSnapshotJson);

@@ -277,8 +277,8 @@ public static class OverviewBuilder
             var inGame = ledgerOwners.ContainsKey(p.PackageId) || lastIncluded.Contains(p.PackageId);
             var isIncluded = included.Contains(p.PackageId);
             var issues = lookup.IssuesOf(p.PackageId);
-            var myPaths = p.Files.Select(f => GamePath.Parse(f.Target).Key).ToHashSet();
-            var pathBlockers = myPaths.Concat(lookup.OwnedPaths(p.PackageId)).Distinct()
+            // nothing is blocked in the usual case: then no path of any mod has to be looked at
+            List<Issue> pathBlockers = blockersByPath.Count == 0 ? [] : p.Files.Select(f => GamePath.Parse(f.Target).Key).Concat(lookup.OwnedPaths(p.PackageId)).Distinct()
                 .SelectMany(k => blockersByPath.TryGetValue(k, out var l) ? l : []).ToList();
             issues.AddRange(pathBlockers);
             stepsByOwner.TryGetValue(p.PackageId, out var mySteps);
@@ -340,7 +340,7 @@ public static class OverviewBuilder
 
         public Dictionary<string, int> LedgerOwners { get; }
 
-        public Lookup(IReadOnlyList<PackageManifest> packages, Dictionary<string, LedgerEntry> ledger, IReadOnlyList<CollectionRecord> collections,
+        public Lookup(IReadOnlyList<PackageManifest> packages, IReadOnlyDictionary<string, LedgerEntry> ledger, IReadOnlyList<CollectionRecord> collections,
             ProfileState profile, DeploymentSnapshot snapshot, Dictionary<string, NexusModInfo> pages, Dictionary<string, NexusUpdate> updates)
         {
             _pages = pages;

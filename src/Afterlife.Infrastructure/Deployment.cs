@@ -7,15 +7,27 @@ public sealed class IntegrityException(string message) : IOException(message);
 
 public sealed class OperationAbortedException(string message) : Exception(message);
 
-public sealed class GameStateObserver(string gameRoot, IFileOps fs) : IStateObserver
+/// <param name="hashes">Remembered hashes for previews; null reads every file that is asked for.</param>
+/// <param name="seen">
+/// What earlier previews found at each path since the last walk of the game folder (see
+/// <see cref="ScanService.SeenFiles"/>); null asks the disk every time.
+/// </param>
+public sealed class GameStateObserver(string gameRoot, IFileOps fs, HashCache? hashes = null, Dictionary<string, Observation>? seen = null) : IStateObserver
 {
     public Observation Observe(GamePath path)
     {
+        if (seen is not null && seen.TryGetValue(path.Key, out var known)) return known;
         var meta = fs.GetMeta(path.ToOsPath(gameRoot));
-        return meta is null ? Observation.Absent : new Observation(true, meta.Size, meta.MTimeTicks);
+        var found = meta is null ? Observation.Absent : new Observation(true, meta.Size, meta.MTimeTicks);
+        if (seen is not null) seen[path.Key] = found;
+        return found;
     }
 
-    public string FullHash(GamePath path) => fs.Hash(path.ToOsPath(gameRoot));
+    public string FullHash(GamePath path)
+    {
+        var os = path.ToOsPath(gameRoot);
+        return hashes is null ? fs.Hash(os) : hashes.Hash(os);
+    }
 }
 
 public sealed record ExecutionResult(string OperationId, OperationStatus Status, int StepsApplied, string? Error);

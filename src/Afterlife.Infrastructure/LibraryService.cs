@@ -255,6 +255,7 @@ public sealed class LibraryService
                 {
                     Entries = deployedProfile.Entries.Where(e => keep.Contains(e.PackageId)).Select(e => e with { Enabled = true }).ToList(),
                 };
+            _ctx.Hashes.Clear(); // a plan that is carried out is built from the disk, not from memory
             var scan = _ctx.Scanner.Scan();
             var preview = _ctx.Deployer.MakePreview(_ctx.Deployer.BuildSnapshot(target, scan), scan, null);
             // A mod being deleted changed its own files (settings, saves): keep the changed copies in Removed and go on.

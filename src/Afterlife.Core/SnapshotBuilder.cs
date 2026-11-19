@@ -100,7 +100,15 @@ public static class SnapshotBuilder
                 .OrderBy(g => g.Key, StringComparer.Ordinal);
             foreach (var g in groups)
             {
-                if (g.Select(x => x.File.Hash).Distinct().Count() <= 1) continue;
+                // nearly every path has one provider or the same content from all: no set per path for that
+                string? firstHash = null;
+                var differ = false;
+                foreach (var x in g)
+                {
+                    if (firstHash is null) firstHash = x.File.Hash;
+                    else if (!string.Equals(x.File.Hash, firstHash, StringComparison.Ordinal)) { differ = true; break; }
+                }
+                if (!differ) continue;
                 var pkgIds = g.Select(x => x.Pkg.PackageId).Distinct().ToList();
                 if (profile.PathWinners.TryGetValue(g.Key, out var ruleWinner) && pkgIds.Contains(ruleWinner)) continue;
 

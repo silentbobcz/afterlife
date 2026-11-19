@@ -25,11 +25,19 @@ public sealed class ScanService
     public ScanResult Scan()
     {
         var raw = ScanFiles();
-        _scanCache = (Store.ScanVersion, GameRoot, raw);
+        _scanCache = (Store.ScanVersion, GameRoot, raw, new Dictionary<string, Observation>(StringComparer.Ordinal));
         return Finish(raw, SelectedProfile);
     }
 
-    private (long Version, string Root, RawScan Raw)? _scanCache;
+    private (long Version, string Root, RawScan Raw, Dictionary<string, Observation> Seen)? _scanCache;
+
+    /// <summary>
+    /// Size and time of the game files the planner asked about since the last walk, by path key. Valid exactly as
+    /// long as that walk is (<see cref="CachedScan"/>), so a preview after a mere profile change does not ask the
+    /// disk about thousands of files again. A fresh, empty map when there is no valid walk.
+    /// </summary>
+    internal Dictionary<string, Observation> SeenFiles() =>
+        _scanCache is { } c && c.Version == Store.ScanVersion && c.Root == GameRoot ? c.Seen : new Dictionary<string, Observation>(StringComparer.Ordinal);
 
     /// <summary>
     /// The last scan, if nothing it depends on changed (packages, ledger, game root) and nothing touched the game
@@ -104,7 +112,7 @@ public sealed class ScanService
                 {
                     if (!hashes.TryGetValue(gp.Value, out var h))
                     {
-                        try { h = _fs.Hash(os); } catch (IOException) { h = null; }
+                        try { h = _ctx.Hashes.Hash(os); } catch (IOException) { h = null; }
                         hashes[gp.Value] = h;
                     }
                     identical = h == f.Hash;
