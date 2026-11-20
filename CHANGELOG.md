@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## 1.0.0-alpha.9
+
+- **AFTERLIFE Offline only, as a plain folder**: the release carries just the Offline edition, the one published on Nexus Mods. The zip holds a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side instead of one self-extracting executable, which Nexus Mods holds for manual review. Unzip the whole folder and run `AFTERLIFE.exe` from it. No change in the app itself.
+
 ## 1.0.0-alpha.8
 
 - **Plainer packaging** for antivirus scanners: `AFTERLIFE.exe` is no longer compressed and no longer unpacks its native libraries to a temporary folder at start; the few libraries it needs ship next to it in the zip. Keep them together in one folder. No change in the app itself.
