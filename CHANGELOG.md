@@ -4,7 +4,8 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 ## 1.0.0-alpha.9
 
-- **AFTERLIFE Offline only, as a plain folder**: the release carries just the Offline edition, the one published on Nexus Mods. The zip holds a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side instead of one self-extracting executable, which Nexus Mods holds for manual review. Unzip the whole folder and run `AFTERLIFE.exe` from it. No change in the app itself.
+- **AFTERLIFE Offline only, as a plain folder**: the release carries just the Offline edition, the one published on Nexus Mods. The zip holds a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side. Unzip the whole folder and run `AFTERLIFE.exe` from it. No change in the app itself.
+- **Why**: Nexus Mods quarantined the previous upload. No antivirus found anything: VirusTotal reports 0 of 66 engines for the alpha.8 zip ([report](https://www.virustotal.com/gui/file/7a24dbc1ed7614d3e9a7f183baba5a202e5c0c69ec76fb1c9d9c9466f34e27cd/detection)). The hold comes from an internal rule of Nexus Mods that sends self-extracting executables to manual review, and until now AFTERLIFE shipped as one executable with the whole app bundled inside. The plain folder has no such bundle. The source code is public and every release is built and tested by GitHub Actions from this repository.
 
 ## 1.0.0-alpha.8
 
