@@ -29,12 +29,14 @@ jobs:
       - name: Test (fake game install, crash injection at every step)
         run: dotnet test tests/Afterlife.Tests -c Release --no-build --logger "trx;LogFileName=results.trx"
 
+      # no compression and no self-extraction: native libraries sit next to the exe instead of being
+      # unpacked to %TEMP% at start, which antivirus heuristics (and so Nexus Mods' scan) read as a packer
       - name: Publish AFTERLIFE
-        run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish/app
+        run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false -p:EnableCompressionInSingleFile=false -o publish/app
 
       # the edition for Nexus Mods while AFTERLIFE is not registered there: no API key, no connection (AppEdition.cs)
       - name: Publish AFTERLIFE Offline
-        run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:Edition=Offline -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish/offline
+        run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:Edition=Offline -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false -p:EnableCompressionInSingleFile=false -o publish/offline
 
       - name: Package
         shell: pwsh
@@ -49,7 +51,7 @@ jobs:
           foreach ($e in @(@{ Name = "AFTERLIFE"; Exe = "publish/app" }, @{ Name = "AFTERLIFE-Offline"; Exe = "publish/offline" })) {
             $dir = "dist/$($e.Name)-$v"
             New-Item -ItemType Directory -Force $dir | Out-Null
-            Copy-Item "$($e.Exe)/AFTERLIFE.exe", README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
+            Copy-Item "$($e.Exe)/AFTERLIFE.exe", "$($e.Exe)/*.dll", README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
             Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt $dir
             New-Item -ItemType Directory -Force "$dir/licenses" | Out-Null
             Copy-Item src/Afterlife.App/Assets/Fonts/OFL-*.txt "$dir/licenses"
