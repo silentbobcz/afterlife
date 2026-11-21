@@ -1,9 +1,10 @@
 # AFTERLIFE: fronta pro modely (1. dávka)
 
-Živá verze fronty (dřív v Claude Docs). Větev `claude/adoring-gates-k9aqtu`, pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
-Úkoly pro uživatele: Claude Docs „AFTERLIFE: co čeká na tebe“ (https://claude.ai/artifact/CmwJyL6CakSib1ZHdXchN9).
+Živá verze fronty. **Nejnovější stav dávky: větev `claude/kind-hopper-az2rax`** (O1, O2, O4, O6, F1, F2). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
+Úkoly pro uživatele: [`UKOLY.md`](UKOLY.md) v této větvi.
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/adoring-gates-k9aqtu) a udělej balík F2.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík F3.“
+Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkout claude/kind-hopper-az2rax`, pak stejná věta.
 
 ## Pravidla dávky
 
@@ -16,15 +17,16 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 
 | Balík | Model | Co | Čeká na | Stav |
 |---|---|---|---|---|
-| O1 | Opus | Překryvná okna rostou s oknem, okno začíná vystředěné | nic | hotovo `b1aa34c`, čeká na kontrolu |
-| O2 | Opus | Dialog při vypnutí modu ukáže i to, co mod potřebuje | nic | hotovo `9400745`, čeká na kontrolu |
+| O1 | Opus | Překryvná okna rostou s oknem, okno začíná vystředěné | nic | hotovo `b1aa34c`, zkontrolováno |
+| O2 | Opus | Dialog při vypnutí modu ukáže i to, co mod potřebuje | nic | hotovo `9400745`, zkontrolováno |
 | O3 | Opus | Rešerše a návrhy seznamu modů (bez kódu) | nic | hotovo |
-| O4 | Opus | Panel filtrů ve třech stavech | nic | hotovo `c75c70f`, čeká na kontrolu |
+| O4 | Opus | Panel filtrů ve třech stavech | nic | hotovo `c75c70f`, zkontrolováno |
 | O5 | Opus | Návrhy celého okna W1/W2/W3 (bez kódu) | nic | hotovo, odloženo jako alternativa |
 | F1 | Fable | Hromadné propojení ručně přidaných ZIPů s Nexusem | nic | hotovo `e1b10cd`, sloučeno do větve `23df26c` |
-| O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo, čeká na kontrolu |
-| F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | čeká |
-| F-kontrola | Fable | Kontrola O1, O2, O4, O6 a uzavření dávky | nic | čeká, může začít |
+| O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo `a75ded6`, zkontrolováno |
+| F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | hotovo (bez kontroly, psal Fable) |
+| F3 | Fable | Kontrola aktualizací při 600+ modech | C4 | čeká na C4 |
+| F-kontrola | Fable | Kontrola O1, O2, O4, O6 | nic | hotovo, bez nálezu; uzavření dávky čeká na C3 a C4 |
 
 ## O6. Hromadné propojení i v nastavení Nexusu
 
@@ -43,6 +45,14 @@ Soubory: `MainViewModel.cs`, `MainViewModel.Blocks.cs`, `MainWindow.xaml` (`Mods
 4. Kde si bez spuštění nejsi jistý, dát virtualizaci za přepínač v nastavení (výchozí vypnuto) a zapsat položku A.
 5. Do předávky: co má uživatel změřit (otevření okna, plynulost rolování s 300 mody, s přepínačem a bez).
 
+## F3. Kontrola aktualizací při 600+ modech
+
+Fable. Čeká na C4 v `UKOLY.md` (zatím jen návrh, neprogramovat). Soubory: `MainViewModel.Updates.cs`, nastavení.
+1. Přepínač v nastavení: kontrola při startu a každou hodinu ano/ne. Core mody se kontrolují vždy.
+2. Volba rozsahu při startu: jen mody zapnuté v profilu, nebo všechny.
+3. Tlačítko CHECK UPDATES použije seznam změněných modů z Nexusu (dnes ho obchází a čte všech 600+); plná kontrola všech jako zvláštní, zřídka používaná volba.
+4. Testy pro výběr modů ke kontrole (`NexusUpdates.DueAfterFeed` a nový filtr rozsahu).
+
 ## F-kontrola
 
 Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „Neověřeno“ a „Rozhodl jsem sám“; testy a sestavení; chyby opravit a zapsat. F1 a F2 nekontroluj (psal je Fable). Pak dávku uzavřít: trvalé věci do `docs/HOW-IT-WORKS.md` a `CHANGELOG.md`, tento soubor do `archiv/FRONTA-1-davka.md`.
@@ -58,3 +68,16 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 **Sloučení F1** (21. 11., Opus): větev `claude/kind-hopper-az2rax` (F1 + O1 + O2) sloučena do pracovní větve, jediný konflikt v `CHANGELOG.md` (obě položky ponechány). Pozor: nadpis v CHANGELOGu je teď „1.0.0-alpha.10“ (přišlo z F1), verze v `Directory.Build.props` se neměnila. Ověřeno: 296 testů, sestavení plné i Offline edice.
 
 **O6** (21. 11., Opus): `SettingsActions.LinkMods` a `SettingsVm.LinkModsCommand`; odkaz „Link all unlinked mods…“ v nastavení, oddíl 03 · NEXUS MODS, viditelný s uloženým klíčem. Zavře nastavení a spustí stejný příkaz jako detail (`LinkGuessedModsCommand`). V Offline edici je celý oddíl Nexusu skrytý a příkaz zamčený. Neověřeno: klikání ve Windows (A6).
+
+**F-kontrola** (21. 11., Fable): prošel jsem commity O1, O2, O4 a O6 proti zadání a předávkám. Chybu jsem nenašel, nic jsem neopravoval. Poznámky: překryvná okna rostou až od výšky okna 910 (na menší obrazovce jako dřív); panel filtrů se sbaluje podle šířky okna 1500, ne podle šířky seznamu (rozhodnutí O4, ponecháno); `CLAUDE.md` říkal „Unreleased“, nadpis je „1.0.0-alpha.10“ (opraveno v `CLAUDE.md`). Dávka zatím není uzavřená: čeká F3 (C4) a odeslání do `main` (C3), proto tento soubor zůstává živý a nejde do archivu.
+
+**F2** (21. 11., Fable)
+- Stav: hotovo. Nové `ModSort.cs` (Infrastructure, čistá logika, 7 testů) a `MainViewModel.Sorting.cs`; změny v `MainViewModel.cs`, `MainViewModel.Blocks.cs`, `Rows.cs`, `MainWindow.xaml`, `Views/Panels.xaml`, `SettingsVm.cs`, `MainViewModel.Settings.cs`, `AppSettings.cs`.
+- Řazení: tlačítko „⇅“ vedle FILTERS prochází LOAD ORDER → NAME → NEWEST → STATE → SIZE. Řadí se uvnitř bloků, core mody a pořadí bloků zůstávají, vrstva „my edits“ zůstává pod svým modem. Volba se pamatuje (`ui.sort`).
+- Bezpečnost pořadí: okno drží řádky dvakrát. `_loadOrdered` je pořadí načítání a čte ho `CurrentOrder()`, tedy i `SyncSortedOrderAsync`, přesuny bloků a kategorie; `Mods` je to, co je vidět. Dřív `CurrentOrder()` četl zobrazený seznam, takže by seřazený pohled přepsal pořadí ve hře. Přepnutí řazení nic nečte ani nezapisuje kromě zapamatované volby.
+- Při řazení je přetahování modů vypnuté (`ModRowVm.SortLocked`) a nad seznamem je řádek s vysvětlením a „Back to load order“. Šipky u bloků fungují dál.
+- Virtualizace: přepínač v Settings → 05 · DISPLAY, výchozí vypnuto (`AppSettings.VirtualizeList`), platí hned. Kód přetahování, značek vložení a posunu na vybraný mod jsem prošel: pracuje s řádkem pod myší a s `ScrollIntoView`, na vykreslení všech řádků nespoléhá.
+- Ověřeno: 303 testů, překlad plné i Offline edice.
+- Neověřeno: vzhled tlačítka a řádku, chování virtualizace při rolování, přetahování a sbalování bloků (A7, A8).
+- Rozhodl jsem sám: řazení platí i uvnitř kolekcí (jen pro oko); při řazení nejde mod přetáhnout ani do jiné kategorie; „NEWEST“ je podle data importu do knihovny; „STATE“ řadí problémy první, pak neaplikované, zapnuté, vypnuté.
+- Co změřit (A8): čas od spuštění po zobrazení seznamu a plynulost rolování s 300+ mody, jednou s přepínačem a jednou bez.
