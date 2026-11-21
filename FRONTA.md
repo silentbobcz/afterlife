@@ -3,7 +3,7 @@
 Živá verze fronty (dřív v Claude Docs). Větev `claude/adoring-gates-k9aqtu`, pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
 Úkoly pro uživatele: Claude Docs „AFTERLIFE: co čeká na tebe“ (https://claude.ai/artifact/CmwJyL6CakSib1ZHdXchN9).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/adoring-gates-k9aqtu) a udělej balík O6.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/adoring-gates-k9aqtu) a udělej balík F2.“
 
 ## Pravidla dávky
 
@@ -21,20 +21,14 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O3 | Opus | Rešerše a návrhy seznamu modů (bez kódu) | nic | hotovo |
 | O4 | Opus | Panel filtrů ve třech stavech | nic | hotovo `c75c70f`, čeká na kontrolu |
 | O5 | Opus | Návrhy celého okna W1/W2/W3 (bez kódu) | nic | hotovo, odloženo jako alternativa |
-| F1 | Fable | Hromadné propojení ručně přidaných ZIPů s Nexusem | nic | hotovo, ale **jen na počítači uživatele** (soubor `F1-link-mods-to-nexus.patch`); musí se dostat do větve |
-| O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | F1 ve větvi | čeká |
+| F1 | Fable | Hromadné propojení ručně přidaných ZIPů s Nexusem | nic | hotovo `e1b10cd`, sloučeno do větve `23df26c` |
+| O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo, čeká na kontrolu |
 | F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | čeká |
-| F-kontrola | Fable | Kontrola O1, O2, O4, O6 a uzavření dávky | O6 | čeká |
-
-## F1 do větve (uživatel nebo vlákno na jeho počítači)
-
-Na počítači v klonu repozitáře: `git fetch origin claude/adoring-gates-k9aqtu`, `git checkout claude/adoring-gates-k9aqtu`,
-`git am F1-link-mods-to-nexus.patch`, vyřešit konflikty (F1 mění i `MainWindow.xaml`, `Rows.cs`, `CHANGELOG.md`, které mezitím
-změnily O1, O2 a O4), `dotnet test`, `git push`. Bez toho O6 a F-kontrola nemohou začít.
+| F-kontrola | Fable | Kontrola O1, O2, O4, O6 a uzavření dávky | nic | čeká, může začít |
 
 ## O6. Hromadné propojení i v nastavení Nexusu
 
-Opus, malý. Čeká na F1 ve větvi. F1 dal příkaz „Link all unlinked mods…“ jen do detailu modu, protože `Views/Panels.xaml` tehdy měnil O1.
+Opus, malý. Hotovo. F1 dal příkaz „Link all unlinked mods…“ jen do detailu modu, protože `Views/Panels.xaml` tehdy měnil O1.
 1. V `Views/Panels.xaml`, oddíl NEXUS v nastavení, přidej tlačítko se stejným příkazem jako v detailu modu (najdi ho podle `MainViewModel.Linking.cs`).
 2. V edici Offline schované nebo zamčené jako ostatní věci Nexusu (`LockedOffline`).
 3. Řádek do `CHANGELOG.md`, sestavení a testy.
@@ -60,3 +54,7 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 **O2** (21. 11., Opus): dialog při vypnutí: závislé mody, „ONLY IT NEEDED, NOW ON“ (vlastní zaškrtávátko, výchozí ne), „IT NEEDS, STAYS ON“ ke čtení (`KeptRequirements`). Rozhodl jsem sám: core mody ani v informačním seznamu; kolekce se ptají dál vlastním dotazem. Neověřeno ve Windows (A3).
 
 **O4** (21. 11., Opus): `ModFilter` (Infrastructure, čistá logika, 6 testů), `FilterPanelVm`, `Views/FilterPanel.xaml`, sloupec mezi PROFILES a MOD LIBRARY, tlačítko „⧩ FILTERS“ u hledání (cyklus otevřený → pruh → skrytý), stav v meta `ui.filterpanel`. Rozhodl jsem sám: automatické sbalení do pruhu pod šířkou okna 1500 px (ne podle šířky seznamu 760 px, to by sbalovalo už při výchozí velikosti); bez filtru „FIXER quests“ (balíček FIXERu se v datech nepozná); štítky kolekcí a OPTIONAL/REQUIRED nejsou mezi štítky. Ověřeno: 287 testů, sestavení aplikace. Neověřeno: vzhled a klikání ve Windows (A5).
+
+**Sloučení F1** (21. 11., Opus): větev `claude/kind-hopper-az2rax` (F1 + O1 + O2) sloučena do pracovní větve, jediný konflikt v `CHANGELOG.md` (obě položky ponechány). Pozor: nadpis v CHANGELOGu je teď „1.0.0-alpha.10“ (přišlo z F1), verze v `Directory.Build.props` se neměnila. Ověřeno: 296 testů, sestavení plné i Offline edice.
+
+**O6** (21. 11., Opus): `SettingsActions.LinkMods` a `SettingsVm.LinkModsCommand`; odkaz „Link all unlinked mods…“ v nastavení, oddíl 03 · NEXUS MODS, viditelný s uloženým klíčem. Zavře nastavení a spustí stejný příkaz jako detail (`LinkGuessedModsCommand`). V Offline edici je celý oddíl Nexusu skrytý a příkaz zamčený. Neověřeno: klikání ve Windows (A6).

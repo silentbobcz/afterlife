@@ -97,7 +97,8 @@ public sealed partial class MainViewModel
         var vm = new SettingsVm(GameFolder, GameVersion is null ? GameBuild : $"{GameVersion} · build {GameBuild}", AppSettings.ResolveLibrary(null),
             AppSettings.Load().ReduceMotion, AppSettings.Load().ActivityLog, NexusKeyStore.Load() is not null, SafeNxmRegistered(), SafeOtherHandler(),
             new SettingsActions(ChangeGameFolderAsync, SetReduceMotion, SetActivityLog, SaveNexusKeyAsync, ForgetNexusKey, CheckNexusAsync, SetNxmHandlerAsync,
-                () => OpenGameFolder(), () => OpenInbox(), LoadStorageAsync, PurgeAsync, CopyDiagnostics, RemoveFromPcAsync, SetFixerAsync))
+                () => OpenGameFolder(), () => OpenInbox(), LoadStorageAsync, PurgeAsync, CopyDiagnostics, RemoveFromPcAsync, SetFixerAsync,
+                () => { Overlay = null; LinkGuessedModsCommand.Execute(null); }))
         { CloseCommand = new RelayCommand(() => Overlay = null) };
         vm.SetFixerSilently(_fixerOn);
         Overlay = vm;

@@ -25,7 +25,8 @@ public sealed record SettingsActions(
     Func<SettingsVm, string, Task> Purge,
     Action CopyDiagnostics,
     Func<SettingsVm, Task> RemoveFromPc,
-    Func<SettingsVm, bool, Task> SetFixer);
+    Func<SettingsVm, bool, Task> SetFixer,
+    Action LinkMods);
 
 /// <summary>Game, library, Nexus Mods, display, diagnostics.</summary>
 public sealed partial class SettingsVm : OverlayVm
@@ -202,6 +203,8 @@ public sealed partial class SettingsVm : OverlayVm
     [RelayCommand] private void OpenKeyPage() => AppLinks.Open(NexusClient.KeyPage);
     [RelayCommand] private void OpenGame() => _a.OpenGame();
     [RelayCommand] private void OpenScan() => _a.OpenScan();
+    /// <summary>Links every mod added from a file to its Nexus page, the same as in the details of a mod.</summary>
+    [RelayCommand] private void LinkMods() => _a.LinkMods();
     [RelayCommand] private void OpenLibrary() { if (Directory.Exists(Library)) AppLinks.OpenFolder(Library); }
     [RelayCommand] private void OpenLogs() { Directory.CreateDirectory(App.LogDirectory); AppLinks.OpenFolder(App.LogDirectory); }
 }

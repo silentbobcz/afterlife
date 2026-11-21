@@ -218,6 +218,9 @@
                         <Button Margin="16,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding CheckKeyCommand}" Content="Check again" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
                         <Button Margin="16,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding ForgetKeyCommand}" Content="Remove key" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
                     </StackPanel>
+                    <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource LinkButton}" Command="{Binding LinkModsCommand}" Content="Link all unlinked mods…"
+                            ToolTip="Mods added from files get their Nexus page once Nexus confirms them; one list, one question"
+                            Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
                     <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding NxmHandler}" Content="Open Mod Manager Download links in AFTERLIFE (nxm://)" />
                     <TextBlock Margin="28,2,0,0" Style="{StaticResource Meta}" Text="{Binding NxmHint}" TextWrapping="Wrap" />
                     </StackPanel>
