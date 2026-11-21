@@ -25,7 +25,7 @@ Doporučená možnost je vždy první.
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
 | C3 | Sloučení do `main` a vydání alpha.10 | Nevratný krok. Rozhodnuto 21. 11.: nejdřív projít A2 až A8 na zkušebním sestavení. | Po zkoušce napiš „C3 vydat“, nebo co opravit. | ☐ čeká na A2 až A8 |
-| C4 | Kontrola aktualizací při 600+ modech | Při startu a každou hodinu jde jeden dotaz na seznam změněných modů a čte se nejvýš 60 modů. Tlačítko CHECK UPDATES ale čte všechny, tedy 600+ dotazů. Tvůj návrh: přepínač kontroly při startu, tlačítko, core mody vždy, volba kontrolovat jen zapnuté mody. | 1. Přepínač, core mody vždy, rozsah při startu a tlačítko nově čte jen změněné mody (plná kontrola jako zvláštní volba). 2. Jen přepínač a core mody, tlačítko nechat číst vše: méně práce, jedno kliknutí stojí 600+ dotazů. Po rozhodnutí je to balík F3. | ☐ čeká |
+| C6 | Uspořádání nastavení | Do nastavení přibudou volby kontroly aktualizací (F3). Dnes je to jeden rolovací sloupec se šesti oddíly; oddíl 05 míchá vzhled, diagnostiku a odinstalaci. | 1. Jen přidat oddíl UPDATES pod NEXUS MODS a rozdělit oddíl 05 (vzhled / diagnostika / odinstalace až dole): malá změna, jde rovnou s F3. 2. Nejdřív statický náhled celého nastavení (O7), pak teprve kód: čistší, o kolo delší. 3. Nastavení se záložkami vlevo: nejpřehlednější při dalším růstu, největší zásah. | ☐ čeká |
 
 ## D. Dodat
 
@@ -37,6 +37,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 21. 11. | C4: kontrola aktualizací bude bez stropu 60, zapnuté a core mody první, tlačítko přes rozdíly, přepínač kontroly při startu a plné přečtení každého modu jednou za N dní (N v nastavení). Zadání je v balíku F3. |
 | 21. 11. | A1: v maximalizovaném okně alpha.9 hlavní seznam vyplní šířku i výšku, chyba v něm není. Pisatelovo „nezvětší se“ nejspíš míří na překryvná okna (opravuje O1); potvrdí to jeho snímek (D1). |
 | 21. 11. | Fronta a úkoly jsou v repozitáři (`FRONTA.md`, `UKOLY.md`), aby je našla všechna vlákna i počítač doma. Dokumenty v Claude Docs už se nevedou. |
 | 21. 11. | F2 hotové: řazení jen pro zobrazení a přepínač virtualizace. Kontrola O1, O2, O4 a O6 bez nálezu. 303 testů, překlad obou edic. |

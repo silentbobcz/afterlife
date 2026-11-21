@@ -25,7 +25,8 @@ Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkou
 | F1 | Fable | Hromadné propojení ručně přidaných ZIPů s Nexusem | nic | hotovo `e1b10cd`, sloučeno do větve `23df26c` |
 | O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo `a75ded6`, zkontrolováno |
 | F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | hotovo (bez kontroly, psal Fable) |
-| F3 | Fable | Kontrola aktualizací při 600+ modech | C4 | čeká na C4 |
+| F3 | Fable | Kontrola aktualizací při 600+ modech | C6 | zadání potvrzeno, čeká na C6 |
+| O7 | Opus | Přehlednější nastavení (návrh, bez kódu) | C6 | čeká na C6 |
 | F-kontrola | Fable | Kontrola O1, O2, O4, O6 | nic | hotovo, bez nálezu; uzavření dávky čeká na C3 a C4 |
 
 ## O6. Hromadné propojení i v nastavení Nexusu
@@ -47,11 +48,19 @@ Soubory: `MainViewModel.cs`, `MainViewModel.Blocks.cs`, `MainWindow.xaml` (`Mods
 
 ## F3. Kontrola aktualizací při 600+ modech
 
-Fable. Čeká na C4 v `UKOLY.md` (zatím jen návrh, neprogramovat). Soubory: `MainViewModel.Updates.cs`, nastavení.
-1. Přepínač v nastavení: kontrola při startu a každou hodinu ano/ne. Core mody se kontrolují vždy.
-2. Volba rozsahu při startu: jen mody zapnuté v profilu, nebo všechny.
-3. Tlačítko CHECK UPDATES použije seznam změněných modů z Nexusu (dnes ho obchází a čte všech 600+); plná kontrola všech jako zvláštní, zřídka používaná volba.
-4. Testy pro výběr modů ke kontrole (`NexusUpdates.DueAfterFeed` a nový filtr rozsahu).
+Fable. Zadání potvrzeno uživatelem 21. 11. (C4). Čeká jen na C6: kam v nastavení přijdou nové volby. Soubory: `MainViewModel.Updates.cs`, `Nexus.cs` (`NexusUpdates`), nastavení, `NexusTests.cs`.
+1. Zrušit strop 60 modů na jednu kontrolu: přečte se vše, co je na řadě, a kontrola se zastaví jen o limit Nexusu (`RateLimited`), zbytek příště. Před tím ověřit v dokumentaci Nexusu skutečné limity dotazů.
+2. Pořadí: core mody a mody zapnuté ve vybraném profilu první, pak ostatní.
+3. Tlačítko CHECK UPDATES použije seznam změněných modů (dnes ho obchází a čte všech 600+). Plná kontrola všech jako zvláštní volba.
+4. Nastavení: kontrola při startu a každou hodinu ano/ne (core mody vždy); rozsah při startu (jen zapnuté mody, nebo všechny).
+5. Pojistka: ke každému modu zvlášť datum posledního plného přečtení. Mezi tím jen rozdíly ze seznamu změn; jednou za N dní se mod přečte celý. N je v nastavení, výchozí 7. Mody rozložit rovnoměrně, aby nepřišly na řadu všechny ve stejný den. Dnes se „poslední kontrola“ přepisuje i při odpovědi „beze změny“, takže plné přečtení při pravidelném používání neproběhne nikdy.
+6. Testy: výběr modů ke kontrole (rozdíly, pojistka po N dnech, rozložení, pořadí, zastavení o limit).
+
+## O7. Přehlednější nastavení (návrh, bez kódu)
+
+Opus. Čeká na C6. Dnes je nastavení jeden rolovací sloupec šířky 680 se šesti oddíly (`Views/Panels.xaml`, šablona `SettingsVm`).
+1. Statický náhled nastavení s novým oddílem UPDATES (volby z F3) a s úpravami podle C6.
+2. U každé změny jedna věta proč. Odkaz na náhled zapsat k C6.
 
 ## F-kontrola
 
