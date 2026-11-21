@@ -340,7 +340,7 @@ public sealed class InstallCoordinator : IDisposable
     public IReadOnlyList<Dependent> DependentsOf(IReadOnlyCollection<string> capabilities, IReadOnlyCollection<string>? exceptPackages = null) => LibraryService.DependentsOf(capabilities, exceptPackages);
     public void DeactivateEverywhere(IReadOnlyCollection<string> packageIds) => LibraryService.DeactivateEverywhere(packageIds);
     public int RefreshRequirements() => LibraryService.RefreshRequirements();
-    public PackageManifest LinkToNexus(string packageId, string nexusModId) => LibraryService.LinkToNexus(packageId, nexusModId);
+    public PackageManifest LinkToNexus(string packageId, string nexusModId, string? nexusFileId = null) => LibraryService.LinkToNexus(packageId, nexusModId, nexusFileId);
     public StorageInfo StorageInfo() => LibraryService.StorageInfo();
     public long PurgeStorage(bool removed, bool downloads, bool temp) => LibraryService.PurgeStorage(removed, downloads, temp);
 

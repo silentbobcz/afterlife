@@ -285,6 +285,7 @@ public sealed partial class DetailsVm : ObservableObject
         UpdateLine = o.Update is { } up ? $"Newer on Nexus: {up.Name}{(up.Version is null ? "" : " v" + up.Version.TrimStart('v', 'V'))}{(up.Exact ? "" : " (by version number)")}" : null;
         UpdateCommand = new AsyncRelayCommand(() => main.UpdateModAsync(p.PackageId));
         LinkNexusCommand = new AsyncRelayCommand(() => main.LinkToNexusAsync(p.PackageId, o.NexusId));
+        LinkAllCommand = main.LinkGuessedModsCommand;
     }
 
     private readonly MainViewModel _main;
@@ -321,6 +322,8 @@ public sealed partial class DetailsVm : ObservableObject
     public string? UpdateLine { get; }
     public ICommand UpdateCommand { get; }
     public ICommand LinkNexusCommand { get; }
+    /// <summary>Asks Nexus about every mod added by hand that is not linked yet.</summary>
+    public ICommand LinkAllCommand { get; }
 
     public ModOverview Overview { get; }
     public string Title { get; }

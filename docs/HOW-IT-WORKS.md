@@ -85,6 +85,7 @@ If the process dies at any point, the next start finds an unfinished operation a
 - **REST v1** (`api.nexusmods.com/v1`): key validation, mod info, file lists, the *updated mods* feed for update checks, download links (Premium) and download links from `nxm://` keys (all accounts).
 - **GraphQL v2** (`api.nexusmods.com/v2/graphql`): collections and their revisions, requirements listed on mod pages.
 - Update checks use one request to the *updated in the last day/week/month* feed for all mods, then read the file list only of mods that changed. Results are cached. If Nexus answers *rate limit reached*, AFTERLIFE stops and tells you instead of retrying.
+- A mod added from a file is linked to its Nexus page only when Nexus confirms it (`NexusLinker`, `NexusLinking.cs`): the MD5 of the archive through `md5_search`, otherwise the file list of the mod guessed from the archive name must hold a file with that name or that upload time. The link also stores the file id, so update checks compare the exact file. A package without a match is not asked about again for a day (`nexus:linktry:<package>` in the meta table). The window does this for all unlinked mods on request and for each import from disk (`MainViewModel.Linking.cs`).
 - `nxm://` links are registered per Windows user (`HKCU\Software\Classes\nxm`); the previous handler is saved and restored.
 - Mod pictures are downloaded once into `cache/images`.
 

@@ -43,6 +43,8 @@ public sealed class NexusException(string message) : Exception(message)
 {
     /// <summary>Nexus Mods answered 429: no further request gets through until its limit resets.</summary>
     public bool RateLimited { get; init; }
+    /// <summary>Nexus Mods answered 404: it does not know what was asked for.</summary>
+    public bool NotFound { get; init; }
 }
 
 /// <summary>A mod the Nexus page lists as required.</summary>
@@ -381,6 +383,40 @@ public sealed class NexusClient : IDisposable
         return new NexusFiles(modId, files, updates);
     }
 
+    /// <summary>
+    /// Files on Nexus Mods with exactly this content (MD5 of the downloaded archive). Empty when Nexus knows none.
+    /// </summary>
+    public async Task<IReadOnlyList<NexusMd5Match>> Md5SearchAsync(string md5, CancellationToken ct = default)
+    {
+        try
+        {
+            using var doc = await GetJsonAsync($"games/{NxmLink.Cyberpunk}/mods/md5_search/{md5.ToLowerInvariant()}.json", ct);
+            return ParseMd5Search(doc.RootElement);
+        }
+        catch (NexusException ex) when (ex.NotFound) { return []; }
+    }
+
+    public static IReadOnlyList<NexusMd5Match> ParseMd5Search(JsonElement root)
+    {
+        static string? Str(JsonElement e, string n) => e.TryGetProperty(n, out var v) ? v.ValueKind switch
+        {
+            JsonValueKind.String => v.GetString(), JsonValueKind.Number => v.ToString(), _ => null,
+        } : null;
+        var list = new List<NexusMd5Match>();
+        if (root.ValueKind != JsonValueKind.Array) return list;
+        foreach (var e in root.EnumerateArray())
+        {
+            if (!e.TryGetProperty("mod", out var m) || m.ValueKind != JsonValueKind.Object) continue;
+            if (!e.TryGetProperty("file_details", out var f) || f.ValueKind != JsonValueKind.Object) continue;
+            // the search is asked per game, but an answer for another game must never link a Cyberpunk mod
+            if (Str(m, "domain_name") is { } game && !game.Equals(NxmLink.Cyberpunk, StringComparison.OrdinalIgnoreCase)) continue;
+            if (Str(m, "mod_id") is not { Length: > 0 } modId || !modId.All(char.IsDigit)) continue;
+            if (Str(f, "file_id") is not { Length: > 0 } fileId || !fileId.All(char.IsDigit)) continue;
+            list.Add(new NexusMd5Match(modId, Str(m, "name"), fileId, Str(f, "file_name"), Str(f, "version")));
+        }
+        return list;
+    }
+
     /// <summary>Mods of the game whose files changed in the period (1d, 1w, 1m) with the time of the last file change. One request for all mods.</summary>
     public async Task<IReadOnlyDictionary<string, long>> UpdatedAsync(string period, CancellationToken ct = default)
     {
@@ -510,7 +546,7 @@ public sealed class NexusClient : IDisposable
                     410 => "the download link expired; click Mod Manager Download again",
                     429 => "Nexus Mods rate limit reached; try again later",
                     var c => $"Nexus Mods answered {c}",
-                }) { RateLimited = (int)resp.StatusCode == 429 };
+                }) { RateLimited = (int)resp.StatusCode == 429, NotFound = (int)resp.StatusCode == 404 };
             try { return JsonDocument.Parse(body); }
             catch (JsonException) { throw new NexusException("unexpected answer from Nexus Mods"); }
         }
