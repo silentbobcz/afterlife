@@ -60,7 +60,7 @@ Fable. Hotovo. Zadání potvrzeno uživatelem 21. 11. (C4); volby jsou zatím v 
 ## O7. Nové nastavení se záložkami vlevo (návrh, bez kódu)
 
 Opus. Může začít hned. Uživatel 21. 11. rozhodl nastavení přestavět: vzniklo pro pár voleb a dnes jich je kolem dvaceti v jednom rolovacím sloupci šířky 680 (`Views/Panels.xaml`, šablona `SettingsVm`).
-1. Statický náhled nastavení se záložkami vlevo: Game a Library · Nexus Mods (účet, propojení modů, nxm://) · Updates (volby z F3) · Display (animace, vykreslování řádků) · Storage (uložené soubory) · Diagnostics (log, diagnostika) · FIXER. Odinstalace samostatně až dole, mimo běžné volby.
+1. Statický náhled nastavení se záložkami vlevo: Game a Library · Nexus Mods (účet, propojení modů, nxm://) · Updates (volby z F3; kontrola při startu a kontrola každou hodinu jsou od 21. 11. dva samostatné přepínače) · Display (animace, vykreslování řádků) · Storage (uložené soubory) · Diagnostics (log, diagnostika) · FIXER. Odinstalace samostatně až dole, mimo běžné volby.
 2. V paletě a písmech ze skillu grafika-cyberpunk, v rozměru okna 1612 × 910 i 2560 × 1440. Všechny dnešní volby musí mít své místo; vypiš, kam se která přesunula.
 3. Odkaz na náhled zapsat k B3 v `UKOLY.md`.
 

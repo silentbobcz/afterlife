@@ -50,8 +50,10 @@ public sealed partial class MainViewModel
     /// <summary>What started an update check.</summary>
     private enum UpdateRun
     {
-        /// <summary>At start and every hour, in the scope chosen in Settings (core mods always).</summary>
+        /// <summary>At start and after REFRESH, in the scope chosen in Settings (core mods always).</summary>
         Auto,
+        /// <summary>Every hour while the window stays open; has its own switch in Settings.</summary>
+        Hourly,
         /// <summary>CHECK UPDATES: every mod, but only the changed ones are read.</summary>
         Manual,
         /// <summary>Every mod is read, whatever the feed says.</summary>
@@ -85,7 +87,7 @@ public sealed partial class MainViewModel
         _updateTimer.Tick += async (_, _) =>
         {
             if (IsBusy) return;
-            try { await CheckUpdatesAsync(UpdateRun.Auto); }
+            try { await CheckUpdatesAsync(UpdateRun.Hourly); }
             catch (Exception ex) when (IsExpected(ex)) { }
         };
         _updateTimer.Start();
@@ -97,8 +99,10 @@ public sealed partial class MainViewModel
         if (key is null || _overview is null) return;
         var now = DateTimeOffset.UtcNow;
         var settings = AppSettings.Load();
-        var scope = run != UpdateRun.Auto ? UpdateScope.All
-            : !settings.CheckUpdatesAuto ? UpdateScope.CoreOnly
+        var asked = run is UpdateRun.Manual or UpdateRun.Full;
+        var allowed = run == UpdateRun.Hourly ? settings.CheckUpdatesHourly : settings.CheckUpdatesAuto;
+        var scope = asked ? UpdateScope.All
+            : !allowed ? UpdateScope.CoreOnly
             : settings.CheckUpdatesActiveOnly ? UpdateScope.Active : UpdateScope.All;
         var fullEvery = TimeSpan.FromDays(Math.Clamp(settings.FullCheckDays, 0, 365));
         var linked = _overview.Mods.Where(m => m.Package.LayerOfModId is null && NexusInfo.IdOf(m.Package) is { Id: not null, Confirmed: true }).ToList();
@@ -106,7 +110,6 @@ public sealed partial class MainViewModel
         var byId = linked.ToDictionary(m => m.Package.PackageId, m => m.Package, StringComparer.Ordinal);
         var (checkedAt, fullRead, pausedUntil, owedSince) = await _host.RunAsync(c =>
             (NexusUpdates.CheckedAll(c.Store), UpdatePlan.FullReadAll(c.Store), NexusLimits.PausedUntil(c.Store, now), NexusLimits.FullRunSince(c.Store)));
-        var asked = run != UpdateRun.Auto;
         if (pausedUntil is { } rest)
         {
             // the request limit of Nexus Mods was reached: nothing is asked until it is back
@@ -209,7 +212,7 @@ public sealed partial class MainViewModel
             var resume = NexusLimits.ResumeAt(NexusLimits.Observed, DateTimeOffset.UtcNow);
             await _host.RunAsync(c => NexusLimits.Pause(c.Store, resume));
             if (found > 0) await RefreshAsync();
-            var tooOften = NexusLimits.SettingsWarning(items.Count, settings.FullCheckDays, settings.CheckUpdatesAuto) is not null;
+            var tooOften = NexusLimits.SettingsWarning(items.Count, settings.FullCheckDays, settings.CheckUpdatesHourly) is not null;
             Say($"Nexus Mods reached its request limit for your key ({NexusLimits.PerHour} an hour, {NexusLimits.PerDay:N0} a day, for every program together). "
                 + $"{unread} mod(s) wait; checks rest until {resume.LocalDateTime:t} and then go on by themselves."
                 + (tooOften ? $" The full read of every mod is set to every {settings.FullCheckDays} day(s), which is too often for {items.Count:N0} mods: raise it in Settings → UPDATES." : ""),
