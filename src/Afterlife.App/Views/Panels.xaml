@@ -241,8 +241,14 @@
                         <TextBlock Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="days (0 = never)" />
                     </StackPanel>
                     <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" TextWrapping="Wrap" Text="{Binding UpdatesHint}" />
+                    <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" TextWrapping="Wrap" Text="{Binding UpdatesLoad}" />
+                    <!-- the days between full reads are too few for this library -->
+                    <Border Margin="0,8,0,0" Padding="10,6" BorderThickness="1" BorderBrush="{StaticResource O}" Background="{StaticResource OTint}"
+                            Visibility="{Binding HasUpdatesWarning, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" Foreground="{StaticResource O}" Text="{Binding UpdatesWarning}" />
+                    </Border>
                     <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource LinkButton}" Command="{Binding CheckAllModsCommand}" Content="Check every mod now…"
-                            ToolTip="Reads the file list of every linked mod: one request to Nexus Mods per mod. CHECK UPDATES in the main window reads only the mods that changed." />
+                            ToolTip="{Binding CheckAllTip}" />
                 </StackPanel>
             </c:CutBorder>
 

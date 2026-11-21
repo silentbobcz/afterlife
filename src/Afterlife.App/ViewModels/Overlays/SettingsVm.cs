@@ -89,9 +89,20 @@ public sealed partial class SettingsVm : OverlayVm
         if (!_loading) _a.SetVirtualizeList(value);
     }
 
-    [ObservableProperty] private bool _checkUpdatesAuto = true;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(UpdatesLoad), nameof(UpdatesWarning), nameof(HasUpdatesWarning))] private bool _checkUpdatesAuto = true;
     [ObservableProperty] private bool _checkUpdatesActiveOnly;
-    [ObservableProperty] private int _fullCheckDays = 7;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(UpdatesLoad), nameof(UpdatesWarning), nameof(HasUpdatesWarning))] private int _fullCheckDays = 7;
+
+    /// <summary>Mods linked to Nexus Mods: what the update check has to ask about.</summary>
+    public int LinkedMods { get; private set; }
+    public string UpdatesLoad => $"With your {LinkedMods:N0} linked mod(s) this costs about {NexusLimits.RequestsPerDay(LinkedMods, FullCheckDays, CheckUpdatesAuto):N0} requests a day. "
+        + $"Nexus Mods allows {NexusLimits.PerDay:N0} a day and {NexusLimits.PerHour} an hour per key; when it is reached AFTERLIFE waits and goes on later.";
+    /// <summary>The days between full reads are too few for this library.</summary>
+    public string? UpdatesWarning => NexusLimits.SettingsWarning(LinkedMods, FullCheckDays, CheckUpdatesAuto);
+    public bool HasUpdatesWarning => UpdatesWarning is not null;
+    public string CheckAllTip => LinkedMods > NexusLimits.PerHour - NexusLimits.HourlyReserve
+        ? $"Reads the file list of every linked mod: {LinkedMods:N0} requests, more than Nexus Mods allows in one hour ({NexusLimits.PerHour}). It will pause at the limit and finish by itself over the next hours."
+        : "Reads the file list of every linked mod: one request to Nexus Mods per mod. CHECK UPDATES in the main window reads only the mods that changed.";
     public string UpdatesHint => "Between full reads AFTERLIFE asks Nexus Mods only which mods changed: one request for the whole library. The full read is a safety net; the mods take turns, so about the same number is read every day.";
 
     partial void OnCheckUpdatesAutoChanged(bool value) => SaveUpdateChecks();
@@ -108,9 +119,10 @@ public sealed partial class SettingsVm : OverlayVm
         if (!_loading) _a.SetUpdateChecks(CheckUpdatesAuto, CheckUpdatesActiveOnly, FullCheckDays);
     }
 
-    public void SetUpdateChecksSilently(bool auto, bool activeOnly, int days)
+    public void SetUpdateChecksSilently(bool auto, bool activeOnly, int days, int linkedMods)
     {
         _loading = true;
+        LinkedMods = linkedMods;
         CheckUpdatesAuto = auto;
         CheckUpdatesActiveOnly = activeOnly;
         FullCheckDays = Math.Clamp(days, 0, 365);

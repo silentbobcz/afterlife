@@ -104,7 +104,15 @@ public sealed partial class MainViewModel
         var linked = _overview.Mods.Where(m => m.Package.LayerOfModId is null && NexusInfo.IdOf(m.Package) is { Id: not null, Confirmed: true }).ToList();
         if (linked.Count == 0) return;
         var byId = linked.ToDictionary(m => m.Package.PackageId, m => m.Package, StringComparer.Ordinal);
-        var (checkedAt, fullRead) = await _host.RunAsync(c => (NexusUpdates.CheckedAll(c.Store), UpdatePlan.FullReadAll(c.Store)));
+        var (checkedAt, fullRead, pausedUntil, owedSince) = await _host.RunAsync(c =>
+            (NexusUpdates.CheckedAll(c.Store), UpdatePlan.FullReadAll(c.Store), NexusLimits.PausedUntil(c.Store, now), NexusLimits.FullRunSince(c.Store)));
+        var asked = run != UpdateRun.Auto;
+        if (pausedUntil is { } rest)
+        {
+            // the request limit of Nexus Mods was reached: nothing is asked until it is back
+            if (asked) Say($"Nexus Mods reached its request limit for your key. Checks rest until {rest.LocalDateTime:t} and then go on by themselves.", Tone.Warn);
+            return;
+        }
         var items = linked.Select(m => new UpdateItem(m.Package.PackageId, NexusInfo.IdOf(m.Package).Id!,
                 checkedAt.TryGetValue(m.Package.PackageId, out var at) ? at : null,
                 fullRead.TryGetValue(m.Package.PackageId, out var full) ? full : null, m.IsCore, m.Wanted))
@@ -112,7 +120,12 @@ public sealed partial class MainViewModel
         if (items.Count == 0) return;
         using var client = new NexusClient(key, AppVersion);
         IReadOnlyList<UpdateItem> due;
-        if (run == UpdateRun.Full) due = items.OrderBy(UpdatePlan.Priority).ToList();
+        if (run == UpdateRun.Full)
+        {
+            // remembered, so a run cut short by the request limit is finished by the next checks
+            await _host.RunAsync(c => NexusLimits.StartFullRun(c.Store, now));
+            due = items.OrderBy(UpdatePlan.Priority).ToList();
+        }
         else
         {
             var known = items.Where(i => i.CheckedAt is not null).Select(i => i.CheckedAt!.Value).ToList();
@@ -122,6 +135,13 @@ public sealed partial class MainViewModel
                 try { feed = await client.UpdatedAsync(period); }
                 catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException) { }
             due = UpdatePlan.Due(items, feed, scope, fullEvery, now);
+            if (owedSince is { } since)
+            {
+                // "check every mod" did not get through all of them: the rest is still owed
+                var owed = items.Where(i => i.FullReadAt is not { } read || read < since).ToList();
+                if (owed.Count == 0) await _host.RunAsync(c => NexusLimits.EndFullRun(c.Store));
+                else due = due.Concat(owed).DistinctBy(i => i.PackageId).OrderBy(UpdatePlan.Priority).ToList();
+            }
             if (feed is not null)
             {
                 // the feed vouches for the rest: checked now, without a request
@@ -132,7 +152,6 @@ public sealed partial class MainViewModel
                 }));
             }
         }
-        var asked = run != UpdateRun.Auto;
         if (due.Count == 0)
         {
             if (asked) Say("All mods from Nexus are up to date.", Tone.Ok);
@@ -147,7 +166,13 @@ public sealed partial class MainViewModel
             var group = groups[g];
             if (asked && groups.Count > 20) { PhaseTitle = $"CHECKING UPDATES · {g + 1} / {groups.Count}"; PhaseTone = Tone.Info; }
             NexusFiles files;
-            try { files = await client.FilesAsync(group.Key); }
+            // stop a little before the limit, so downloads and other actions still get through this hour
+            var reserve = NexusLimits.Observed is { } q && now - q.At < TimeSpan.FromHours(1) && DateTimeOffset.UtcNow - q.At < TimeSpan.FromMinutes(5) && NexusLimits.ReserveReached(q);
+            try
+            {
+                if (reserve) throw new NexusException("the request reserve of Nexus Mods is reached") { RateLimited = true };
+                files = await client.FilesAsync(group.Key);
+            }
             catch (NexusException ex) when (ex.RateLimited)
             {
                 unread += groups.Skip(g).Sum(x => x.Count()); // no further request gets through for now
@@ -179,6 +204,18 @@ public sealed partial class MainViewModel
             }));
         }
         if (asked && groups.Count > 20) PhaseIdle();
+        if (limited)
+        {
+            var resume = NexusLimits.ResumeAt(NexusLimits.Observed, DateTimeOffset.UtcNow);
+            await _host.RunAsync(c => NexusLimits.Pause(c.Store, resume));
+            if (found > 0) await RefreshAsync();
+            var tooOften = NexusLimits.SettingsWarning(items.Count, settings.FullCheckDays, settings.CheckUpdatesAuto) is not null;
+            Say($"Nexus Mods reached its request limit for your key ({NexusLimits.PerHour} an hour, {NexusLimits.PerDay:N0} a day, for every program together). "
+                + $"{unread} mod(s) wait; checks rest until {resume.LocalDateTime:t} and then go on by themselves."
+                + (tooOften ? $" The full read of every mod is set to every {settings.FullCheckDays} day(s), which is too often for {items.Count:N0} mods: raise it in Settings → UPDATES." : ""),
+                Tone.Warn);
+            return;
+        }
         if (found > 0 || asked)
         {
             await RefreshAsync();

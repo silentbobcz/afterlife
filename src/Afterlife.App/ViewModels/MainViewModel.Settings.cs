@@ -104,7 +104,8 @@ public sealed partial class MainViewModel
         vm.SetFixerSilently(_fixerOn);
         vm.SetVirtualizeListSilently(VirtualizeList);
         var saved = AppSettings.Load();
-        vm.SetUpdateChecksSilently(saved.CheckUpdatesAuto, saved.CheckUpdatesActiveOnly, saved.FullCheckDays);
+        vm.SetUpdateChecksSilently(saved.CheckUpdatesAuto, saved.CheckUpdatesActiveOnly, saved.FullCheckDays,
+            _overview?.Mods.Count(m => m.Package.LayerOfModId is null && NexusInfo.IdOf(m.Package) is { Id: not null, Confirmed: true }) ?? 0);
         Overlay = vm;
         vm.LoadStorageLater();
         if (vm.HasNexusKey) _ = CheckNexusAsync(vm);

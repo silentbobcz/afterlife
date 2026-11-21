@@ -536,6 +536,7 @@ public sealed class NexusClient : IDisposable
         catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new NexusException("Nexus Mods did not answer in time"); }
         using (resp)
         {
+            NexusLimits.Observe(NexusLimits.Parse(resp.Headers, DateTimeOffset.UtcNow));
             var body = await resp.Content.ReadAsStringAsync(ct);
             if (!resp.IsSuccessStatusCode)
                 throw new NexusException((int)resp.StatusCode switch

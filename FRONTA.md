@@ -106,3 +106,12 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 - Ověřeno: 309 testů (mimo jiné 700 modů přes 7 dní: každý přečten právě jednou, 60 až 140 denně), překlad plné i Offline edice.
 - Neověřeno: skutečné limity dotazů Nexusu jsem v dokumentaci neověřil, kód se řídí jen odpovědí 429; chování v okně (A9).
 - Rozhodl jsem sám: při vypnuté automatické kontrole se dál kontrolují jen core mody; plná kontrola je v nastavení, ne v hlavním okně; průběh v dolní liště se ukazuje jen u ruční kontroly s víc než 20 mody.
+
+**F3, doplněk: pojistka limitu Nexusu** (21. 11., Fable)
+- Nové `NexusLimits.cs` (Infrastructure, 4 testy). Limity podle nápovědy Nexusu: 20 000 dotazů denně a 500 za hodinu na klíč, pro všechny programy dohromady (ne 2 500 a 100, jak jsem dřív uváděl z paměti).
+- Aplikace čte zbývající dotazy z hlaviček odpovědí, kontrolu zastaví 50 dotazů před limitem (aby šlo dál stahovat), uloží pauzu do celé hodiny (nebo do půlnoci GMT u denního limitu) a do té doby se na nic neptá. Pak pokračuje sama, i s nedokončenou plnou kontrolou všech modů.
+- Hláška při dosažení limitu říká, kolik modů čeká a do kdy; když je počet dní mezi plnými čteními na knihovnu moc nízký, pošle uživatele do Settings → UPDATES.
+- V nastavení je řádek „kolik dotazů denně to stojí pro tvých N modů“ a oranžové varování, když plná čtení berou víc než desetinu denního limitu (s doporučeným počtem dní). U „Check every mod now…“ je upozornění, pokud je modů víc, než se vejde do hodiny.
+- Ověřeno: 313 testů, překlad obou edic. Neověřeno: názvy hlaviček `x-rl-hourly-remaining` a `x-rl-daily-remaining` mám z cizího klienta, ne z dokumentace; když je Nexus nepošle, funguje jen zastavení při odpovědi 429. Limity jsem četl z výsledku hledání, stránku nápovědy jsem neotevřel.
+- Poznámka uživatele k verzi (21. 11.): tuhle dávku považuje za velkou aktualizaci a chce posunout číslování verzí. Číslo vybere v C7; do té doby se verze v `Directory.Build.props` nemění a nadpis v `CHANGELOG.md` zůstává pracovní.
+
