@@ -205,15 +205,7 @@ public static class OverviewBuilder
     {
         var off = turningOffIds.ToHashSet(StringComparer.Ordinal);
         var byId = o.Mods.ToDictionary(m => m.Package.PackageId, StringComparer.Ordinal);
-        var candidates = new Dictionary<string, string>(StringComparer.Ordinal); // id -> needed by
-        foreach (var id in off)
-        {
-            if (!byId.TryGetValue(id, out var m)) continue;
-            foreach (var r in m.Requirements)
-                if (r.ProviderPackageId is { } pid) candidates.TryAdd(pid, m.Package.ModName);
-            foreach (var r in m.RequirementLinks.Where(r => !r.External && r.ModId is not null))
-                foreach (var x in o.Mods.Where(x => NexusInfo.IdOf(x.Package).Id == r.ModId)) candidates.TryAdd(x.Package.PackageId, m.Package.ModName);
-        }
+        var candidates = RequirementsOf(o, byId, off);
         var baseline = ActiveDependents(o, off).Select(d => d.PackageId).ToHashSet(StringComparer.Ordinal);
         var result = new List<InactiveRequirement>();
         foreach (var (id, by) in candidates)
@@ -223,6 +215,47 @@ public static class OverviewBuilder
             if (with.All(baseline.Contains)) result.Add(new InactiveRequirement(id, c.Package.ModName, by, by));
         }
         return result;
+    }
+
+    /// <summary>
+    /// Switched-on mods the given mods need that stay on when they go off because another switched-on mod
+    /// needs them too. <paramref name="unneeded"/> are the ones offered to switch off. Core mods always stay on
+    /// and are left out, so switching off an ordinary script mod does not ask anything. What names who else needs it.
+    /// </summary>
+    public static IReadOnlyList<InactiveRequirement> KeptRequirements(InstallOverview o, IEnumerable<string> turningOffIds,
+        IEnumerable<InactiveRequirement> unneeded)
+    {
+        var off = turningOffIds.ToHashSet(StringComparer.Ordinal);
+        var offered = unneeded.Select(u => u.PackageId).ToHashSet(StringComparer.Ordinal);
+        var byId = o.Mods.ToDictionary(m => m.Package.PackageId, StringComparer.Ordinal);
+        var stillOn = o.Mods.Where(m => m.Wanted && !off.Contains(m.Package.PackageId)).ToList();
+        var result = new List<InactiveRequirement>();
+        foreach (var (id, by) in RequirementsOf(o, byId, off))
+        {
+            if (off.Contains(id) || offered.Contains(id) || !byId.TryGetValue(id, out var c) || !c.Wanted || c.IsCore) continue;
+            var nexusId = NexusInfo.IdOf(c.Package).Id;
+            var other = stillOn.FirstOrDefault(m => m.Package.PackageId != id
+                && (m.Requirements.Any(r => r.ProviderPackageId == id)
+                    || (nexusId is not null && m.RequirementLinks.Any(r => !r.External && r.ModId == nexusId))));
+            var why = other is not null ? $"also needed by {other.Package.ModName}" : "stays on";
+            result.Add(new InactiveRequirement(id, c.Package.ModName, by, why));
+        }
+        return result;
+    }
+
+    /// <summary>Package id of every mod the given mods need (files or Nexus page), with the name of the first mod that needs it.</summary>
+    private static Dictionary<string, string> RequirementsOf(InstallOverview o, Dictionary<string, ModOverview> byId, IEnumerable<string> ids)
+    {
+        var needs = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var id in ids)
+        {
+            if (!byId.TryGetValue(id, out var m)) continue;
+            foreach (var r in m.Requirements)
+                if (r.ProviderPackageId is { } pid) needs.TryAdd(pid, m.Package.ModName);
+            foreach (var r in m.RequirementLinks.Where(r => !r.External && r.ModId is not null))
+                foreach (var x in o.Mods.Where(x => NexusInfo.IdOf(x.Package).Id == r.ModId)) needs.TryAdd(x.Package.PackageId, m.Package.ModName);
+        }
+        return needs;
     }
 
     /// <param name="rescan">false: only profiles changed since the last overview, reuse the last scan of the game folder.</param>

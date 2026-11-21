@@ -31,7 +31,7 @@ public sealed partial class MainViewModel
             {
                 await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, ids, want));
                 Say(want ? $"{row.Name} and {ids.Count - 1} mod(s) it needs are in the profile. Apply to put them in the game."
-                         : $"{row.Name} and {ids.Count - 1} mod(s) that need it are switched off. Apply to remove them from the game.", Tone.Info);
+                         : $"{row.Name} and {ids.Count - 1} related mod(s) are switched off. Apply to remove them from the game.", Tone.Info);
             }
             await RefreshAsync();
         }
@@ -51,28 +51,64 @@ public sealed partial class MainViewModel
     });
 
     /// <summary>
-    /// Switching on asks to switch on the needed mods that are off. switching off asks to switch off the
-    /// Switched-on mods that need it. Returns the ids to change, or null when cancelled.
+    /// Switching on asks to switch on the needed mods that are off. Switching off asks to switch off the
+    /// switched-on mods that need it and, separately, the mods only it needed; it also lists what it needs and
+    /// stays on. Returns the ids to change, or null when cancelled.
     /// </summary>
-    private async Task<IReadOnlyList<string>?> WithRelatedAsync(IReadOnlyList<string> ids, bool on)
+    /// <param name="offerRequirements">false: switching off asks only about the dependents (collections ask about the rest themselves).</param>
+    private async Task<IReadOnlyList<string>?> WithRelatedAsync(IReadOnlyList<string> ids, bool on, bool offerRequirements = true)
     {
         if (_overview is null || IsModsOff) return ids;
-        var related = on ? OverviewBuilder.InactiveRequirements(_overview, ids) : OverviewBuilder.ActiveDependents(_overview, ids);
+        if (!on) return await WithRelatedOffAsync(ids, offerRequirements);
+        var related = OverviewBuilder.InactiveRequirements(_overview, ids);
         if (related.Count == 0) return ids;
-        var names = _overview.Mods.Where(m => ids.Contains(m.Package.PackageId)).Select(m => m.Package.ModName).ToList();
-        var subject = names.Count == 1 ? names[0] : $"{names.Count} mods";
-        var lines = on
-            ? related.Select(r => $"{r.Name}   · needed by {r.NeededBy}").ToList()
-            : related.Select(r => $"{r.Name}   · needs {r.NeededBy}").ToList();
-        var vm = on
-            ? new ConfirmVm("ALSO SWITCH ON WHAT IT NEEDS?",
-                $"{subject} needs {related.Count} mod(s) that are in your library but switched off in this profile. Without them it may not work.",
-                "SWITCH ON", false, lines, $"Also switch on the {related.Count} needed mod(s)", true, "NEEDED, NOW OFF")
-            : new ConfirmVm("ALSO SWITCH OFF WHAT NEEDS IT?",
-                $"{related.Count} switched-on mod(s) need {subject}. Without it they may not work or show errors in game.",
-                "SWITCH OFF", false, lines, $"Also switch off the {related.Count} mod(s) that need it", true, "NEED IT, NOW ON");
+        var vm = new ConfirmVm("ALSO SWITCH ON WHAT IT NEEDS?",
+            $"{SubjectOf(ids)} needs {related.Count} mod(s) that are in your library but switched off in this profile. Without them it may not work.",
+            "SWITCH ON", false, related.Select(r => $"{r.Name}   · needed by {r.NeededBy}").ToList(),
+            $"Also switch on the {related.Count} needed mod(s)", true, "NEEDED, NOW OFF");
         if (!await AskAsync(vm)) return null;
         return vm.OptionChecked ? ids.Concat(related.Select(r => r.PackageId)).Distinct().ToList() : ids;
+    }
+
+    private async Task<IReadOnlyList<string>?> WithRelatedOffAsync(IReadOnlyList<string> ids, bool offerRequirements)
+    {
+        var dependents = OverviewBuilder.ActiveDependents(_overview!, ids);
+        IReadOnlyList<InactiveRequirement> unneeded = [], kept = [];
+        if (offerRequirements)
+        {
+            unneeded = OverviewBuilder.UnneededRequirements(_overview!, ids);
+            kept = OverviewBuilder.KeptRequirements(_overview!, ids, unneeded);
+        }
+        if (dependents.Count == 0 && unneeded.Count == 0 && kept.Count == 0) return ids;
+        var subject = SubjectOf(ids);
+        var message = dependents.Count > 0
+            ? $"{dependents.Count} switched-on mod(s) need {subject}. Without it they may not work or show errors in game."
+            : unneeded.Count > 0
+                ? $"{subject} used {unneeded.Count} mod(s) that nothing else switched on needs. Core mods stay on."
+                : $"{subject} goes off. What it needs stays on because other mods use it.";
+        var vm = new ConfirmVm(dependents.Count > 0 ? "ALSO SWITCH OFF WHAT NEEDS IT?" : "SWITCH OFF",
+            message, "SWITCH OFF", false,
+            dependents.Select(r => $"{r.Name}   · needs {r.NeededBy}").ToList(),
+            dependents.Count > 0 ? $"Also switch off the {dependents.Count} mod(s) that need it" : null, true,
+            dependents.Count > 0 ? "NEED IT, NOW ON" : null)
+        {
+            ExtraLines = unneeded.Select(r => $"{r.Name}   · needed by {r.NeededBy}").ToList(),
+            ExtraTitle = "ONLY IT NEEDED, NOW ON",
+            ExtraOptionLabel = $"Also switch off {unneeded.Count} mod(s) only it needed",
+            InfoLines = kept.Select(r => $"{r.Name}   · {r.What}").ToList(),
+            InfoTitle = "IT NEEDS, STAYS ON",
+        };
+        if (!await AskAsync(vm)) return null;
+        IEnumerable<string> result = ids;
+        if (vm.OptionChecked) result = result.Concat(dependents.Select(r => r.PackageId));
+        if (vm.ExtraOptionChecked) result = result.Concat(unneeded.Select(r => r.PackageId));
+        return result.Distinct().ToList();
+    }
+
+    private string SubjectOf(IReadOnlyList<string> ids)
+    {
+        var names = _overview!.Mods.Where(m => ids.Contains(m.Package.PackageId)).Select(m => m.Package.ModName).ToList();
+        return names.Count == 1 ? names[0] : $"{names.Count} mods";
     }
 
     public Task OverrideRequirementsAsync(string packageId, IReadOnlyList<string> capabilities) => RunUiAsync(async () =>

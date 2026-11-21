@@ -211,3 +211,82 @@ public class LibrarySuggestionTests
         Assert.NotNull(AppSettings.SuggestLibrary(null, "/opt/afl", _ => false).FallbackReason);
     }
 }
+
+/// <summary>Switching a mod off: what needs it, what only it needed, and what it needs that stays on.</summary>
+public class SwitchOffPromptTests
+{
+    /// <summary>A plain mod linked to a Nexus page; others can list that page as a requirement.</summary>
+    private static PackageManifest Linked(TestEnv t, string name, string nexusId, params string[] requires)
+    {
+        var p = t.ImportZip(name, ($"archive/pc/mod/{name}.archive", name));
+        t.C.LinkToNexus(p.PackageId, nexusId);
+        NexusInfo.Save(t.C.Store, new NexusModInfo(nexusId, name, "short", null, null, 0, 0, null,
+            requires.Select(r => new NexusRequirement(r, "lib " + r, $"https://www.nexusmods.com/cyberpunk2077/mods/{r}", false, null)).ToList(),
+            DateTimeOffset.UtcNow));
+        t.C.SetEnabled(p.PackageId, true);
+        return p;
+    }
+
+    private static InstallOverview Overview(TestEnv t) { t.C.RefreshRequirements(); return OverviewBuilder.Build(t.C); }
+
+    [Fact]
+    public void Mod_with_one_dependent()
+    {
+        using var t = new TestEnv();
+        var lib = Linked(t, "Lib", "9001");
+        var user = Linked(t, "User", "9002", "9001");
+        var o = Overview(t);
+        Assert.Equal(user.PackageId, Assert.Single(OverviewBuilder.ActiveDependents(o, [lib.PackageId])).PackageId);
+        // switching the user off: the library was needed only by it
+        Assert.Equal(lib.PackageId, Assert.Single(OverviewBuilder.UnneededRequirements(o, [user.PackageId])).PackageId);
+        Assert.Empty(OverviewBuilder.KeptRequirements(o, [user.PackageId], OverviewBuilder.UnneededRequirements(o, [user.PackageId])));
+    }
+
+    [Fact]
+    public void Requirement_shared_by_two_mods_stays_on()
+    {
+        using var t = new TestEnv();
+        var lib = Linked(t, "Lib", "9001");
+        var a = Linked(t, "A", "9002", "9001");
+        Linked(t, "B", "9003", "9001");
+        var o = Overview(t);
+        var unneeded = OverviewBuilder.UnneededRequirements(o, [a.PackageId]);
+        Assert.Empty(unneeded);
+        var kept = Assert.Single(OverviewBuilder.KeptRequirements(o, [a.PackageId], unneeded));
+        Assert.Equal(lib.PackageId, kept.PackageId);
+        Assert.Equal("also needed by B", kept.What);
+        Assert.Empty(OverviewBuilder.ActiveDependents(o, [a.PackageId]));
+    }
+
+    [Fact]
+    public void Chain_of_three_mods()
+    {
+        using var t = new TestEnv();
+        var bottom = Linked(t, "Bottom", "9001");
+        var middle = Linked(t, "Middle", "9002", "9001");
+        var top = Linked(t, "Top", "9003", "9002");
+        var o = Overview(t);
+        // the bottom goes off: the middle needs it directly, the top through the middle
+        var dependents = OverviewBuilder.ActiveDependents(o, [bottom.PackageId]).Select(d => d.PackageId).ToList();
+        Assert.Equal(2, dependents.Count);
+        Assert.Contains(middle.PackageId, dependents);
+        Assert.Contains(top.PackageId, dependents);
+        // the middle goes off: the top depends on it, and the bottom was needed only by it
+        Assert.Equal(top.PackageId, Assert.Single(OverviewBuilder.ActiveDependents(o, [middle.PackageId])).PackageId);
+        Assert.Equal(bottom.PackageId, Assert.Single(OverviewBuilder.UnneededRequirements(o, [middle.PackageId])).PackageId);
+    }
+
+    [Fact]
+    public void Core_mods_are_neither_offered_nor_listed()
+    {
+        using var t = new TestEnv();
+        var cet = t.ImportZip("CET", ("bin/x64/plugins/cyber_engine_tweaks.asi", "asi"), ("bin/x64/version.dll", "v"));
+        var mod = t.ImportZip("Lua mod", ("bin/x64/plugins/cyber_engine_tweaks/mods/Lua/init.lua", "x"));
+        t.C.SetEnabled(cet.PackageId, true);
+        t.C.SetEnabled(mod.PackageId, true);
+        var o = Overview(t);
+        var unneeded = OverviewBuilder.UnneededRequirements(o, [mod.PackageId]);
+        Assert.Empty(unneeded);
+        Assert.Empty(OverviewBuilder.KeptRequirements(o, [mod.PackageId], unneeded));
+    }
+}
