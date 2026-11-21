@@ -4,19 +4,19 @@ Naposledy upraveno: 21. 11. 2026. Když něco vyřídíš, napiš číslo úkolu
 
 **Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/kind-hopper-az2rax`. Do nového vlákna stačí napsat: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík F3.“
 
-Aplikace se nesestavuje, dokud nejsou hotové všechny úpravy a neřekneš. Položky A2 až A8 do té doby čekají; všechny se zkouší na jednom sestavení z větve `claude/kind-hopper-az2rax`.
+Zkušební sestavení plné edice jsi dostal 21. 11. jako `AFTERLIFE-test-e0a53b4-win-x64.zip` (commit `e0a53b4`). Položky A2 až A8 se zkouší na něm. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
 
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A2 | Překryvná okna a start okna (O1) | Nové sestavení | 1. Maximalizuj okno, otevři Scan manual mods a historii stahování: seznamy mají sahat skoro dolů. 2. Zmenši okno na minimum: jako dnes. 3. Na 1920 × 1080 při 125 % okno nesmí přesahovat okraj. | ☐ čeká na sestavení |
-| A3 | Dialog při vypnutí modu (O2) | Nové sestavení, seznam modů | 1. Vypni mod, který potřebuje jiný (ne core) mod: dialog ukáže „ONLY IT NEEDED, NOW ON“ s nezaškrtnutou volbou. 2. Vypni skriptový mod, který potřebuje jen CET: vypne se bez dotazu. 3. Jsou texty srozumitelné? | ☐ čeká na sestavení |
-| A4 | Propojení modů ze ZIPů s Nexusem (F1) | Nové sestavení, plná edice; detail modu, „Link all unlinked mods…“ | 1. Klikni na odkaz a počkej na seznam. 2. Zkontroluj, že každý řádek patří ke správné stránce, a potvrď. 3. Přetáhni do okna ZIP stažený z Nexusu: má sám dostat obrázek a popis. Neověřeno: skutečná odpověď Nexusu. | ☐ čeká na sestavení |
-| A5 | Panel filtrů (O4) | Nové sestavení; panel mezi PROFILES a MOD LIBRARY, tlačítko ⧩ FILTERS | 1. Zaškrtni Conflict a Update available, přepni MATCH ALL / MATCH ANY. 2. Klikni «, pak ✕, pak FILTERS: panel se sbalí, skryje a vrátí. 3. Zavři a otevři AFTERLIFE: panel je ve stejném stavu. | ☐ čeká na sestavení |
-| A6 | Propojení s Nexusem z nastavení (O6) | Nové sestavení; Settings → 03 · NEXUS MODS | 1. Klikni na „Link all unlinked mods…“: nastavení se zavře a ukáže stejný seznam jako z detailu modu. | ☐ čeká na sestavení |
-| A7 | Řazení seznamu (F2) | Nové sestavení; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | 1. Proklikej NAME, NEWEST, STATE, SIZE: řadí se uvnitř bloků, core mody zůstávají. 2. Při řazení nejde mod přetáhnout a nad seznamem je vysvětlení. 3. Klikni „Back to load order“, dej APPLY: v plánu nesmí být žádná změna pořadí. | ☐ čeká na sestavení |
-| A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na sestavení |
+| A2 | Překryvná okna a start okna (O1) | Nové sestavení | 1. Maximalizuj okno, otevři Scan manual mods a historii stahování: seznamy mají sahat skoro dolů. 2. Zmenši okno na minimum: jako dnes. 3. Na 1920 × 1080 při 125 % okno nesmí přesahovat okraj. | ☐ čeká na tebe |
+| A3 | Dialog při vypnutí modu (O2) | Nové sestavení, seznam modů | 1. Vypni mod, který potřebuje jiný (ne core) mod: dialog ukáže „ONLY IT NEEDED, NOW ON“ s nezaškrtnutou volbou. 2. Vypni skriptový mod, který potřebuje jen CET: vypne se bez dotazu. 3. Jsou texty srozumitelné? | ☐ čeká na tebe |
+| A4 | Propojení modů ze ZIPů s Nexusem (F1) | Nové sestavení, plná edice; detail modu, „Link all unlinked mods…“ | 1. Klikni na odkaz a počkej na seznam. 2. Zkontroluj, že každý řádek patří ke správné stránce, a potvrď. 3. Přetáhni do okna ZIP stažený z Nexusu: má sám dostat obrázek a popis. Neověřeno: skutečná odpověď Nexusu. | ☐ čeká na tebe |
+| A5 | Panel filtrů (O4) | Nové sestavení; panel mezi PROFILES a MOD LIBRARY, tlačítko ⧩ FILTERS | 1. Zaškrtni Conflict a Update available, přepni MATCH ALL / MATCH ANY. 2. Klikni «, pak ✕, pak FILTERS: panel se sbalí, skryje a vrátí. 3. Zavři a otevři AFTERLIFE: panel je ve stejném stavu. | ☐ čeká na tebe |
+| A6 | Propojení s Nexusem z nastavení (O6) | Nové sestavení; Settings → 03 · NEXUS MODS | 1. Klikni na „Link all unlinked mods…“: nastavení se zavře a ukáže stejný seznam jako z detailu modu. | ☐ čeká na tebe |
+| A7 | Řazení seznamu (F2) | Nové sestavení; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | 1. Proklikej NAME, NEWEST, STATE, SIZE: řadí se uvnitř bloků, core mody zůstávají. 2. Při řazení nejde mod přetáhnout a nad seznamem je vysvětlení. 3. Klikni „Back to load order“, dej APPLY: v plánu nesmí být žádná změna pořadí. | ☐ čeká na tebe |
+| A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -24,7 +24,7 @@ Doporučená možnost je vždy první.
 
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
-| C3 | Sloučení do `main` a vydání alpha.10 | Nevratný krok. Vše hotové je v pracovní větvi, v `main` nic. | 1. Nejdřív sestavit a projít A2 až A8, pak sloučit a vydat. 2. Sloučit a vydat hned bez zkoušky: rychlejší, ale nic z toho ještě neběželo ve Windows. | ☐ čeká |
+| C3 | Sloučení do `main` a vydání alpha.10 | Nevratný krok. Rozhodnuto 21. 11.: nejdřív projít A2 až A8 na zkušebním sestavení. | Po zkoušce napiš „C3 vydat“, nebo co opravit. | ☐ čeká na A2 až A8 |
 | C4 | Kontrola aktualizací při 600+ modech | Při startu a každou hodinu jde jeden dotaz na seznam změněných modů a čte se nejvýš 60 modů. Tlačítko CHECK UPDATES ale čte všechny, tedy 600+ dotazů. Tvůj návrh: přepínač kontroly při startu, tlačítko, core mody vždy, volba kontrolovat jen zapnuté mody. | 1. Přepínač, core mody vždy, rozsah při startu a tlačítko nově čte jen změněné mody (plná kontrola jako zvláštní volba). 2. Jen přepínač a core mody, tlačítko nechat číst vše: méně práce, jedno kliknutí stojí 600+ dotazů. Po rozhodnutí je to balík F3. | ☐ čeká |
 
 ## D. Dodat
