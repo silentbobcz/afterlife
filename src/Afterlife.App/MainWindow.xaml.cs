@@ -20,10 +20,12 @@ public partial class MainWindow : Window
     public MainWindow(string? startLink = null)
     {
         InitializeComponent();
+        // size the window to the work area before it is shown, so CenterScreen centres the size it really gets
+        FitMinimumToScreen();
         DataContext = _vm;
         _vm.ScrollToSelected += () => Dispatcher.BeginInvoke(() => { if (_vm.SelectedMod is { } r) ModsList.ScrollIntoView(r); },
             System.Windows.Threading.DispatcherPriority.Background);
-        SourceInitialized += (_, _) => { UseDarkTitleBar(); FitMinimumToScreen(); };
+        SourceInitialized += (_, _) => UseDarkTitleBar();
         Loaded += async (_, _) =>
         {
             if (startLink is not null) await _vm.HandleExternalAsync(startLink);

@@ -76,3 +76,22 @@ public sealed class ChapterLookupConverter : IMultiValueConverter
             && map.TryGetValue(name, out var vm) ? vm : null;
     public object[] ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo culture) => [];
 }
+
+/// <summary>
+/// Height of a list inside an overlay: the value it had at the smallest window (ConverterParameter),
+/// plus whatever the window has grown beyond that, so a maximised window shows more rows instead of empty space.
+/// </summary>
+public sealed class GrowWithWindow : IValueConverter
+{
+    /// <summary>Window height the overlay sizes were designed for (MinHeight of the main window).</summary>
+    public const double DesignHeight = 910;
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var baseline = double.TryParse(parameter as string, NumberStyles.Float, CultureInfo.InvariantCulture, out var b) ? b : 0;
+        var window = value is double h && !double.IsNaN(h) ? h : DesignHeight;
+        return baseline + Math.Max(0, window - DesignHeight);
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
+}

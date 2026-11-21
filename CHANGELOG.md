@@ -2,6 +2,11 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## Unreleased
+
+- **Overlays use a bigger window**: lists in overlays (Scan manual mods, download history, collection management, plan preview, FOMOD, settings, guide and others) keep their size at the smallest window and grow with it, so a maximised window shows more rows instead of empty space.
+- **Start position on small screens**: the window is fitted to the work area before it is shown, so it starts centred instead of sticking out of a 1536 × 824 work area (1920 × 1080 at 125 %).
+
 ## 1.0.0-alpha.9
 
 - **AFTERLIFE Offline only, as a plain folder**: the release carries just the Offline edition, the one published on Nexus Mods. The zip holds a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side. Unzip the whole folder and run `AFTERLIFE.exe` from it. No change in the app itself.

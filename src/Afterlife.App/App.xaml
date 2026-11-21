@@ -122,6 +122,7 @@
             <app:ChapterLookupConverter x:Key="ChapterLookup" />
             <app:ToneToBrush x:Key="ToneBrush" />
             <app:ToneToBrush x:Key="ToneTint" Tint="True" />
+            <app:GrowWithWindow x:Key="GrowWithWindow" />
 
             <!-- ===== Focus ring: separate, always visible on keyboard focus ===== -->
             <Style x:Key="FocusRing">
