@@ -77,6 +77,19 @@ public sealed partial class ConfirmVm : OverlayVm
     public string? OptionLabel { get; }
     [ObservableProperty] private bool _optionChecked;
     public Task<bool> Result => _tcs.Task;
+
+    /// <summary>Optional second list with its own checkbox, for example the mods only the switched-off mod needed.</summary>
+    public IReadOnlyList<string> ExtraLines { get; init; } = [];
+    public string? ExtraTitle { get; init; }
+    public string? ExtraOptionLabel { get; init; }
+    public bool HasExtraLines => ExtraLines.Count > 0;
+    [ObservableProperty] private bool _extraOptionChecked;
+
+    /// <summary>Optional list to read only, no choice (what stays as it is).</summary>
+    public IReadOnlyList<string> InfoLines { get; init; } = [];
+    public string? InfoTitle { get; init; }
+    public bool HasInfoLines => InfoLines.Count > 0;
+
     /// <summary>The second button can say what it does ("Keep both", "Not now").</summary>
     public string CancelLabel { get; init; } = "Cancel";
 

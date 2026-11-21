@@ -72,6 +72,10 @@
         </StackPanel>
     </DataTemplate>
 
+    <!-- one line of a confirmation list -->
+    <DataTemplate x:Key="ConfirmLine">
+        <TextBlock Style="{StaticResource Mono}" FontSize="12" Text="{Binding}" Margin="0,1" TextTrimming="CharacterEllipsis" ToolTip="{Binding}" />
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:ConfirmVm}">
         <StackPanel Width="560">
             <TextBlock Style="{StaticResource Body}" FontSize="13.5" Text="{Binding Message}" TextWrapping="Wrap" />
@@ -79,18 +83,32 @@
                 <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Text="{Binding LinesTitle}" Visibility="{Binding LinesTitle, Converter={StaticResource NullToVis}}" />
                 <c:CutBorder Margin="0,8,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" CutTopLeft="False" CutTopRight="False" CutBottomRight="True" Cut="8" Padding="12,8">
                     <ScrollViewer MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource GrowWithWindow}, ConverterParameter=240}" VerticalScrollBarVisibility="Auto" Focusable="False">
-                        <ItemsControl ItemsSource="{Binding Lines}" Focusable="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Style="{StaticResource Mono}" FontSize="12" Text="{Binding}" Margin="0,1" TextTrimming="CharacterEllipsis" ToolTip="{Binding}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding Lines}" ItemTemplate="{StaticResource ConfirmLine}" Focusable="False" />
                     </ScrollViewer>
                 </c:CutBorder>
             </StackPanel>
             <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding OptionChecked}" Content="{Binding OptionLabel}"
                       Visibility="{Binding OptionLabel, Converter={StaticResource NullToVis}}" />
+            <!-- what only this mod needed: its own choice, off by default -->
+            <StackPanel Visibility="{Binding HasExtraLines, Converter={StaticResource BoolToVis}}">
+                <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Text="{Binding ExtraTitle}" Visibility="{Binding ExtraTitle, Converter={StaticResource NullToVis}}" />
+                <c:CutBorder Margin="0,8,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" CutTopLeft="False" CutTopRight="False" CutBottomRight="True" Cut="8" Padding="12,8">
+                    <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding ExtraLines}" ItemTemplate="{StaticResource ConfirmLine}" Focusable="False" />
+                    </ScrollViewer>
+                </c:CutBorder>
+                <CheckBox Margin="0,12,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ExtraOptionChecked}" Content="{Binding ExtraOptionLabel}"
+                          Visibility="{Binding ExtraOptionLabel, Converter={StaticResource NullToVis}}" />
+            </StackPanel>
+            <!-- what it needs and stays on: to read only -->
+            <StackPanel Visibility="{Binding HasInfoLines, Converter={StaticResource BoolToVis}}">
+                <TextBlock Margin="0,14,0,6" Style="{StaticResource MonoLabel}" Text="{Binding InfoTitle}" Visibility="{Binding InfoTitle, Converter={StaticResource NullToVis}}" />
+                <c:CutBorder Margin="0,8,0,0" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" CutTopLeft="False" CutTopRight="False" CutBottomRight="True" Cut="8" Padding="12,8">
+                    <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding InfoLines}" ItemTemplate="{StaticResource ConfirmLine}" Focusable="False" />
+                    </ScrollViewer>
+                </c:CutBorder>
+            </StackPanel>
             <StackPanel Margin="0,20,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
                 <!-- third button that leaves everything as it is -->
                 <Button Style="{StaticResource QuietLinkButton}" Command="{Binding AbortCommand}" Content="{Binding AbortLabel}" Margin="0,0,18,0"

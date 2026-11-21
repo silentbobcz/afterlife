@@ -543,7 +543,7 @@ public sealed partial class MainViewModel
         }
         else ids = ids.Where(id => !selected.IsEnabled(id)).ToList();
         if (ids.Count == 0) { await RefreshAsync(); return; }
-        var all = await WithRelatedAsync(ids, on);
+        var all = await WithRelatedAsync(ids, on, offerRequirements: false);
         if (all is null) { await RefreshAsync(); return; }
         if (!on)
         {

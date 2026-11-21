@@ -5,6 +5,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 ## Unreleased
 
 - **Overlays use a bigger window**: lists in overlays (Scan manual mods, download history, collection management, plan preview, FOMOD, settings, guide and others) keep their size at the smallest window and grow with it, so a maximised window shows more rows instead of empty space.
+- **Switching a mod off shows both directions**: besides the switched-on mods that need it, the dialog lists the mods only it needed (with their own checkbox, unticked by default) and, to read only, what it needs that stays on because another mod uses it. Core mods are never offered. A mod without such links still goes off without a question.
 - **Start position on small screens**: the window is fitted to the work area before it is shown, so it starts centred instead of sticking out of a 1536 × 824 work area (1920 × 1080 at 125 %).
 
 ## 1.0.0-alpha.9
