@@ -125,7 +125,10 @@ a { color: var(--c); }
 table.kept { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 table.kept td { height: 30px; border-bottom: 1px solid var(--line); }
 table.kept td.sz { font: 11.5px var(--mono); color: var(--t); width: 120px; }
-table.kept td.act { width: 60px; text-align: right; }
+table.kept td.act { width: 130px; text-align: right; white-space: nowrap; }
+table.kept td.act .link { margin-right: 16px; }
+.about { border: 1px solid var(--line2); border-left: 3px solid var(--o); background: var(--bg3); padding: 10px 12px; margin: 6px 0 4px; font-size: 12.5px; line-height: 1.45; }
+.about b { font: 700 11px var(--mono); color: var(--o); letter-spacing: .08em; }
 table.kept tr.total td { border-bottom: 0; color: var(--t2); }
 .danger-zone { margin-top: 18px; }
 
@@ -274,11 +277,11 @@ table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-spa
         <!-- 05 KEPT FILES -->
         <section class="page" id="p-storage" style="--acc: var(--m)">
           <div class="ph"><h2>Kept files</h2></div>
-          <p class="lead">Copies AFTERLIFE keeps so you can undo. Deleting them frees space; the game, the mods in the library and the profiles stay.</p>
+          <p class="lead">Copies AFTERLIFE keeps so you can undo. Deleting them frees space; the game, the mods in the library and the profiles stay. Show opens the folder in Explorer, so you can look before you delete.</p>
           <table class="kept">
-            <tr><td>Removed files (undo)</td><td class="sz">1.2 GB</td><td class="act"><button class="quiet">Delete</button></td></tr>
-            <tr><td>Downloaded archives</td><td class="sz">540 MB</td><td class="act"><button class="quiet">Delete</button></td></tr>
-            <tr><td>Temporary files</td><td class="sz">38 MB</td><td class="act"><button class="quiet">Delete</button></td></tr>
+            <tr><td>Removed files (undo)</td><td class="sz">1.2 GB</td><td class="act"><button class="link">Show</button><button class="quiet">Delete</button></td></tr>
+            <tr><td>Downloaded archives</td><td class="sz">540 MB</td><td class="act"><button class="link">Show</button><button class="quiet">Delete</button></td></tr>
+            <tr><td>Temporary files</td><td class="sz">38 MB</td><td class="act"><button class="link">Show</button><button class="quiet">Delete</button></td></tr>
             <tr class="total"><td>Together</td><td class="sz">1.8 GB</td><td></td></tr>
           </table>
           <div class="danger-zone"><button class="btn dan">DELETE ALL KEPT FILES</button></div>
@@ -302,8 +305,9 @@ table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-spa
         <!-- 07 FIXER -->
         <section class="page" id="p-fixer" style="--acc: var(--t)">
           <div class="ph"><h2>FIXER</h2></div>
+          <div class="about"><b>IN DEVELOPMENT · NOT RELEASED YET</b><br>FIXER is a quest editor for Cyberpunk 2077: you build a quest on a map of scenes, calls and journal entries, and it comes out as a mod. It is made by the author of AFTERLIFE and is still being worked on; until it is out, this switch has nothing to receive.</div>
           <div class="grp" style="border-top:0">
-            <label class="chk" style="margin-top:0"><input type="checkbox"><span>Take quests from FIXER (drop box in the library)</span><span class="meta">For FIXER, the quest editor for Cyberpunk 2077. While this is on, AFTERLIFE takes the quests FIXER leaves in the fixer\inbox folder of the library: they arrive in the category FIXER, switched on in the selected profile, and go into the game with APPLY CHANGES like any other mod. Off: the folder is not read.</span></label>
+            <label class="chk" style="margin-top:0"><input type="checkbox"><span>Take quests from FIXER (drop box in the library)</span><span class="meta">While this is on, AFTERLIFE takes the quests FIXER leaves in the fixer\inbox folder of the library: they arrive in the category FIXER, switched on in the selected profile, and go into the game with APPLY CHANGES like any other mod. Off: the folder is not read.</span></label>
             <p class="meta" style="margin-left:28px">Drop box: <span class="path" style="display:inline;font-size:11.5px">D:\AFTERLIFE\library\fixer\inbox</span></p>
           </div>
         </section>
@@ -330,9 +334,11 @@ table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-spa
       <tr><td>Reduce motion</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>04 Display</td></tr>
       <tr><td>Draw only the visible rows</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>04 Display</td></tr>
       <tr><td>Removed files, archives, temp files, DELETE ALL</td><td>04 · KEPT FILES</td><td>05 Kept files, total on the tab</td></tr>
+      <tr><td><i>New:</i> Show for each kind of kept file (opens its folder)</td><td>—</td><td>05 Kept files</td></tr>
       <tr><td>Activity log, Open log folder</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>06 Diagnostics</td></tr>
       <tr><td>Copy diagnostics</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>06 Diagnostics</td></tr>
       <tr><td>Take quests from FIXER, hint</td><td>06 · FIXER</td><td>07 FIXER, drop box path shown</td></tr>
+      <tr><td><i>New:</i> what FIXER is, made by the author, not released yet</td><td>—</td><td>07 FIXER, box above the switch</td></tr>
       <tr><td>Remove AFTERLIFE from this PC…</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>Bottom of the tab list, apart</td></tr>
       <tr><td>Message line (saved, error)</td><td>top of the column</td><td>top of the selected tab</td></tr>
     </table>
