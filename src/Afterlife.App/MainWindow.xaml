@@ -1015,6 +1015,10 @@
                                         Visibility="{Binding HasNexusUrl, Converter={StaticResource BoolToVis}}" ToolTip="{Binding NexusUrl}" />
                                 <Button Style="{StaticResource QuietLinkButton}" FontSize="12" Command="{Binding LinkNexusCommand}" Content="{Binding LinkNexusLabel}"
                                         Visibility="{Binding CanLinkNexus, Converter={StaticResource BoolToVis}}" />
+                                <!-- every mod added from an archive on disk, in one go -->
+                                <Button Style="{StaticResource QuietLinkButton}" FontSize="12" Margin="14,0,0,0" Command="{Binding LinkAllCommand}" Content="Link all unlinked mods…"
+                                        Visibility="{Binding CanLinkNexus, Converter={StaticResource BoolToVis}}"
+                                        ToolTip="Asks Nexus Mods about every mod you added from a file: by the checksum of its archive, then by its file name. Only mods Nexus confirms are linked, after one question." />
                             </WrapPanel>
 
                             <StackPanel Margin="0,14,0,0" Orientation="Horizontal">

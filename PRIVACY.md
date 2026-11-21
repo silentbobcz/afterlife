@@ -8,7 +8,7 @@ AFTERLIFE connects only to Nexus Mods, and only for features you use:
 
 | When | Where | What is sent |
 |---|---|---|
-| You save a Nexus key, at start, and when you use Nexus features | `api.nexusmods.com` (REST v1 and GraphQL v2) | your API key (as the request header Nexus requires) and the IDs of the mods, files and collections involved: key check, mod details and requirements, file lists, update checks, collection details |
+| You save a Nexus key, at start, and when you use Nexus features | `api.nexusmods.com` (REST v1 and GraphQL v2) | your API key (as the request header Nexus requires) and the IDs of the mods, files and collections involved: key check, mod details and requirements, file lists, update checks, collection details. For a mod you added from a file on disk, the MD5 checksum of that archive, to find its page (the file itself is never uploaded) |
 | You download a mod or a collection | the download servers Nexus Mods points to | a normal file download |
 | Mod details are shown | the picture address Nexus gives for that mod | a normal image download (cached in the library afterwards) |
 | You use *Log in with Nexus Mods* (only once Nexus Mods registered AFTERLIFE) | `sso.nexusmods.com` and your browser | a random request ID; the key comes back to AFTERLIFE |

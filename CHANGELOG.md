@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## 1.0.0-alpha.10
+
+- **Mods added from files find their Nexus page**: a mod you add from an archive on disk is linked to its page on Nexus Mods when Nexus confirms it, first by the checksum of the archive, then by its file name. It then shows its description, picture, requirements and updates like a mod that came through Mod Manager Download. *Link all unlinked mods…* in the details does the same for every mod already in the library: one list of what Nexus confirmed, one question. A mod Nexus does not confirm is left as it is. Needs a Nexus key; locked in AFTERLIFE Offline.
+
 ## 1.0.0-alpha.9
 
 - **AFTERLIFE Offline only, as a plain folder**: the release carries just the Offline edition, the one published on Nexus Mods. The zip holds a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side. Unzip the whole folder and run `AFTERLIFE.exe` from it. No change in the app itself.

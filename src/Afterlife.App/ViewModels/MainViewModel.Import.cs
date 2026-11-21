@@ -173,7 +173,7 @@ public sealed partial class MainViewModel
         {
             await _host.RunAsync(c => c.RefreshRequirements());
             await RefreshAsync();
-            _ = FetchNexusInfoAsync(onlyMissing: true);
+            _ = LinkImportedAsync(packages);
         }
         // one line per mod, or nothing when there is nothing to say
         var lines = new List<string>();

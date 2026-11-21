@@ -389,11 +389,13 @@ public sealed class LibraryService
     }
 
     /// <summary>Links a library package to a mod on Nexus (id typed by the user or taken from a link).</summary>
-    public PackageManifest LinkToNexus(string packageId, string nexusModId)
+    /// <param name="nexusFileId">The exact file on Nexus when it is known; a link to another mod forgets the old file.</param>
+    public PackageManifest LinkToNexus(string packageId, string nexusModId, string? nexusFileId = null)
     {
         var p = Store.GetPackage(packageId) ?? throw new InvalidOperationException($"unknown package {packageId}");
         if (nexusModId.Length == 0 || !nexusModId.All(char.IsDigit)) throw new InvalidOperationException("a Nexus mod id is a number, for example 107");
-        var q = p with { NexusModId = nexusModId, Origin = p.Origin == PackageOrigin.Captured ? p.Origin : PackageOrigin.Nexus };
+        var fileId = nexusFileId ?? (p.NexusModId == nexusModId ? p.NexusFileId : null);
+        var q = p with { NexusModId = nexusModId, NexusFileId = fileId, Origin = p.Origin == PackageOrigin.Captured ? p.Origin : PackageOrigin.Nexus };
         Store.UpdatePackage(q);
         return q;
     }

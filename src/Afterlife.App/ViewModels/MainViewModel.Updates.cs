@@ -13,21 +13,24 @@ namespace Afterlife.App.ViewModels;
 /// <summary>Nexus update checks and the update queue.</summary>
 public sealed partial class MainViewModel
 {
-    /// <summary>Reads summary, author and requirements from the Nexus page of every linked mod.</summary>
-    private async Task FetchNexusInfoAsync(bool onlyMissing, string? onlyPackage = null)
+    /// <summary>
+    /// Reads summary, author and requirements from the Nexus page of every linked mod, at most <paramref name="limit"/>
+    /// pages in one go. False when some page is still unread (the limit, an error, or the rate limit of Nexus Mods).
+    /// </summary>
+    private async Task<bool> FetchNexusInfoAsync(bool onlyMissing, string? onlyPackage = null, int limit = 40)
     {
         var key = NexusKeyStore.Load();
-        if (key is null || _overview is null) return;
+        if (key is null || _overview is null) return false;
         var candidates = _overview.Mods.Select(m => m.Package)
             .Where(p => onlyPackage is null || p.PackageId == onlyPackage)
             .Select(NexusInfo.IdOf).Where(x => x.Id is not null && (x.Confirmed || onlyPackage is not null)).Select(x => x.Id!).Distinct().ToList();
         var ids = onlyMissing
             ? await _host.RunAsync(c => candidates.Where(id => NexusInfo.Load(c.Store, id) is not { } i || DateTimeOffset.UtcNow - i.FetchedAt > TimeSpan.FromDays(7)).ToList())
             : candidates;
-        if (ids.Count == 0) return;
+        if (ids.Count == 0) return true;
         using var client = new NexusClient(key, AppVersion);
         var got = 0;
-        foreach (var id in ids.Take(40))
+        foreach (var id in ids.Take(limit))
         {
             try
             {
@@ -35,11 +38,13 @@ public sealed partial class MainViewModel
                 await _host.RunAsync(c => NexusInfo.Save(c.Store, info));
                 got++;
             }
+            catch (NexusException ex) when (ex.RateLimited) { break; } // no further request gets through for now
             catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException) { }
         }
-        if (got == 0) return;
+        if (got == 0) return false;
         await _host.RunAsync(c => c.RefreshRequirements());
         await RefreshAsync();
+        return got == ids.Count;
     }
 
     /// <summary>
