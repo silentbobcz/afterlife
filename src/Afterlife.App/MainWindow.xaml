@@ -613,10 +613,15 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="2" Margin="8,0,0,0" Style="{StaticResource AccentButton}" VerticalAlignment="Center"
                                         Content="{Binding Filters.ButtonLabel}" Command="{Binding Filters.CycleCommand}"
                                         ToolTip="Filter panel: open, collapse to a strip, hide" AutomationProperties.Name="Filters" />
+                                <!-- sorting for viewing only: load order, name, newest, state, size -->
+                                <Button Grid.Column="3" Margin="8,0,0,0" Style="{StaticResource AccentButton}" VerticalAlignment="Center"
+                                        Content="{Binding SortLabel}" Command="{Binding CycleSortCommand}" AutomationProperties.Name="Sort the list"
+                                        ToolTip="Sort the list for viewing: load order, name, newest, state, size. The load order in the game never changes by sorting." />
                                 <TextBlock Style="{StaticResource Meta}" Text="{Binding LibrarySubtitle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding LibrarySubtitle}" VerticalAlignment="Center" />
                                 <Grid Grid.Column="1" Width="220" Margin="12,0,0,0" VerticalAlignment="Center">
@@ -640,6 +645,18 @@
                                     </TextBlock>
                                 </Grid>
                             </Grid>
+                            <!-- the list shows another order than the game loads -->
+                            <Border Margin="0,8,0,0" Padding="10,5" BorderThickness="1" BorderBrush="{StaticResource C}" Background="{StaticResource CTint}"
+                                    Visibility="{Binding IsViewSorted, Converter={StaticResource BoolToVis}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource Body}" FontSize="12.5" Text="{Binding SortNote}" TextTrimming="CharacterEllipsis" ToolTip="{Binding SortNote}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding ResetSortCommand}" Content="Back to load order" />
+                                </Grid>
+                            </Border>
                         </StackPanel>
 
                         <!-- Banners: recovery (blocking) first, then game update -->
@@ -724,6 +741,7 @@
                         <!-- Mod rows -->
                         <!-- clicking a row shows details; checkboxes (Ctrl/Shift+click) select. CORE chapter. drag rows to set the load order. -->
                         <ListBox x:Name="ModsList" Grid.Row="4" Style="{StaticResource PlainList}" SelectionMode="Single" AllowDrop="True"
+                                 VirtualizingPanel.IsVirtualizingWhenGrouping="{Binding VirtualizeList}"
                                  DragOver="OnListDragOver" Drop="OnListDrop"
                                  ItemsSource="{Binding ModsView}" SelectedItem="{Binding SelectedMod}" AutomationProperties.Name="Mods">
                             <ListBox.ItemContainerStyle>

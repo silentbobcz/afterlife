@@ -26,7 +26,8 @@ public sealed record SettingsActions(
     Action CopyDiagnostics,
     Func<SettingsVm, Task> RemoveFromPc,
     Func<SettingsVm, bool, Task> SetFixer,
-    Action LinkMods);
+    Action LinkMods,
+    Action<bool> SetVirtualizeList);
 
 /// <summary>Game, library, Nexus Mods, display, diagnostics.</summary>
 public sealed partial class SettingsVm : OverlayVm
@@ -77,6 +78,21 @@ public sealed partial class SettingsVm : OverlayVm
     [ObservableProperty] private bool _nxmHandler;
 
     partial void OnReduceMotionChanged(bool value) => _a.SetReduceMotion(value);
+
+    /// <summary>Only the visible rows of the mod list are drawn (off by default until it has proven itself).</summary>
+    [ObservableProperty] private bool _virtualizeList;
+
+    partial void OnVirtualizeListChanged(bool value)
+    {
+        if (!_loading) _a.SetVirtualizeList(value);
+    }
+
+    public void SetVirtualizeListSilently(bool value)
+    {
+        _loading = true;
+        VirtualizeList = value;
+        _loading = false;
+    }
 
     partial void OnActivityLogChanged(bool value) => _a.SetActivityLog(value);
     public string ActivityLogHint => "Writes what AFTERLIFE does (switches, imports, every planned file change with its reason, results) into the log folder, one file per day. Switch it on when something looks wrong, then send the file with your report.";

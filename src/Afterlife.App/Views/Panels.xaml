@@ -263,6 +263,8 @@
                 <StackPanel>
                     <TextBlock Style="{StaticResource MonoLabel}" Text="05 · DISPLAY · DIAGNOSTICS" />
                     <CheckBox Margin="0,8,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ReduceMotion}" Content="Reduce motion (stops the background, glitches, scans and breach animation)" />
+                    <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding VirtualizeList}" Content="Draw only the visible rows of the mod list (experimental; faster with hundreds of mods)"
+                              ToolTip="Off: every row of the list is drawn at once, as before. On: only the rows on screen are drawn, so a long list opens and scrolls faster. Switch it off again if the list jumps while scrolling or dragging." />
                     <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding ActivityLog}" Content="Log what AFTERLIFE does (for finding problems; one file per day in the log folder)"
                               ToolTip="{Binding ActivityLogHint}" />
                     <StackPanel Margin="0,10,0,0" Orientation="Horizontal">

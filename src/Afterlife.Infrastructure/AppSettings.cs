@@ -12,6 +12,8 @@ public sealed record AppSettings(string? LibraryRoot)
     public bool ReduceMotion { get; init; }
     /// <summary>Write an activity log (switches, imports, every planned file change with its reason) for finding problems.</summary>
     public bool ActivityLog { get; init; }
+    /// <summary>Draw only the visible rows of the grouped mod list. Off until it has proven itself on real installs.</summary>
+    public bool VirtualizeList { get; init; }
 
     public const string PortableLibraryFolderName = "AFTERLIFE Library";
 

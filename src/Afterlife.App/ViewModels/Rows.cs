@@ -79,7 +79,15 @@ public sealed partial class ModRowVm : ObservableObject
     [ObservableProperty] private bool _isChecked;
     /// <summary>Drop marker while another row is dragged over this one (-1 above, 1 below).</summary>
     [ObservableProperty] private int _dropHint;
-    public bool CanDrag => CanToggle && !IsCore && Overview.Package.LayerOfModId is null && !Overview.OrderLocked;
+    public bool CanDrag => CanToggle && !IsCore && Overview.Package.LayerOfModId is null && !Overview.OrderLocked && !SortLocked;
+
+    /// <summary>The list is sorted for viewing: its order is not the load order, so rows cannot be dragged.</summary>
+    public bool SortLocked
+    {
+        get => _sortLocked;
+        set { if (SetProperty(ref _sortLocked, value)) OnPropertyChanged(nameof(CanDrag)); }
+    }
+    private bool _sortLocked;
     public string Name => Overview.Package.LayerOfModId is null ? Overview.Package.ModName : "└ " + Overview.Package.ModName;
     /// <summary>Another version of this mod is on in the profile too.</summary>
     public string? TwinText { get => _twinText; set => SetProperty(ref _twinText, value); }

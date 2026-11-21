@@ -51,6 +51,10 @@ FIXER (a quest editor) hands its quests to AFTERLIFE through a folder in the lib
 
 `Process` imports a package through the ordinary import (so paths are validated the same way), gives it the mod id `fixer-<id>`, adds the requirements FIXER listed (origin `fixer`, kept by `RefreshRequirements`), puts it into the category FIXER and switches it on in the selected profile. A new build replaces the previous one with `ReplaceVersion`; the old build is deleted once the game no longer has it. Nothing here touches the game: that is still APPLY, after which `AfterApply` rewrites the result to `applied`. The window (`MainViewModel.Fixer.cs`) looks into the inbox every three seconds while the switch is on and never takes anything over a running operation, an open dialog or a pending recovery. The contract is schema 1; the same description lives in the FIXER repository, and both sides raise `schema` together.
 
+## The list and the load order
+
+The window keeps the mod rows twice (`MainViewModel.Sorting.cs`): `_loadOrdered` in load order, which every reordering, block move and `SyncSortedOrderAsync` reads through `CurrentOrder()`, and `Mods` as shown. Sorting for viewing (`ModSort`, pure) only changes the second, inside each block, so a sort can never reach the profile or `modlist.txt`; rows cannot be dragged while it is on. The filter panel (`ModFilter`, `FilterPanelVm`) and the search are conditions of the view and do not touch the order either. The grouped list draws every row unless `AppSettings.VirtualizeList` is on (bound to `VirtualizingPanel.IsVirtualizingWhenGrouping`).
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.

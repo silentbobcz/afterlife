@@ -207,6 +207,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         if (AppEdition.Offline) ShowOfflineBadge();
         Controls.Fx.SetReduceMotion(AppSettings.Load().ReduceMotion);
+        VirtualizeList = AppSettings.Load().VirtualizeList;
         ActivityLog.Directory = App.LogDirectory;
         ActivityLog.Enabled = AppSettings.Load().ActivityLog;
         ActivityLog.Write("app", $"start · AFTERLIFE {AppVersion}");
@@ -468,9 +469,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase)
                 .ToList();
             Filters.Recount(ordered);
-            if (ordered.SequenceEqual(Mods)) ModsView.Refresh(); // same rows in the same order: regroup only
-            else Mods.Reset(ordered);
-            UpdateGroupNames();
+            ShowRows(ordered);
             foreach (var m in Mods) m.IsChecked = keepMulti.Contains(m.PackageId);
             IsEmptyLibrary = Mods.Count == 0;
             UpdateCount = o.Mods.Count(m => m.Update is not null);

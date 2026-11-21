@@ -98,9 +98,10 @@ public sealed partial class MainViewModel
             AppSettings.Load().ReduceMotion, AppSettings.Load().ActivityLog, NexusKeyStore.Load() is not null, SafeNxmRegistered(), SafeOtherHandler(),
             new SettingsActions(ChangeGameFolderAsync, SetReduceMotion, SetActivityLog, SaveNexusKeyAsync, ForgetNexusKey, CheckNexusAsync, SetNxmHandlerAsync,
                 () => OpenGameFolder(), () => OpenInbox(), LoadStorageAsync, PurgeAsync, CopyDiagnostics, RemoveFromPcAsync, SetFixerAsync,
-                () => { Overlay = null; LinkGuessedModsCommand.Execute(null); }))
+                () => { Overlay = null; LinkGuessedModsCommand.Execute(null); }, SetVirtualizeList))
         { CloseCommand = new RelayCommand(() => Overlay = null) };
         vm.SetFixerSilently(_fixerOn);
+        vm.SetVirtualizeListSilently(VirtualizeList);
         Overlay = vm;
         vm.LoadStorageLater();
         if (vm.HasNexusKey) _ = CheckNexusAsync(vm);
@@ -208,6 +209,16 @@ public sealed partial class MainViewModel
             vm.MessageTone = Tone.Block;
         }
         return Task.CompletedTask;
+    }
+
+    /// <summary>Only the visible rows of the mod list are drawn. Saved with the settings and effective at once.</summary>
+    [ObservableProperty] private bool _virtualizeList;
+
+    private void SetVirtualizeList(bool on)
+    {
+        VirtualizeList = on;
+        var current = AppSettings.Load();
+        (current with { LibraryRoot = current.LibraryRoot ?? AppSettings.ResolveLibrary(null), VirtualizeList = on }).Save();
     }
 
     private void SetReduceMotion(bool reduce)

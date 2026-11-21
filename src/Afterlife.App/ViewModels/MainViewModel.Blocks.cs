@@ -23,9 +23,10 @@ public sealed partial class MainViewModel
         try
         {
             var first = _collapsed is null;
-            (_collections, var layout, var folded, var panel) = await _host.RunAsync(c =>
-                (c.Collections(), c.Store.GetMeta(LayoutKey), first ? c.Store.GetMeta("ui.collapsed") : null, first ? c.Store.GetMeta(FilterPanelKey) : null));
-            if (first) Filters.Restore(panel);
+            (_collections, var layout, var folded, var panel, var sort) = await _host.RunAsync(c =>
+                (c.Collections(), c.Store.GetMeta(LayoutKey), first ? c.Store.GetMeta("ui.collapsed") : null, first ? c.Store.GetMeta(FilterPanelKey) : null,
+                 first ? c.Store.GetMeta(SortKey) : null));
+            if (first) { Filters.Restore(panel); RestoreSort(sort); }
             _layout = BlockLayout.FromJson(layout);
             if (_collapsed is null) _collapsed = (folded ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
         }
@@ -93,8 +94,9 @@ public sealed partial class MainViewModel
         ModsView.Refresh();
     }
 
+    /// <summary>The load order as the list holds it, never the order a sort for viewing shows.</summary>
     private List<string> CurrentOrder() =>
-        Mods.Where(m => !m.IsCore && m.Overview.Package.LayerOfModId is null).Select(m => m.PackageId).ToList();
+        _loadOrdered.Where(m => !m.IsCore && m.Overview.Package.LayerOfModId is null).Select(m => m.PackageId).ToList();
 
     /// <summary>Saves the layout and writes the load order that follows it into the selected profile.</summary>
     private async Task ApplyLayoutAsync(BlockLayout layout, List<string> order, string message)
