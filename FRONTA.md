@@ -3,7 +3,7 @@
 Živá verze fronty. **Nejnovější stav dávky: větev `claude/kind-hopper-az2rax`** (O1, O2, O4, O6, F1, F2). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
 Úkoly pro uživatele: [`UKOLY.md`](UKOLY.md) v této větvi.
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík F3.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík O7.“
 Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkout claude/kind-hopper-az2rax`, pak stejná věta.
 
 ## Pravidla dávky
@@ -25,8 +25,9 @@ Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkou
 | F1 | Fable | Hromadné propojení ručně přidaných ZIPů s Nexusem | nic | hotovo `e1b10cd`, sloučeno do větve `23df26c` |
 | O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo `a75ded6`, zkontrolováno |
 | F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | hotovo (bez kontroly, psal Fable) |
-| F3 | Fable | Kontrola aktualizací při 600+ modech | C6 | zadání potvrzeno, čeká na C6 |
-| O7 | Opus | Přehlednější nastavení (návrh, bez kódu) | C6 | čeká na C6 |
+| F3 | Fable | Kontrola aktualizací při 600+ modech | nic | hotovo (bez kontroly, psal Fable) |
+| O7 | Opus | Nové nastavení se záložkami vlevo (návrh, bez kódu) | nic | může začít |
+| O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
 | F-kontrola | Fable | Kontrola O1, O2, O4, O6 | nic | hotovo, bez nálezu; uzavření dávky čeká na C3 a C4 |
 
 ## O6. Hromadné propojení i v nastavení Nexusu
@@ -48,7 +49,7 @@ Soubory: `MainViewModel.cs`, `MainViewModel.Blocks.cs`, `MainWindow.xaml` (`Mods
 
 ## F3. Kontrola aktualizací při 600+ modech
 
-Fable. Zadání potvrzeno uživatelem 21. 11. (C4). Čeká jen na C6: kam v nastavení přijdou nové volby. Soubory: `MainViewModel.Updates.cs`, `Nexus.cs` (`NexusUpdates`), nastavení, `NexusTests.cs`.
+Fable. Hotovo. Zadání potvrzeno uživatelem 21. 11. (C4); volby jsou zatím v prostém oddílu UPDATES, na své místo je přesune O8. Soubory: `MainViewModel.Updates.cs`, `Nexus.cs` (`NexusUpdates`), nastavení, `NexusTests.cs`.
 1. Zrušit strop 60 modů na jednu kontrolu: přečte se vše, co je na řadě, a kontrola se zastaví jen o limit Nexusu (`RateLimited`), zbytek příště. Před tím ověřit v dokumentaci Nexusu skutečné limity dotazů.
 2. Pořadí: core mody a mody zapnuté ve vybraném profilu první, pak ostatní.
 3. Tlačítko CHECK UPDATES použije seznam změněných modů (dnes ho obchází a čte všech 600+). Plná kontrola všech jako zvláštní volba.
@@ -56,11 +57,16 @@ Fable. Zadání potvrzeno uživatelem 21. 11. (C4). Čeká jen na C6: kam v nast
 5. Pojistka: ke každému modu zvlášť datum posledního plného přečtení. Mezi tím jen rozdíly ze seznamu změn; jednou za N dní se mod přečte celý. N je v nastavení, výchozí 7. Mody rozložit rovnoměrně, aby nepřišly na řadu všechny ve stejný den. Dnes se „poslední kontrola“ přepisuje i při odpovědi „beze změny“, takže plné přečtení při pravidelném používání neproběhne nikdy.
 6. Testy: výběr modů ke kontrole (rozdíly, pojistka po N dnech, rozložení, pořadí, zastavení o limit).
 
-## O7. Přehlednější nastavení (návrh, bez kódu)
+## O7. Nové nastavení se záložkami vlevo (návrh, bez kódu)
 
-Opus. Čeká na C6. Dnes je nastavení jeden rolovací sloupec šířky 680 se šesti oddíly (`Views/Panels.xaml`, šablona `SettingsVm`).
-1. Statický náhled nastavení s novým oddílem UPDATES (volby z F3) a s úpravami podle C6.
-2. U každé změny jedna věta proč. Odkaz na náhled zapsat k C6.
+Opus. Může začít hned. Uživatel 21. 11. rozhodl nastavení přestavět: vzniklo pro pár voleb a dnes jich je kolem dvaceti v jednom rolovacím sloupci šířky 680 (`Views/Panels.xaml`, šablona `SettingsVm`).
+1. Statický náhled nastavení se záložkami vlevo: Game a Library · Nexus Mods (účet, propojení modů, nxm://) · Updates (volby z F3) · Display (animace, vykreslování řádků) · Storage (uložené soubory) · Diagnostics (log, diagnostika) · FIXER. Odinstalace samostatně až dole, mimo běžné volby.
+2. V paletě a písmech ze skillu grafika-cyberpunk, v rozměru okna 1612 × 910 i 2560 × 1440. Všechny dnešní volby musí mít své místo; vypiš, kam se která přesunula.
+3. Odkaz na náhled zapsat k B3 v `UKOLY.md`.
+
+## O8. Přestavba nastavení v kódu
+
+Opus. Čeká na B3 (schválený náhled z O7). Soubory: `Views/Panels.xaml` (šablona nastavení do vlastního souboru ve `Views/`), `ViewModels/Overlays/SettingsVm.cs`. Logika voleb se nemění, jen se přesunou. Do alpha.11, pokud uživatel neřekne jinak.
 
 ## F-kontrola
 
@@ -90,3 +96,13 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 - Neověřeno: vzhled tlačítka a řádku, chování virtualizace při rolování, přetahování a sbalování bloků (A7, A8).
 - Rozhodl jsem sám: řazení platí i uvnitř kolekcí (jen pro oko); při řazení nejde mod přetáhnout ani do jiné kategorie; „NEWEST“ je podle data importu do knihovny; „STATE“ řadí problémy první, pak neaplikované, zapnuté, vypnuté.
 - Co změřit (A8): čas od spuštění po zobrazení seznamu a plynulost rolování s 300+ mody, jednou s přepínačem a jednou bez.
+
+**F3** (21. 11., Fable)
+- Stav: hotovo. Nové `UpdatePlan.cs` (Infrastructure, čistá logika, 6 testů); přepsaná kontrola v `MainViewModel.Updates.cs`; volby v `AppSettings.cs`, `SettingsVm.cs`, `MainViewModel.Settings.cs`, dočasný oddíl UPDATES ve `Views/Panels.xaml`.
+- Strop 60 je pryč: přečte se vše, co je na řadě, v pořadí core mody, mody v profilu, ostatní; zastaví se jen o limit Nexusu a zbytek zůstane na řadě.
+- CHECK UPDATES jde přes seznam změněných modů a čte jen ty. Plná kontrola všech je odkaz „Check every mod now…“ v nastavení.
+- Pojistka: každý balíček má vlastní datum posledního plného přečtení (`nexus:fullread:<balíček>`) a vlastní bod v periodě odvozený z id, takže se každý den čte zhruba stejný díl. Knihovna zkontrolovaná před touto změnou se rozloží přes jednu periodu, nepřečte se naráz.
+- Nastavení: automatická kontrola ano/ne (core mody vždy), jen mody zapnuté v profilu, počet dní mezi plnými čteními (výchozí 7, 0 = nikdy).
+- Ověřeno: 309 testů (mimo jiné 700 modů přes 7 dní: každý přečten právě jednou, 60 až 140 denně), překlad plné i Offline edice.
+- Neověřeno: skutečné limity dotazů Nexusu jsem v dokumentaci neověřil, kód se řídí jen odpovědí 429; chování v okně (A9).
+- Rozhodl jsem sám: při vypnuté automatické kontrole se dál kontrolují jen core mody; plná kontrola je v nastavení, ne v hlavním okně; průběh v dolní liště se ukazuje jen u ruční kontroly s víc než 20 mody.
