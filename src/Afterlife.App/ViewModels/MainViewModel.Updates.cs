@@ -47,15 +47,30 @@ public sealed partial class MainViewModel
         return got == ids.Count;
     }
 
+    /// <summary>What started an update check.</summary>
+    private enum UpdateRun
+    {
+        /// <summary>At start and every hour, in the scope chosen in Settings (core mods always).</summary>
+        Auto,
+        /// <summary>CHECK UPDATES: every mod, but only the changed ones are read.</summary>
+        Manual,
+        /// <summary>Every mod is read, whatever the feed says.</summary>
+        Full,
+    }
+
+    private Task CheckUpdatesAsync(bool force) => CheckUpdatesAsync(force ? UpdateRun.Manual : UpdateRun.Auto);
+
     /// <summary>
-    /// Newer files on Nexus at start and every hour. One request to the "updated mods" feed tells which mods changed;
-    /// Files are read only for those, for new mods and for mods not checked in 4 weeks. Without the feed: once a day per mod.
+    /// Newer files on Nexus. One request to the "updated mods" feed tells which mods changed; files are read only
+    /// for those, for new mods, for mods older than the feed reaches and for the mods whose full read is due
+    /// (<see cref="UpdatePlan"/>). Core mods and the mods in the profile are read first. It reads everything that
+    /// is due and stops only when Nexus Mods says its request limit is reached; the rest comes with the next check.
     /// </summary>
-    private async Task CheckUpdatesAsync(bool force)
+    private async Task CheckUpdatesAsync(UpdateRun run)
     {
         if (_checkingUpdates) return;
         _checkingUpdates = true;
-        try { await CheckUpdatesCoreAsync(force); }
+        try { await CheckUpdatesCoreAsync(run); }
         finally { _checkingUpdates = false; }
     }
 
@@ -70,60 +85,73 @@ public sealed partial class MainViewModel
         _updateTimer.Tick += async (_, _) =>
         {
             if (IsBusy) return;
-            try { await CheckUpdatesAsync(force: false); }
+            try { await CheckUpdatesAsync(UpdateRun.Auto); }
             catch (Exception ex) when (IsExpected(ex)) { }
         };
         _updateTimer.Start();
     }
 
-    private async Task CheckUpdatesCoreAsync(bool force)
+    private async Task CheckUpdatesCoreAsync(UpdateRun run)
     {
         var key = NexusKeyStore.Load();
         if (key is null || _overview is null) return;
         var now = DateTimeOffset.UtcNow;
-        var packages = _overview.Mods.Select(m => m.Package).Where(p => p.LayerOfModId is null && NexusInfo.IdOf(p) is { Id: not null, Confirmed: true }).ToList();
-        if (packages.Count == 0) return;
-        using var feedClient = new NexusClient(key, AppVersion);
-        List<PackageManifest> due;
-        if (force) due = packages;
+        var settings = AppSettings.Load();
+        var scope = run != UpdateRun.Auto ? UpdateScope.All
+            : !settings.CheckUpdatesAuto ? UpdateScope.CoreOnly
+            : settings.CheckUpdatesActiveOnly ? UpdateScope.Active : UpdateScope.All;
+        var fullEvery = TimeSpan.FromDays(Math.Clamp(settings.FullCheckDays, 0, 365));
+        var linked = _overview.Mods.Where(m => m.Package.LayerOfModId is null && NexusInfo.IdOf(m.Package) is { Id: not null, Confirmed: true }).ToList();
+        if (linked.Count == 0) return;
+        var byId = linked.ToDictionary(m => m.Package.PackageId, m => m.Package, StringComparer.Ordinal);
+        var (checkedAt, fullRead) = await _host.RunAsync(c => (NexusUpdates.CheckedAll(c.Store), UpdatePlan.FullReadAll(c.Store)));
+        var items = linked.Select(m => new UpdateItem(m.Package.PackageId, NexusInfo.IdOf(m.Package).Id!,
+                checkedAt.TryGetValue(m.Package.PackageId, out var at) ? at : null,
+                fullRead.TryGetValue(m.Package.PackageId, out var full) ? full : null, m.IsCore, m.Wanted))
+            .Where(i => UpdatePlan.InScope(i, scope)).ToList();
+        if (items.Count == 0) return;
+        using var client = new NexusClient(key, AppVersion);
+        IReadOnlyList<UpdateItem> due;
+        if (run == UpdateRun.Full) due = items.OrderBy(UpdatePlan.Priority).ToList();
         else
         {
-            var checkedAt = await _host.RunAsync(c => NexusUpdates.CheckedAll(c.Store));
-            var items = packages.Select(p => (p.PackageId, ModId: NexusInfo.IdOf(p).Id!,
-                CheckedAt: checkedAt.TryGetValue(p.PackageId, out var at) ? at : (DateTimeOffset?)null)).ToList();
             var known = items.Where(i => i.CheckedAt is not null).Select(i => i.CheckedAt!.Value).ToList();
             var period = known.Count == 0 ? null : NexusUpdates.FeedPeriod(known.Min(), now);
             IReadOnlyDictionary<string, long>? feed = null;
             if (period is not null)
-                try { feed = await feedClient.UpdatedAsync(period); }
+                try { feed = await client.UpdatedAsync(period); }
                 catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException) { }
-            if (feed is null)
-                due = packages.Where(p => !(checkedAt.TryGetValue(p.PackageId, out var at) && now - at < TimeSpan.FromHours(24))).ToList();
-            else
+            due = UpdatePlan.Due(items, feed, scope, fullEvery, now);
+            if (feed is not null)
             {
-                var ids = NexusUpdates.DueAfterFeed(items, feed, now).ToHashSet();
+                // the feed vouches for the rest: checked now, without a request
+                var dueIds = due.Select(i => i.PackageId).ToHashSet(StringComparer.Ordinal);
                 await _host.RunAsync(c => c.Store.InTransaction(() =>
                 {
-                    foreach (var p in packages.Where(p => !ids.Contains(p.PackageId))) NexusUpdates.MarkChecked(c.Store, p.PackageId, now);
+                    foreach (var i in items.Where(i => !dueIds.Contains(i.PackageId))) NexusUpdates.MarkChecked(c.Store, i.PackageId, now);
                 }));
-                due = packages.Where(p => ids.Contains(p.PackageId)).ToList();
             }
         }
-        if (due.Count == 0) return;
-        var groups = due.GroupBy(p => NexusInfo.IdOf(p).Id!).ToList();
-        // The hourly check reads the files of at most 60 mods; the rest stay due and come with the next one.
-        // A check the user asked for reads them all, and says so when some could not be read.
-        var batch = force ? groups : groups.Take(60).ToList();
+        var asked = run != UpdateRun.Auto;
+        if (due.Count == 0)
+        {
+            if (asked) Say("All mods from Nexus are up to date.", Tone.Ok);
+            return;
+        }
+        var groups = due.GroupBy(i => i.ModId).ToList(); // in the order of the plan: core mods, the profile, the rest
         var found = 0;
         var unread = 0;
-        for (var i = 0; i < batch.Count; i++)
+        var limited = false;
+        for (var g = 0; g < groups.Count; g++)
         {
-            var group = batch[i];
+            var group = groups[g];
+            if (asked && groups.Count > 20) { PhaseTitle = $"CHECKING UPDATES · {g + 1} / {groups.Count}"; PhaseTone = Tone.Info; }
             NexusFiles files;
-            try { files = await feedClient.FilesAsync(group.Key); }
+            try { files = await client.FilesAsync(group.Key); }
             catch (NexusException ex) when (ex.RateLimited)
             {
-                unread += batch.Skip(i).Sum(g => g.Count()); // no further request gets through for now
+                unread += groups.Skip(g).Sum(x => x.Count()); // no further request gets through for now
+                limited = true;
                 break;
             }
             catch (Exception ex) when (ex is NexusException or System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
@@ -132,33 +160,44 @@ public sealed partial class MainViewModel
                 continue;
             }
             var results = new List<(string PackageId, NexusUpdate? Update)>();
-            foreach (var p in group)
+            foreach (var i in group)
             {
+                var p = byId[i.PackageId];
                 var u = NexusUpdates.Find(files, p.NexusFileId, p.Version, now);
                 // a newer file of this mod already in the library is not an update to offer again
                 if (u is not null && _overview.Mods.Any(m => m.Package.NexusFileId == u.FileId)) u = null;
-                results.Add((p.PackageId, u));
+                results.Add((i.PackageId, u));
                 if (u is not null) found++;
             }
             await _host.RunAsync(c => c.Store.InTransaction(() =>
             {
-                foreach (var (id, u) in results) NexusUpdates.Save(c.Store, id, u, now);
+                foreach (var (id, u) in results)
+                {
+                    NexusUpdates.Save(c.Store, id, u, now);
+                    UpdatePlan.MarkFullRead(c.Store, id, now);
+                }
             }));
         }
-        if (found > 0 || force)
+        if (asked && groups.Count > 20) PhaseIdle();
+        if (found > 0 || asked)
         {
             await RefreshAsync();
-            if (!force) return;
+            if (!asked) return;
             var newer = found == 0 ? null : $"{found} mod(s) have a newer version on Nexus";
             if (unread > 0)
-                Say($"{newer ?? "No newer versions found so far"}, but {unread} mod(s) could not be checked (Nexus Mods did not answer or its request limit was reached). Try again later.", Tone.Warn);
+                Say($"{newer ?? "No newer versions found so far"}, but {unread} mod(s) could not be checked ("
+                    + (limited ? "the request limit of Nexus Mods was reached; they come with the next check" : "Nexus Mods did not answer") + ").", Tone.Warn);
             else
                 Say(newer is null ? "All mods from Nexus are up to date." : newer + ".", newer is null ? Tone.Ok : Tone.Info);
         }
     }
 
     [RelayCommand]
-    private Task CheckUpdates() => LockedOffline("Checking for updates") ? Task.CompletedTask : RunUiAsync(() => CheckUpdatesAsync(force: true));
+    private Task CheckUpdates() => LockedOffline("Checking for updates") ? Task.CompletedTask : RunUiAsync(() => CheckUpdatesAsync(UpdateRun.Manual));
+
+    /// <summary>Reads the files of every linked mod, whatever the feed of changed mods says. One request per mod.</summary>
+    [RelayCommand]
+    private Task CheckUpdatesFull() => LockedOffline("Checking for updates") ? Task.CompletedTask : RunUiAsync(() => CheckUpdatesAsync(UpdateRun.Full));
 
     /// <summary>Premium downloads the newer file directly; free accounts open its page (Mod Manager Download comes back here).</summary>
     public Task UpdateModAsync(string packageId) => RunUiAsync(async () =>

@@ -98,10 +98,13 @@ public sealed partial class MainViewModel
             AppSettings.Load().ReduceMotion, AppSettings.Load().ActivityLog, NexusKeyStore.Load() is not null, SafeNxmRegistered(), SafeOtherHandler(),
             new SettingsActions(ChangeGameFolderAsync, SetReduceMotion, SetActivityLog, SaveNexusKeyAsync, ForgetNexusKey, CheckNexusAsync, SetNxmHandlerAsync,
                 () => OpenGameFolder(), () => OpenInbox(), LoadStorageAsync, PurgeAsync, CopyDiagnostics, RemoveFromPcAsync, SetFixerAsync,
-                () => { Overlay = null; LinkGuessedModsCommand.Execute(null); }, SetVirtualizeList))
+                () => { Overlay = null; LinkGuessedModsCommand.Execute(null); }, SetVirtualizeList,
+                SetUpdateChecks, () => { Overlay = null; CheckUpdatesFullCommand.Execute(null); }))
         { CloseCommand = new RelayCommand(() => Overlay = null) };
         vm.SetFixerSilently(_fixerOn);
         vm.SetVirtualizeListSilently(VirtualizeList);
+        var saved = AppSettings.Load();
+        vm.SetUpdateChecksSilently(saved.CheckUpdatesAuto, saved.CheckUpdatesActiveOnly, saved.FullCheckDays);
         Overlay = vm;
         vm.LoadStorageLater();
         if (vm.HasNexusKey) _ = CheckNexusAsync(vm);
@@ -213,6 +216,17 @@ public sealed partial class MainViewModel
 
     /// <summary>Only the visible rows of the mod list are drawn. Saved with the settings and effective at once.</summary>
     [ObservableProperty] private bool _virtualizeList;
+
+    /// <summary>How the update check runs on its own; read again by every check.</summary>
+    private static void SetUpdateChecks(bool auto, bool activeOnly, int fullCheckDays)
+    {
+        var current = AppSettings.Load();
+        (current with
+        {
+            LibraryRoot = current.LibraryRoot ?? AppSettings.ResolveLibrary(null),
+            CheckUpdatesAuto = auto, CheckUpdatesActiveOnly = activeOnly, FullCheckDays = Math.Clamp(fullCheckDays, 0, 365),
+        }).Save();
+    }
 
     private void SetVirtualizeList(bool on)
     {

@@ -288,3 +288,79 @@ public class NexusLinkerTests
         Assert.Equal(["pkg-miss"], NexusLinker.TriedRecently(t.C.Store, now).ToArray());
     }
 }
+
+public class UpdatePlanTests
+{
+    private static readonly DateTimeOffset Now = new(2026, 11, 21, 12, 0, 0, TimeSpan.Zero);
+    private static readonly TimeSpan Week = TimeSpan.FromDays(7);
+    private static readonly Dictionary<string, long> NothingChanged = new();
+
+    private static UpdateItem Item(string id, DateTimeOffset? checkedAt, DateTimeOffset? fullRead = null, bool core = false, bool active = false, string? modId = null) =>
+        new(id, modId ?? "mod" + id, checkedAt, fullRead, core, active);
+
+    private static string[] Ids(IEnumerable<UpdateItem> items) => items.Select(i => i.PackageId).ToArray();
+
+    [Fact]
+    public void Between_full_reads_only_the_feed_decides()
+    {
+        var hourAgo = Now.AddHours(-1);
+        var feed = new Dictionary<string, long> { ["modb"] = Now.AddMinutes(-20).ToUnixTimeSeconds(), ["modc"] = Now.AddDays(-3).ToUnixTimeSeconds() };
+        UpdateItem[] items = [Item("a", hourAgo, hourAgo), Item("b", hourAgo, hourAgo), Item("c", hourAgo, hourAgo), Item("d", null)];
+        // b changed after its check, d was never checked; a and c are covered by the feed
+        Assert.Equal(["b", "d"], Ids(UpdatePlan.Due(items, feed, UpdateScope.All, Week, Now)));
+    }
+
+    [Fact]
+    public void Every_mod_is_read_in_full_once_per_period_even_when_the_feed_is_silent()
+    {
+        var items = Enumerable.Range(0, 700).Select(n => Item("pkg-" + n, Now.AddMinutes(-30), Now.AddMinutes(-30))).ToList();
+        var read = new HashSet<string>();
+        var perDay = new List<int>();
+        var state = items.ToDictionary(i => i.PackageId);
+        for (var day = 1; day <= 7; day++)
+        {
+            var now = Now.AddDays(day);
+            // the hourly check keeps "checked" fresh, as the window does
+            var today = UpdatePlan.Due(state.Values.Select(i => i with { CheckedAt = now.AddHours(-1) }), NothingChanged, UpdateScope.All, Week, now);
+            perDay.Add(today.Count);
+            foreach (var i in today) { read.Add(i.PackageId); state[i.PackageId] = i with { FullReadAt = now }; }
+        }
+        Assert.Equal(700, read.Count);            // nobody is skipped
+        Assert.Equal(700, perDay.Sum());          // and nobody is read twice in the period
+        Assert.All(perDay, n => Assert.InRange(n, 60, 140)); // spread over the days, about a seventh each
+    }
+
+    [Fact]
+    public void A_library_checked_before_full_reads_existed_is_spread_not_read_at_once()
+    {
+        var items = Enumerable.Range(0, 600).Select(n => Item("pkg-" + n, Now.AddHours(-1))).ToList(); // no full read recorded
+        Assert.InRange(UpdatePlan.Due(items, NothingChanged, UpdateScope.All, Week, Now).Count, 0, 20);
+        Assert.Empty(UpdatePlan.Due(items, NothingChanged, UpdateScope.All, TimeSpan.Zero, Now)); // 0 days: full reads off
+    }
+
+    [Fact]
+    public void Scope_limits_the_check_and_core_and_active_mods_come_first()
+    {
+        UpdateItem[] items = [Item("other", null), Item("active", null, active: true), Item("core", null, core: true), Item("both", null, core: true, active: true)];
+        Assert.Equal(["core", "both", "active", "other"], Ids(UpdatePlan.Due(items, NothingChanged, UpdateScope.All, Week, Now)));
+        Assert.Equal(["core", "both", "active"], Ids(UpdatePlan.Due(items, NothingChanged, UpdateScope.Active, Week, Now)));
+        Assert.Equal(["core", "both"], Ids(UpdatePlan.Due(items, NothingChanged, UpdateScope.CoreOnly, Week, Now)));
+    }
+
+    [Fact]
+    public void Without_the_feed_a_mod_is_read_once_a_day()
+    {
+        UpdateItem[] items = [Item("fresh", Now.AddHours(-3), Now.AddHours(-3)), Item("old", Now.AddHours(-30), Now.AddHours(-30))];
+        Assert.Contains("old", Ids(UpdatePlan.Due(items, null, UpdateScope.All, TimeSpan.Zero, Now)));
+        Assert.DoesNotContain("fresh", Ids(UpdatePlan.Due(items, null, UpdateScope.All, TimeSpan.Zero, Now)));
+    }
+
+    [Fact]
+    public void Full_reads_are_remembered_per_package()
+    {
+        using var t = new TestEnv();
+        UpdatePlan.MarkFullRead(t.C.Store, "pkg-1", Now);
+        Assert.Equal(Now, UpdatePlan.FullReadAll(t.C.Store)["pkg-1"]);
+        Assert.Equal(UpdatePlan.Phase("pkg-1", Week), UpdatePlan.Phase("pkg-1", Week)); // the same on every start
+    }
+}

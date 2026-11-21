@@ -14,6 +14,12 @@ public sealed record AppSettings(string? LibraryRoot)
     public bool ActivityLog { get; init; }
     /// <summary>Draw only the visible rows of the grouped mod list. Off until it has proven itself on real installs.</summary>
     public bool VirtualizeList { get; init; }
+    /// <summary>Look for newer versions on Nexus Mods at start and every hour. Off: only core mods are checked on their own.</summary>
+    public bool CheckUpdatesAuto { get; init; } = true;
+    /// <summary>The automatic check looks only at core mods and the mods switched on in the selected profile.</summary>
+    public bool CheckUpdatesActiveOnly { get; init; }
+    /// <summary>Every mod is read in full once in this many days, besides the feed of changed mods. 0 switches it off.</summary>
+    public int FullCheckDays { get; init; } = 7;
 
     public const string PortableLibraryFolderName = "AFTERLIFE Library";
 

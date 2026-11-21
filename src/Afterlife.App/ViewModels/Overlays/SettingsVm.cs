@@ -27,7 +27,9 @@ public sealed record SettingsActions(
     Func<SettingsVm, Task> RemoveFromPc,
     Func<SettingsVm, bool, Task> SetFixer,
     Action LinkMods,
-    Action<bool> SetVirtualizeList);
+    Action<bool> SetVirtualizeList,
+    Action<bool, bool, int> SetUpdateChecks,
+    Action CheckAllMods);
 
 /// <summary>Game, library, Nexus Mods, display, diagnostics.</summary>
 public sealed partial class SettingsVm : OverlayVm
@@ -86,6 +88,37 @@ public sealed partial class SettingsVm : OverlayVm
     {
         if (!_loading) _a.SetVirtualizeList(value);
     }
+
+    [ObservableProperty] private bool _checkUpdatesAuto = true;
+    [ObservableProperty] private bool _checkUpdatesActiveOnly;
+    [ObservableProperty] private int _fullCheckDays = 7;
+    public string UpdatesHint => "Between full reads AFTERLIFE asks Nexus Mods only which mods changed: one request for the whole library. The full read is a safety net; the mods take turns, so about the same number is read every day.";
+
+    partial void OnCheckUpdatesAutoChanged(bool value) => SaveUpdateChecks();
+    partial void OnCheckUpdatesActiveOnlyChanged(bool value) => SaveUpdateChecks();
+
+    partial void OnFullCheckDaysChanged(int value)
+    {
+        if (value is < 0 or > 365) { FullCheckDays = Math.Clamp(value, 0, 365); return; }
+        SaveUpdateChecks();
+    }
+
+    private void SaveUpdateChecks()
+    {
+        if (!_loading) _a.SetUpdateChecks(CheckUpdatesAuto, CheckUpdatesActiveOnly, FullCheckDays);
+    }
+
+    public void SetUpdateChecksSilently(bool auto, bool activeOnly, int days)
+    {
+        _loading = true;
+        CheckUpdatesAuto = auto;
+        CheckUpdatesActiveOnly = activeOnly;
+        FullCheckDays = Math.Clamp(days, 0, 365);
+        _loading = false;
+    }
+
+    /// <summary>Reads every linked mod on Nexus Mods now, one request per mod.</summary>
+    [RelayCommand] private void CheckAllMods() => _a.CheckAllMods();
 
     public void SetVirtualizeListSilently(bool value)
     {
