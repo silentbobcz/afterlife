@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 21. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/kind-hopper-az2rax`. Do nového vlákna stačí napsat: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík O7.“
+**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/modest-edison-qznx06`. Pro Opus teď nic nečeká; po schválení B3 stačí do nového vlákna napsat: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/modest-edison-qznx06) a udělej balík O8.“
 
 Zkušební sestavení plné edice jsi dostal 21. 11. jako `AFTERLIFE-test-e0a53b4-win-x64.zip` (commit `e0a53b4`). Položky A2 až A8 se zkouší na něm; A9 potřebuje novější sestavení. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
 
@@ -23,7 +23,7 @@ Zkušební sestavení plné edice jsi dostal 21. 11. jako `AFTERLIFE-test-e0a53b
 
 | # | Co | Kde to najdu | Co mám rozhodnout | Stav |
 |---|---|---|---|---|
-| B3 | Nové nastavení se záložkami vlevo | Náhled z balíku O7 (odkaz doplní Opus) | Jestli rozložení sedí a co kam přesunout. Po schválení ho O8 přestaví v kódu. | ☐ čeká na O7 |
+| B3 | Nové nastavení se záložkami vlevo | [docs/previews/settings-tabs.html](docs/previews/settings-tabs.html), doma `D:/_AI/afterlife/docs/previews/settings-tabs.html` po `git checkout claude/modest-edison-qznx06`; otevři dvojklikem | Proklikej záložky, přepni okno 2560 × 1440 a edici OFFLINE; pod náhledem je, kam se která volba přesunula. Napiš „B3 schváleno“ nebo co změnit. Pak ho O8 přestaví v kódu. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -43,6 +43,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 21. 11. | O7: náhled nastavení se záložkami vlevo je hotový, posuzuješ ho v B3. |
 | 21. 11. | F3 hotové: kontrola aktualizací bez stropu 60, plné čtení každého modu jednou za N dní, volby v nastavení. 309 testů, překlad obou edic. |
 | 21. 11. | C6: nastavení se přestaví celé, se záložkami vlevo. Nejdřív náhled (O7, B3), pak kód (O8). Volby z F3 jsou do té doby v prostém oddílu UPDATES. |
 | 21. 11. | C4: kontrola aktualizací bude bez stropu 60, zapnuté a core mody první, tlačítko přes rozdíly, přepínač kontroly při startu a plné přečtení každého modu jednou za N dní (N v nastavení). Zadání je v balíku F3. |

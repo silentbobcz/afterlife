@@ -1,10 +1,10 @@
 # AFTERLIFE: fronta pro modely (1. dávka)
 
-Živá verze fronty. **Nejnovější stav dávky: větev `claude/kind-hopper-az2rax`** (O1, O2, O4, O6, F1, F2). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
+Živá verze fronty. **Nejnovější stav dávky: větev `claude/modest-edison-qznx06`** (O1–O7, F1–F3). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
 Úkoly pro uživatele: [`UKOLY.md`](UKOLY.md) v této větvi.
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík O7.“
-Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkout claude/kind-hopper-az2rax`, pak stejná věta.
+Spouštěcí věta (až bude B3 schválené): „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/modest-edison-qznx06) a udělej balík O8.“
+Doma na počítači: `git fetch origin claude/modest-edison-qznx06` a `git checkout claude/modest-edison-qznx06`, pak stejná věta.
 
 ## Pravidla dávky
 
@@ -26,7 +26,7 @@ Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkou
 | O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo `a75ded6`, zkontrolováno |
 | F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | hotovo (bez kontroly, psal Fable) |
 | F3 | Fable | Kontrola aktualizací při 600+ modech | nic | hotovo (bez kontroly, psal Fable) |
-| O7 | Opus | Nové nastavení se záložkami vlevo (návrh, bez kódu) | nic | může začít |
+| O7 | Opus | Nové nastavení se záložkami vlevo (návrh, bez kódu) | nic | hotovo, náhled čeká na B3 |
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
 | F-kontrola | Fable | Kontrola O1, O2, O4, O6 | nic | hotovo, bez nálezu; uzavření dávky čeká na C3 a C4 |
 
@@ -106,3 +106,11 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 - Ověřeno: 309 testů (mimo jiné 700 modů přes 7 dní: každý přečten právě jednou, 60 až 140 denně), překlad plné i Offline edice.
 - Neověřeno: skutečné limity dotazů Nexusu jsem v dokumentaci neověřil, kód se řídí jen odpovědí 429; chování v okně (A9).
 - Rozhodl jsem sám: při vypnuté automatické kontrole se dál kontrolují jen core mody; plná kontrola je v nastavení, ne v hlavním okně; průběh v dolní liště se ukazuje jen u ruční kontroly s víc než 20 mody.
+
+**O7** (21. 11., Opus)
+- Stav: hotovo. Náhled `docs/previews/settings-tabs.html` (jeden soubor, bez kódu aplikace): klikací záložky, přepínač okna 1612 × 910 / 2560 × 1440 a edice FULL / OFFLINE, pod náhledem tabulka „kam se která volba přesunula“ a důvody.
+- Záložky: 01 Game & library · 02 Nexus Mods (Account, Link mods, Download links) · 03 Updates · 04 Display · 05 Kept files · 06 Diagnostics · 07 FIXER; „Remove AFTERLIFE from this PC…“ dole pod seznamem záložek, oddělené.
+- Rozhodl jsem sám: dialog má pevnou velikost 214 + 660 × 480 px a při větším okně neroste (nejdelší záložka má 416 px); Game a Library v jedné záložce; v Offline je záložka Updates vidět se zámkem a zašedlými volbami (dnes je oddíl schovaný); na záložkách krátké údaje (součet Kept files, zelená tečka u funkčního klíče Nexusu); dole pod záložkami verze aplikace.
+- Ověřeno: náhled v Chromiu, všechny záložky v obou edicích bez rolování.
+- Pro O8: šablona do `Views/SettingsView.xaml`, výběr záložky v `SettingsVm` (zapamatovat poslední), texty beze změny kromě rozdělení dlouhých popisků na řádek + šedou poznámku.
+- Pro uživatele: B3 v UKOLY.md.
