@@ -21,7 +21,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public MainViewModel()
     {
         ModsView = CollectionViewSource.GetDefaultView(Mods);
-        ModsView.Filter = o => o is ModRowVm r && r.Matches(SearchText.Trim());
+        ModsView.Filter = o => o is ModRowVm r && r.Matches(SearchText.Trim()) && Filters.Matches(r);
+        Filters.Changed += OnListNarrowed;
+        Filters.ModeChanged += m => _ = _host.RunAsync(c => c.Store.SetMeta(FilterPanelKey, m.ToString()));
         ModsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ModRowVm.Chapter)));
     }
 
@@ -30,6 +32,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public ObservableList<ModRowVm> Mods { get; } = new();
 
     public ICollectionView ModsView { get; }
+
+    public FilterPanelVm Filters { get; } = new();
+
+    private const string FilterPanelKey = "ui.filterpanel";
+
+    /// <summary>A search or a filter hides mods: chapters show what they find, folded or not.</summary>
+    private bool IsNarrowed => !string.IsNullOrWhiteSpace(SearchText) || Filters.HasActive;
 
     public ObservableList<FrameworkStatus> Frameworks { get; } = new();
 
@@ -172,7 +181,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _seg2Label = "Applying";
 
-    partial void OnSearchTextChanged(string value) { UpdateGroupNames(); ModsView.Refresh(); BuildCollectionChapters(); UpdateChecked(); }
+    partial void OnSearchTextChanged(string value) => OnListNarrowed();
+
+    private void OnListNarrowed() { UpdateGroupNames(); ModsView.Refresh(); BuildCollectionChapters(); UpdateChecked(); }
 
     partial void OnSelectedModChanged(ModRowVm? value)
     {
@@ -456,6 +467,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 .ThenBy(r => r.InModsBlock ? r.Overview.Package.ModName : "", byName)
                 .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase)
                 .ToList();
+            Filters.Recount(ordered);
             if (ordered.SequenceEqual(Mods)) ModsView.Refresh(); // same rows in the same order: regroup only
             else Mods.Reset(ordered);
             UpdateGroupNames();

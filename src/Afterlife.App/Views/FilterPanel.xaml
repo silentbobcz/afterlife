@@ -1,0 +1,217 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Afterlife.App.Controls"
+                    xmlns:vm="clr-namespace:Afterlife.App.ViewModels">
+    <!-- Filter panel between PROFILES and MOD LIBRARY: open, collapsed to a strip, or hidden. -->
+
+    <!-- square button of the strip and the panel header -->
+    <Style x:Key="FilterSquare" TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Foreground" Value="{StaticResource T2}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Line2}" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="B" Background="Transparent" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Y}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- one filter line: box (off / must match / must not match), colour or mark, name, count -->
+    <DataTemplate x:Key="FilterItemTemplate" DataType="{x:Type vm:FilterItemVm}">
+        <Button Command="{Binding ToggleCommand}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}" HorizontalContentAlignment="Stretch"
+                ToolTip="Click: must match · again: must not match · again: off" AutomationProperties.Name="{Binding Label}">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Row" Background="Transparent" Padding="2,3">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Row" Property="Background" Value="{StaticResource Bg3}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Box" Width="15" Height="15" BorderBrush="{StaticResource T3}" BorderThickness="1.5" VerticalAlignment="Center">
+                    <TextBlock x:Name="BoxMark" Style="{StaticResource Mono}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Rectangle Grid.Column="1" Width="7" Height="7" Margin="9,0,0,0" VerticalAlignment="Center" Fill="{Binding Tone, Converter={StaticResource ToneBrush}}"
+                           Visibility="{Binding HasGlyph, Converter={StaticResource InverseBoolToVis}}" />
+                <TextBlock Grid.Column="1" Width="10" Margin="8,0,0,0" Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" TextAlignment="Center" VerticalAlignment="Center"
+                           Text="{Binding Glyph}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" Visibility="{Binding HasGlyph, Converter={StaticResource BoolToVis}}" />
+                <TextBlock x:Name="Name" Grid.Column="2" Margin="9,0,8,0" Style="{StaticResource Body}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Text="{Binding Label}" />
+                <TextBlock Grid.Column="3" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource T3}" VerticalAlignment="Center" Text="{Binding Count}" />
+            </Grid>
+        </Button>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsIncluded}" Value="True">
+                <Setter TargetName="Box" Property="Background" Value="{StaticResource Y}" />
+                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Y}" />
+                <Setter TargetName="BoxMark" Property="Text" Value="✓" />
+                <Setter TargetName="BoxMark" Property="Foreground" Value="{StaticResource Bg}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsExcluded}" Value="True">
+                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource M}" />
+                <Setter TargetName="BoxMark" Property="Text" Value="✕" />
+                <Setter TargetName="BoxMark" Property="Foreground" Value="{StaticResource M}" />
+                <Setter TargetName="Name" Property="TextDecorations" Value="Strikethrough" />
+                <Setter TargetName="Name" Property="Foreground" Value="{StaticResource T2}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- MATCH ALL / MATCH ANY -->
+    <Style x:Key="MatchButton" TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Foreground" Value="{StaticResource T2}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate DataType="{x:Type vm:FilterPanelVm}">
+        <Grid>
+            <!-- open -->
+            <c:CutBorder Style="{StaticResource Panel}" Width="240" Padding="16,18,16,14" Visibility="{Binding IsOpen, Converter={StaticResource BoolToVis}}">
+                <DockPanel LastChildFill="True">
+                    <Grid DockPanel.Dock="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource PanelTitle}" Text="FILTERS" />
+                            <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="Nothing changes in the game." />
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource FilterSquare}" Width="24" Height="22" Margin="0,0,6,0" VerticalAlignment="Top" Content="«"
+                                Command="{Binding CollapseCommand}" ToolTip="Collapse to a strip" AutomationProperties.Name="Collapse filters" />
+                        <Button Grid.Column="2" Style="{StaticResource FilterSquare}" Width="24" Height="22" VerticalAlignment="Top" Content="✕"
+                                Command="{Binding HideCommand}" ToolTip="Hide the filter panel" AutomationProperties.Name="Hide filters" />
+                    </Grid>
+                    <Border DockPanel.Dock="Top" Margin="0,14,0,4" BorderBrush="{StaticResource Line2}" BorderThickness="1">
+                        <UniformGrid Columns="2">
+                            <Button Content="MATCH ALL" Command="{Binding SetMatchAllCommand}" CommandParameter="all" ToolTip="A mod has to match every ticked filter">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MatchButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding MatchAll}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource CTint}" />
+                                                <Setter Property="Foreground" Value="{StaticResource C}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="MATCH ANY" Command="{Binding SetMatchAllCommand}" CommandParameter="any" ToolTip="One ticked filter is enough">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource MatchButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding MatchAll}" Value="False">
+                                                <Setter Property="Background" Value="{StaticResource CTint}" />
+                                                <Setter Property="Foreground" Value="{StaticResource C}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </UniformGrid>
+                    </Border>
+                    <Grid DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                        <TextBlock Style="{StaticResource Meta}" Foreground="{StaticResource T3}" Text="{Binding Summary}" VerticalAlignment="Center" />
+                        <Button HorizontalAlignment="Right" Style="{StaticResource LinkButton}" Content="Clear all" Command="{Binding ClearAllCommand}"
+                                Visibility="{Binding HasActive, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding Groups}" Focusable="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:FilterGroupVm}">
+                                        <StackPanel Margin="0,10,0,0">
+                                            <TextBlock Style="{StaticResource MonoLabel}" FontSize="10.5" Foreground="{StaticResource T3}" Margin="0,0,0,2" Text="{Binding Title}" />
+                                            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource FilterItemTemplate}" Focusable="False" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Margin="0,12,0,0" Style="{StaticResource Meta}" FontSize="11.5" Foreground="{StaticResource T3}"
+                                       Text="Click once: must match. Twice: must not match. Third click: off." />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </c:CutBorder>
+
+            <!-- collapsed strip -->
+            <c:CutBorder Style="{StaticResource Panel}" Width="58" Padding="0,16,0,14" Visibility="{Binding IsRail, Converter={StaticResource BoolToVis}}">
+                <StackPanel HorizontalAlignment="Center">
+                    <Button Style="{StaticResource FilterSquare}" Content="»" Command="{Binding OpenCommand}" ToolTip="Open the filter panel" AutomationProperties.Name="Open filters" />
+                    <Grid Margin="0,8,0,0">
+                        <Button Style="{StaticResource FilterSquare}" Content="⧩" Command="{Binding OpenCommand}" ToolTip="{Binding Summary}" AutomationProperties.Name="Filters on" />
+                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-7,-6,0" Background="{StaticResource Y}" Padding="3,0" IsHitTestVisible="False"
+                                Visibility="{Binding HasActive, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Style="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource Bg}" Text="{Binding ActiveCount}" />
+                        </Border>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding QuickItems}" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:FilterItemVm}">
+                                <Button x:Name="Q" Margin="0,8,0,0" Command="{Binding ToggleCommand}" Content="{Binding Glyph}" ToolTip="{Binding Label}" AutomationProperties.Name="{Binding Label}"
+                                        Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource FilterSquare}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsIncluded}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{Binding Tone, Converter={StaticResource ToneBrush}}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsExcluded}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{StaticResource M}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Margin="0,12,0,0" HorizontalAlignment="Center" Style="{StaticResource PanelTitle}" FontSize="12" Text="FILTERS">
+                        <TextBlock.LayoutTransform>
+                            <RotateTransform Angle="-90" />
+                        </TextBlock.LayoutTransform>
+                    </TextBlock>
+                </StackPanel>
+            </c:CutBorder>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

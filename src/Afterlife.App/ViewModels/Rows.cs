@@ -56,6 +56,7 @@ public sealed partial class ModRowVm : ObservableObject
         }
         Tags = tags;
         VersionNote = o.HasOverride ? "enabled with override" : null;
+        _facets = null;
         OnPropertyChanged(string.Empty);
     }
 
@@ -117,6 +118,13 @@ public sealed partial class ModRowVm : ObservableObject
         _want = value;
         OnPropertyChanged(nameof(Want));
     }
+
+    private HashSet<string>? _facets;
+
+    /// <summary>What the filter panel can pick this mod by (state, what needs attention, block, tags).</summary>
+    public IReadOnlySet<string> Facets => _facets ??= ModFilter.Facets(Overview,
+        IsCore ? ModBlock.Core : InCollection ? ModBlock.Collection : ModBlock.Mods,
+        Tags.Where(t => !t.Mine && t.Label is not ("OPTIONAL" or "REQUIRED")).Select(t => t.Label));
 
     public bool Matches(string filter) =>
         filter.Length == 0

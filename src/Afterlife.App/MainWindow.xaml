@@ -25,6 +25,7 @@
                 <ResourceDictionary Source="Views/Dialogs.xaml" />
                 <ResourceDictionary Source="Views/CollectionViews.xaml" />
                 <ResourceDictionary Source="Views/Panels.xaml" />
+                <ResourceDictionary Source="Views/FilterPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type vm:CollectionChapterVm}">
@@ -425,6 +426,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="292" />
                     <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="14" />
                     <ColumnDefinition Width="340" />
@@ -562,8 +564,12 @@
                     </DockPanel>
                 </c:CutBorder>
 
+                <!-- ===== FILTERS: open, strip or hidden (Views/FilterPanel.xaml) ===== -->
+                <ContentControl Grid.Column="2" Margin="0,0,14,0" Content="{Binding Filters}" Focusable="False"
+                                Visibility="{Binding Filters.IsShown, Converter={StaticResource BoolToVis}}" />
+
                 <!-- ===== CENTER: mod library ===== -->
-                <c:CutBorder Grid.Column="2" Style="{StaticResource Panel}">
+                <c:CutBorder Grid.Column="3" Style="{StaticResource Panel}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -606,7 +612,11 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
+                                <Button Grid.Column="2" Margin="8,0,0,0" Style="{StaticResource AccentButton}" VerticalAlignment="Center"
+                                        Content="{Binding Filters.ButtonLabel}" Command="{Binding Filters.CycleCommand}"
+                                        ToolTip="Filter panel: open, collapse to a strip, hide" AutomationProperties.Name="Filters" />
                                 <TextBlock Style="{StaticResource Meta}" Text="{Binding LibrarySubtitle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding LibrarySubtitle}" VerticalAlignment="Center" />
                                 <Grid Grid.Column="1" Width="220" Margin="12,0,0,0" VerticalAlignment="Center">
@@ -962,7 +972,7 @@
                 </c:CutBorder>
 
                 <!-- ===== RIGHT: details ===== -->
-                <c:CutBorder Grid.Column="4" Style="{StaticResource Panel}">
+                <c:CutBorder Grid.Column="5" Style="{StaticResource Panel}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />

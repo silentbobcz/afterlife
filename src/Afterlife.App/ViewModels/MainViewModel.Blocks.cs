@@ -22,8 +22,10 @@ public sealed partial class MainViewModel
     {
         try
         {
-            (_collections, var layout, var folded) = await _host.RunAsync(c =>
-                (c.Collections(), c.Store.GetMeta(LayoutKey), _collapsed is null ? c.Store.GetMeta("ui.collapsed") : null));
+            var first = _collapsed is null;
+            (_collections, var layout, var folded, var panel) = await _host.RunAsync(c =>
+                (c.Collections(), c.Store.GetMeta(LayoutKey), first ? c.Store.GetMeta("ui.collapsed") : null, first ? c.Store.GetMeta(FilterPanelKey) : null));
+            if (first) Filters.Restore(panel);
             _layout = BlockLayout.FromJson(layout);
             if (_collapsed is null) _collapsed = (folded ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
         }
@@ -80,7 +82,7 @@ public sealed partial class MainViewModel
     {
         if (ModsView.GroupDescriptions.FirstOrDefault() is not PropertyGroupDescription g) return;
         var want = new List<string>();
-        if (_overview is not null && Mods.Count > 0 && string.IsNullOrWhiteSpace(SearchText))
+        if (_overview is not null && Mods.Count > 0 && !IsNarrowed)
         {
             if (Mods.Any(m => m.IsCore)) want.Add(CoreChapter);
             want.AddRange(_layout.Sections(CollectionSlugs).Select(ChapterOfSection));

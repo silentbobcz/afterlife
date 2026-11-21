@@ -4,6 +4,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 ## Unreleased
 
+- **Filter panel next to the mod list**: filter by state (on, off, not applied yet), by what needs attention (update, conflict, missing requirement), by block (core mods, collections, my mods) and by tags, each with a count. A click means "must match", a second click "must not match", a third turns it off; MATCH ALL or MATCH ANY. The panel can be open, collapsed to a strip with quick filters, or hidden (the FILTERS button next to the search brings it back); AFTERLIFE remembers the choice. Filtering never changes the load order, and Select all takes only what the filter shows.
 - **Overlays use a bigger window**: lists in overlays (Scan manual mods, download history, collection management, plan preview, FOMOD, settings, guide and others) keep their size at the smallest window and grow with it, so a maximised window shows more rows instead of empty space.
 - **Switching a mod off shows both directions**: besides the switched-on mods that need it, the dialog lists the mods only it needed (with their own checkbox, unticked by default) and, to read only, what it needs that stays on because another mod uses it. Core mods are never offered. A mod without such links still goes off without a question.
 - **Start position on small screens**: the window is fitted to the work area before it is shown, so it starts centred instead of sticking out of a 1536 × 824 work area (1920 × 1080 at 125 %).

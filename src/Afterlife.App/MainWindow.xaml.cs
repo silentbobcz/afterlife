@@ -15,6 +15,7 @@ public partial class MainWindow : Window
 {
     private static readonly string[] Accepted = [".zip", ".7z", ".rar", ".archive"];
     private const string RowFormat = "AFTERLIFE.ModRows";
+    private const double NarrowForFilters = 1500;
     private readonly MainViewModel _vm = new();
 
     public MainWindow(string? startLink = null)
@@ -26,6 +27,8 @@ public partial class MainWindow : Window
         _vm.ScrollToSelected += () => Dispatcher.BeginInvoke(() => { if (_vm.SelectedMod is { } r) ModsList.ScrollIntoView(r); },
             System.Windows.Threading.DispatcherPriority.Background);
         SourceInitialized += (_, _) => UseDarkTitleBar();
+        // a narrow window shows the open filter panel as the strip, so the list keeps room
+        SizeChanged += (_, _) => _vm.Filters.IsNarrow = ActualWidth < NarrowForFilters;
         Loaded += async (_, _) =>
         {
             if (startLink is not null) await _vm.HandleExternalAsync(startLink);

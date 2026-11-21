@@ -366,7 +366,7 @@ public sealed partial class MainViewModel
         if (_overview is null) { CollectionChapters = new Dictionary<string, CollectionChapterVm>(); return; }
         _collapsed ??= new HashSet<string>(StringComparer.Ordinal);
         var selected = _overview.Status.Selected;
-        var searching = !string.IsNullOrWhiteSpace(SearchText); // a search shows what it finds, folded or not
+        var searching = IsNarrowed; // a search or a filter shows what it finds, folded or not
         var canEdit = !IsModsOff && _overview.Status.Unfinished is null;
         bool Folded(string key) => !searching && _collapsed.Contains(key);
         ICommand Fold(string key) => new RelayCommand(() => ToggleFold(key));
