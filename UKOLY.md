@@ -10,7 +10,6 @@ Aplikace se nesestavuje, dokud nejsou hotové všechny úpravy a neřekneš. Pol
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A1 | Maximalizace okna v dnešní verzi | AFTERLIFE alpha.9 na tvém počítači | 1. Maximalizuj okno: sahá prostřední seznam až dolů a do šířky? 2. Otevři „Scan manual mods“ a historii stahování: seznamy zůstanou malé (to opravuje O1). 3. Napiš, co vidíš, a své rozlišení a měřítko Windows. | ☐ čeká |
 | A2 | Překryvná okna a start okna (O1) | Nové sestavení | 1. Maximalizuj okno, otevři Scan manual mods a historii stahování: seznamy mají sahat skoro dolů. 2. Zmenši okno na minimum: jako dnes. 3. Na 1920 × 1080 při 125 % okno nesmí přesahovat okraj. | ☐ čeká na sestavení |
 | A3 | Dialog při vypnutí modu (O2) | Nové sestavení, seznam modů | 1. Vypni mod, který potřebuje jiný (ne core) mod: dialog ukáže „ONLY IT NEEDED, NOW ON“ s nezaškrtnutou volbou. 2. Vypni skriptový mod, který potřebuje jen CET: vypne se bez dotazu. 3. Jsou texty srozumitelné? | ☐ čeká na sestavení |
 | A4 | Propojení modů ze ZIPů s Nexusem (F1) | Nové sestavení, plná edice; detail modu, „Link all unlinked mods…“ | 1. Klikni na odkaz a počkej na seznam. 2. Zkontroluj, že každý řádek patří ke správné stránce, a potvrď. 3. Přetáhni do okna ZIP stažený z Nexusu: má sám dostat obrázek a popis. Neověřeno: skutečná odpověď Nexusu. | ☐ čeká na sestavení |
@@ -38,6 +37,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 21. 11. | A1: v maximalizovaném okně alpha.9 hlavní seznam vyplní šířku i výšku, chyba v něm není. Pisatelovo „nezvětší se“ nejspíš míří na překryvná okna (opravuje O1); potvrdí to jeho snímek (D1). |
 | 21. 11. | Fronta a úkoly jsou v repozitáři (`FRONTA.md`, `UKOLY.md`), aby je našla všechna vlákna i počítač doma. Dokumenty v Claude Docs už se nevedou. |
 | 21. 11. | F2 hotové: řazení jen pro zobrazení a přepínač virtualizace. Kontrola O1, O2, O4 a O6 bez nálezu. 303 testů, překlad obou edic. |
 | 21. 11. | F1 a O6 hotové: propojení modů ze ZIPů s Nexusem, z detailu modu i z nastavení. |
