@@ -80,6 +80,7 @@ Each block header has:
 Each row has:
 
 - a checkbox for selecting several mods (Shift and Ctrl work like in Explorer),
+- its place in the load order (**#1**, **#2** …, only while the list is in load order) and the **⋮⋮** handle for dragging it,
 - the name (double-click to rename it, see [section 8](#8-mod-details)), tags and a pink line under the name when a requirement is missing,
 - the version, with **UPDATE vX** when Nexus has a newer one (core mods also show a small cyan arrow next to their version in the CORE MODS table at the top; one click updates),
 - the **DEPLOYED** column: what is really in the game (**DEPLOYED**, **+ PENDING · APPLY**, **− PENDING · APPLY**, **! CONFLICT · DECIDE** and so on),
@@ -93,7 +94,7 @@ The **search** box above the list filters by name and tag; **✕** or Esc clears
 
 When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
-The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category the mods are sorted by name (local edits stay right below their mod); collections keep the curator's order. Profiles are sorted by name too, with *Mods off* first.
+The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category you set the order yourself: drag a row up or down (local edits stay right below their mod), and **A→Z** in the header sorts that section by name once; collections keep the curator's order. Profiles are sorted by name, with *Mods off* first.
 
 Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **RESET ORDER**, **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
@@ -193,18 +194,18 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 1. CORE MODS (always first, cannot be moved),
 2. then the blocks from top to bottom (every COLLECTION and MODS),
 3. inside MODS: the mods without a category first, then each category from top to bottom,
-4. inside MODS and inside every category the mods are **sorted by name**; inside a collection they keep the curator's order.
+4. inside MODS and inside every category the mods load in the order you give them; inside a collection they keep the curator's order.
+
+The number at the start of a row (**#1**, **#2** …) is its place in that order, counted after CORE MODS; it is shown only while the list is in load order (not while it is sorted with **⇅**).
 
 **To load one mod before another** (for example a texture fix that must win over a bigger texture pack):
 
-1. In the MODS header click **+ CATEGORY** and name it, for example *Load first*.
-2. Drag the mod onto that category, or select it and use **MOVE TO CATEGORY**.
-3. Move the category up with its **⋮⋮** handle or the small arrows. Categories always load after the mods of MODS that have no category; if the other mod is one of those, put it into a category too and place the two categories in the order you want.
-4. **APPLY CHANGES**. The preview shows the new order before anything is written.
+1. Drag the mod by its **⋮⋮** handle above the other one, inside MODS, inside a category or from one into another. A line shows where it lands. Several checked mods move together and keep their order.
+2. **APPLY CHANGES**. The preview shows the new order before anything is written.
 
-A category with a single mod in it is fine: that is the intended way to pin one mod. Dragging a row up or down inside MODS or inside the same category does nothing, because the order there is by name.
+A mod's local edits (**└ name**) always stay right below the mod and move with it. Categories still group mods, and a whole category moves by its handle or the small arrows. **A→Z** in the header of MODS or a category sorts that section by name once, after a question; nothing changes in the game before you apply. New mods go to the end of MODS, without a category; an updated mod keeps the place of the old version. The order belongs to the profile: another profile can order the same mods differently (categories are shared by all profiles).
 
-Inside an unlocked collection you can drag rows by the **⋮⋮** handle ([section 12](#12-collections)). Moving a block, a category, or a mod into another category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. **Reset order** returns to the game's default (alphabetical by archive name). Sorting the list (**⇅**) changes only the view, never the order.
+Inside an unlocked collection you can drag rows the same way ([section 12](#12-collections)). Moving a mod, a block or a category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. Until you change the order of a profile, the game uses its default (alphabetical by archive name) and the list shows the mods of MODS by name. **Reset order** returns to that default. Sorting the list (**⇅**) changes only the view, never the order.
 
 ## 11. Nexus Mods: key, downloads, updates
 
@@ -374,4 +375,4 @@ More in the [FAQ](FAQ.md).
 | Esc | Clear the search |
 | Double-click a mod, profile or category name | Rename |
 | Shift+click, Ctrl+click | Select several mods |
-| Drag ⋮⋮ | Move a block or category (load order), move mods into a category, reorder inside an unlocked collection |
+| Drag ⋮⋮ | Move a mod up or down inside MODS, a category or an unlocked collection, or into another category; move a block or category (load order) |

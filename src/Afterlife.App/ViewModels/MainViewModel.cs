@@ -393,32 +393,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await SyncSortedOrderAsync(o);
     }
 
-    private bool _syncingOrder;
-
-    /// <summary>
-    /// With a custom load order (modlist.txt) the list is the load order. MODS and categories are now sorted by
-    /// Name, so the profile follows the list once: same blocks, alphabetical inside them. Apply puts it in the game.
-    /// </summary>
-    private async Task SyncSortedOrderAsync(InstallOverview o)
-    {
-        if (_syncingOrder || !o.OrderIsCustom || IsModsOff || o.Status.Unfinished is not null) return;
-        var slugOfName = SlugOfName();
-        var byId = Mods.ToDictionary(m => m.PackageId, m => m.Overview);
-        var composed = BlockLayout.Compose(CurrentOrder(), id => byId.TryGetValue(id, out var m) ? SectionOf(m, _layout, slugOfName) : BlockLayout.ModsBlock,
-            _layout.Sections(CollectionSlugs));
-        var set = composed.ToHashSet(StringComparer.Ordinal);
-        var now = o.Status.Selected.Entries.Select(e => e.PackageId).Where(set.Contains).ToList();
-        if (now.SequenceEqual(composed)) return;
-        _syncingOrder = true;
-        try
-        {
-            await _host.RunAsync(c => c.Reorder(o.Status.Selected.Id, composed));
-            await RefreshAsync();
-        }
-        catch (Exception ex) when (IsExpected(ex)) { }
-        finally { _syncingOrder = false; }
-    }
-
     private void Apply(InstallOverview o)
     {
         _overview = o;
@@ -459,17 +433,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             }).ToList();
             AssignChapters(rows);
             MarkTwins(rows, o);
-            // MODS and every category alphabetically by name (a layer "└ name" stays right below its mod).
-            // Collections keep their (curator's) order and CORE MODS their fixed one: the stable sort leaves them as they are.
-            var parentName = rows.Where(r => r.Overview.Package.LayerOfModId is null)
-                .GroupBy(r => r.Overview.Package.ModId).ToDictionary(g => g.Key, g => g.First().Overview.Package.ModName, StringComparer.Ordinal);
-            string Group(ModRowVm r) => !r.InModsBlock ? "" : r.Overview.Package.LayerOfModId is { } of && parentName.TryGetValue(of, out var pn) ? pn : r.Overview.Package.ModName;
-            var byName = StringComparer.Create(System.Globalization.CultureInfo.CurrentCulture, ignoreCase: true);
-            var ordered = rows.OrderBy(r => r.BlockRank).ThenBy(Group, byName)
-                .ThenBy(r => !r.InModsBlock || r.Overview.Package.LayerOfModId is null ? 0 : 1)
-                .ThenBy(r => r.InModsBlock ? r.Overview.Package.ModName : "", byName)
-                .ThenBy(r => r.InModsBlock ? r.Overview.Package.Version : "", StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            // MODS and every category in the profile's order, layers right below their mod (MainViewModel.LoadOrder.cs)
+            var ordered = ArrangeRows(rows, o);
             Filters.Recount(ordered);
             ShowRows(ordered);
             foreach (var m in Mods) m.IsChecked = keepMulti.Contains(m.PackageId);

@@ -88,6 +88,14 @@ public sealed partial class ModRowVm : ObservableObject
         set { if (SetProperty(ref _sortLocked, value)) OnPropertyChanged(nameof(CanDrag)); }
     }
     private bool _sortLocked;
+
+    /// <summary>Position in the load order after CORE MODS ("#1"), the count modlist.txt follows; null for core mods and layers.</summary>
+    public string? OrderText { get => _orderText; private set => SetProperty(ref _orderText, value); }
+    private string? _orderText;
+    public string OrderTip { get => _orderTip; private set => SetProperty(ref _orderTip, value); }
+    private string _orderTip = "";
+    public void SetOrder(string? text, string tip) { OrderTip = tip; OrderText = text; }
+
     public string Name => Overview.Package.LayerOfModId is null ? Overview.Package.ModName : "└ " + Overview.Package.ModName;
     /// <summary>Another version of this mod is on in the profile too.</summary>
     public string? TwinText { get => _twinText; set => SetProperty(ref _twinText, value); }
@@ -520,6 +528,11 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public ICommand? AddCategoryCommand { get; init; }
     public ICommand? RenameCommand { get; init; }
     public ICommand? RemoveCommand { get; init; }
+    /// <summary>A→Z: sorts this section (MODS without category, or this category) by name once.</summary>
+    public ICommand? SortCommand { get; init; }
+    public string SortTip => IsCategory
+        ? "Sort the mods of this category by name, once. Afterwards you can drag them again."
+        : "Sort the mods of MODS without a category by name, once. Afterwards you can drag them again.";
     public string EmptyHint => IsCategory ? "empty · drag mods here or select them and use MOVE TO CATEGORY" : "";
     public bool IsEmpty => Total == 0;
 

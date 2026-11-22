@@ -28,6 +28,7 @@ public sealed partial class MainViewModel
                  first ? c.Store.GetMeta(SortKey) : null));
             if (first) { Filters.Restore(panel); RestoreSort(sort); }
             _layout = BlockLayout.FromJson(layout);
+            if (_takeOver is null) await LoadTakeOverAsync();
             if (_collapsed is null) _collapsed = (folded ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries).ToHashSet(StringComparer.Ordinal);
         }
         catch (Exception ex) when (IsExpected(ex)) { _collections = []; }
@@ -72,6 +73,14 @@ public sealed partial class MainViewModel
             r.Section = SectionOf(r.Overview, _layout, slugOfName);
             r.Chapter = ChapterOfSection(r.Section);
             r.BlockRank = r.Section == "core" ? -1 : rank.TryGetValue(r.Section, out var i) ? i : sections.Count;
+        }
+        // a layer ("└ name") of a mod in MODS or a category belongs to the section of that mod
+        foreach (var (layer, parent) in ParentRows(rows))
+        {
+            if (parent.Section != BlockLayout.ModsBlock && !parent.Section.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal)) continue;
+            layer.Section = parent.Section;
+            layer.Chapter = parent.Chapter;
+            layer.BlockRank = parent.BlockRank;
         }
     }
 
@@ -170,22 +179,16 @@ public sealed partial class MainViewModel
     public Task MoveModsAsync(IReadOnlyList<string> moved, string targetId, bool after) => RunUiAsync(async () =>
     {
         if (_overview is null || IsModsOff) return;
-        var target = Mods.FirstOrDefault(m => m.PackageId == targetId);
-        if (target is null) return;
+        var row = Mods.FirstOrDefault(m => m.PackageId == targetId);
+        if (row is null || DropTargetOf(row, after) is not { } drop) return;
+        var target = drop.Target;
+        targetId = target.PackageId;
         if (WhyNotDrop(moved, target.Chapter) is { } why) { Say("Not moved: " + why + ".", Tone.Warn); return; }
-        // inside MODS and categories the order is alphabetical; a drop there only changes the category
-        if (InModsFamily(target.Chapter) && Mods.Where(m => moved.Contains(m.PackageId)).All(m => m.Chapter == target.Chapter))
-        {
-            Say("Inside MODS and categories mods are sorted by name. To load a mod earlier, put it in a category and move the category up.", Tone.Info);
-            return;
-        }
-        var order = CurrentOrder();
-        var movedSet = moved.Where(order.Contains).ToList();
+        var current = CurrentOrder();
+        // several mods move as one group in their current load order
+        var movedSet = current.Where(moved.Contains).ToList();
         if (movedSet.Count == 0 || movedSet.Contains(targetId)) return;
-        order.RemoveAll(movedSet.Contains);
-        var i = order.IndexOf(targetId);
-        if (i < 0) i = order.Count; else if (after) i++;
-        order.InsertRange(i, movedSet);
+        var order = LoadOrder.MoveGroup(current, movedSet, targetId, drop.After);
         var layout = _layout;
         var into = "";
         if (InModsFamily(target.Chapter))
@@ -195,6 +198,8 @@ public sealed partial class MainViewModel
             layout = layout.Assign(movedSet, cat);
             if (changes.Count > 0) into = $"{changes.Count} mod(s) moved to {(cat is null ? "MODS" : CategoryName(cat))}.";
         }
+        // dropped where it already was: nothing to write (a profile in the game's default order stays so)
+        if (into.Length == 0 && order.SequenceEqual(current)) return;
         await ApplyLayoutAsync(layout, order, into.Length > 0 ? into : "Load order changed.");
         if (into.Length > 0) SetAllChecked(false); // moved into a category, selection done
     });

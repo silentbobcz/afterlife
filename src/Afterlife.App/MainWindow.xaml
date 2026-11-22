@@ -27,6 +27,7 @@
                 <ResourceDictionary Source="Views/Panels.xaml" />
                 <ResourceDictionary Source="Views/SettingsView.xaml" />
                 <ResourceDictionary Source="Views/FilterPanel.xaml" />
+                <ResourceDictionary Source="Views/LoadOrder.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type vm:CollectionChapterVm}">
@@ -112,6 +113,7 @@
                             </StackPanel>
                             <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
                                 <!-- new category inside MODS -->
+                                <Button Style="{StaticResource SortSectionButton}" />
                                 <Button Style="{StaticResource SmallButton}" Content="+ CATEGORY" Command="{Binding AddCategoryCommand}"
                                         ToolTip="New category inside MODS; its mods load after the mods without a category"
                                         Visibility="{Binding AddCategoryCommand, Converter={StaticResource NullToVis}}" />
@@ -206,6 +208,7 @@
                                     <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Margin="4,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource T2}" Text="{Binding CountText}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                                    <Button Style="{StaticResource SortSectionButton}" Margin="0,0,12,0" />
                                     <Button Style="{StaticResource QuietLinkButton}" FontSize="11.5" Content="Rename" Command="{Binding RenameCommand}" Margin="0,0,12,0" />
                                     <Button Style="{StaticResource QuietLinkButton}" FontSize="11.5" Content="Remove" Command="{Binding RemoveCommand}"
                                             ToolTip="Remove the category; its mods go back to MODS (nothing is deleted)" />
@@ -818,7 +821,8 @@
                                                   IsChecked="{Binding IsChecked}" Click="OnRowCheckClick" />
                                         <StackPanel Grid.Column="1" Margin="0,0,10,0">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="⋮⋮" Foreground="{StaticResource T3}" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip="Drag into another category (inside MODS and categories mods are sorted by name), or reorder inside an unlocked collection"
+                                                <TextBlock Style="{StaticResource OrderNumber}" />
+                                                <TextBlock Text="⋮⋮" Foreground="{StaticResource T3}" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip="Drag up or down to change the load order, or into another category; inside a collection only while its order is unlocked"
                                                            Visibility="{Binding CanDrag, Converter={StaticResource BoolToVis}}" Cursor="SizeNS" />
                                                 <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
                                                            MouseLeftButtonDown="OnModNameMouseDown" ToolTip="Double-click to rename">

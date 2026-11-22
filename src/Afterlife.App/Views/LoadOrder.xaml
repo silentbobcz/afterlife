@@ -1,0 +1,37 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Free load order: the position number at the start of a mod row and the A→Z button of MODS and categories. -->
+
+    <!-- "#1", "#2" … in load order view only; kept as space on rows without a number (core mods, layers) so names align -->
+    <Style x:Key="OrderNumber" TargetType="TextBlock" BasedOn="{StaticResource Mono}">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{StaticResource T3}" />
+        <Setter Property="MinWidth" Value="34" />
+        <Setter Property="TextAlignment" Value="Right" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Text" Value="{Binding OrderText}" />
+        <Setter Property="ToolTip" Value="{Binding OrderTip}" />
+        <Setter Property="Visibility" Value="Visible" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding OrderText}" Value="{x:Null}">
+                <Setter Property="Visibility" Value="Hidden" />
+            </DataTrigger>
+            <!-- sorted for viewing (⇅): the shown order is not the load order -->
+            <DataTrigger Binding="{Binding SortLocked}" Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- A→Z in the header of MODS and every category: sorts that section by name once, after a question -->
+    <Style x:Key="SortSectionButton" TargetType="Button" BasedOn="{StaticResource SmallButton}">
+        <Setter Property="Content" Value="A→Z" />
+        <Setter Property="Margin" Value="0,0,6,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Command" Value="{Binding SortCommand}" />
+        <Setter Property="ToolTip" Value="{Binding SortTip}" />
+        <Setter Property="AutomationProperties.Name" Value="Sort by name" />
+        <Setter Property="Visibility" Value="{Binding SortCommand, Converter={StaticResource NullToVis}}" />
+    </Style>
+</ResourceDictionary>

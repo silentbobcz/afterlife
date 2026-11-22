@@ -38,7 +38,7 @@ Until 1.0.0-alpha.8 AFTERLIFE shipped as one executable with the whole app packe
 
 ## How do I load one mod before another?
 
-Only archive mods (`.archive`) have a load order; the top of the list loads first and wins. Inside MODS and inside a category the mods are sorted by name, so today you pin a mod with a category: **+ CATEGORY**, put the mod into it, move the category up, **APPLY CHANGES**. The steps are in the [user guide, section 10](USER-GUIDE.md#load-order).
+Only archive mods (`.archive`) have a load order; the top of the list loads first and wins. Drag the mod by its **⋮⋮** handle above the other one (inside MODS, inside a category or from one into another), then **APPLY CHANGES**. The number at the start of a row (#1, #2 …) is its place in the load order. Categories stay a way to group mods; **A→Z** in a header sorts that section by name once. The steps are in the [user guide, section 10](USER-GUIDE.md#load-order).
 
 ## AFTERLIFE says the request limit of Nexus Mods is reached
 

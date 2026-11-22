@@ -154,7 +154,7 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <Path Fill="{StaticResource T3}" Width="6" Height="10" HorizontalAlignment="Left" Data="M0,0 H2 V2 H0 Z M4,0 H6 V2 H4 Z M0,4 H2 V6 H0 Z M4,4 H6 V6 H4 Z M0,8 H2 V10 H0 Z M4,8 H6 V10 H4 Z" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag a row into another category, or a whole block by its icon to change the load order. Inside MODS and categories mods are sorted by name; higher blocks load first and win file conflicts." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Drag a row up or down, or into another category, to change the load order; a whole block moves by its icon. #1, #2 … at the start of a row is its place in the load order. Higher loads first and wins file conflicts; A→Z in a header sorts that section by name once." />
             </Grid>
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>

@@ -418,7 +418,7 @@ public sealed partial class MainViewModel
             familyOn, family.Count, canEdit && family.Count > 0, modsFolded, new AsyncRelayCommand(() => SetPlainEnabledAsync(familyOn == 0)), null, Fold(PlainChapter))
         {
             BlockKey = BlockLayout.ModsBlock, MoveUpCommand = mUp, MoveDownCommand = mDown,
-            AddCategoryCommand = canEdit ? AddCategoryCommand : null,
+            AddCategoryCommand = canEdit ? AddCategoryCommand : null, SortCommand = SortCommandOf(BlockLayout.ModsBlock, canEdit),
         }, x => x.InModsBlock);
 
         foreach (var cat in _layout.Categories)
@@ -431,7 +431,7 @@ public sealed partial class MainViewModel
             map[key] = Marks(new CollectionChapterVm(ChapterKind.Category, id, "CATEGORY", cat.Name, on, ids.Count,
                 canEdit && ids.Count > 0, modsFolded || Folded(key), new AsyncRelayCommand(() => SetChapterEnabledAsync(key, on == 0)), null, Fold(key))
             {
-                IsHidden = modsFolded, BlockKey = BlockLayout.CategoryKey(id), MoveUpCommand = up, MoveDownCommand = down,
+                IsHidden = modsFolded, BlockKey = BlockLayout.CategoryKey(id), MoveUpCommand = up, MoveDownCommand = down, SortCommand = SortCommandOf(BlockLayout.CategoryKey(id), canEdit),
                 RenameCommand = new AsyncRelayCommand(() => RenameCategoryAsync(id)),
                 RemoveCommand = new AsyncRelayCommand(() => RemoveCategoryAsync(id)),
             }, x => x.Chapter == key);

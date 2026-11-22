@@ -203,9 +203,11 @@ public partial class MainWindow : Window
         }
         else
         {
+            // a layer ("└ name") is part of its mod: a drop on it lands after that mod and its layers
             var (row, after) = RowAt(e);
-            ok = row is not null && !row.IsCore && row.Overview.Package.LayerOfModId is null && !_vm.IsModsOff && _vm.WhyNotDrop(moved, row.Chapter) is null;
-            SetHint(ok ? row : null, after ? 1 : -1);
+            var spot = row is null ? null : _vm.DropTargetOf(row, after);
+            ok = spot is not null && !_vm.IsModsOff && _vm.WhyNotDrop(moved, spot.Target.Chapter) is null;
+            SetHint(ok ? spot!.Hint : null, spot?.After == true ? 1 : -1);
         }
         e.Effects = ok ? DragDropEffects.Move : DragDropEffects.None;
         AutoScroll(e);

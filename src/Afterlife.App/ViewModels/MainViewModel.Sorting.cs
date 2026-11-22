@@ -54,6 +54,7 @@ public sealed partial class MainViewModel
     private void ShowRows(IReadOnlyList<ModRowVm> loadOrdered)
     {
         _loadOrdered = loadOrdered;
+        NumberRows(loadOrdered);
         var locked = IsViewSorted;
         foreach (var r in loadOrdered) r.SortLocked = locked;
         var shown = ModSort.View(loadOrdered, SortBy, r => r.Overview, r => r.BlockRank, r => r.IsCore);

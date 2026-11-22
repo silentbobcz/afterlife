@@ -108,12 +108,7 @@ public sealed class ProfileService
         var byId = p.Entries.ToDictionary(e => e.PackageId);
         var entries = ordered.Select(id => byId.TryGetValue(id, out var e) ? e : new ProfileEntry(id, false)).ToList();
         entries.AddRange(p.Entries.Where(e => !ordered.Contains(e.PackageId)));
-        var archives = ordered
-            .SelectMany(id => packages[id].Files.Select(f => GamePath.Parse(f.Target))
-                .Where(g => string.Equals(g.ParentValue, "archive/pc/mod", StringComparison.OrdinalIgnoreCase) && g.Extension == ".archive")
-                .Select(g => g.FileName).OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var archives = ArchiveOrderOf(ordered, packages);
         var q = p with
         {
             Entries = entries,
@@ -123,6 +118,18 @@ public sealed class ProfileService
         Store.SaveProfile(q);
         return q;
     }
+
+    /// <summary>
+    /// The archive order (modlist.txt) that <see cref="Reorder"/> stores for a list of mods: their .archive files in
+    /// The order of the mods, by file name inside one mod. Unknown mods are skipped.
+    /// </summary>
+    public static List<string> ArchiveOrderOf(IReadOnlyList<string> orderedPackageIds, IReadOnlyDictionary<string, PackageManifest> packages) =>
+        orderedPackageIds.Where(packages.ContainsKey).Distinct()
+            .SelectMany(id => packages[id].Files.Select(f => GamePath.Parse(f.Target))
+                .Where(g => string.Equals(g.ParentValue, "archive/pc/mod", StringComparison.OrdinalIgnoreCase) && g.Extension == ".archive")
+                .Select(g => g.FileName).OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
     /// <summary>Back to the game's default (alphabetical) archive order.</summary>
     public ProfileState ResetOrder(string profileId)
