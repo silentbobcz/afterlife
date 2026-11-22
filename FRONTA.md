@@ -17,7 +17,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | Balík | Model | Co | Čeká na | Stav |
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
-| O9 | Opus | Samostatný instalátor (Inno Setup) jako druhé stažení | D2 | čeká na D2 |
+| O9 | Opus | Samostatný instalátor (Inno Setup), jen na GitHubu | nic | může začít |
 | F-kontrola | Fable | Kontrola O8 a O9, uzavření dávky | O8, O9 | čeká |
 
 ## O8. Přestavba nastavení v kódu
@@ -37,10 +37,10 @@ Podklad z první dávky (předávka O7):
 
 ## O9. Samostatný instalátor
 
-Opus. Čeká na D2 (Nexus Mods schválí nahranou verzi se složkou v zipu). Rozhodnuto 22. 11.: zip se složkou zůstává hlavní podobou, k jednomu samorozbalovacímu exe se nevracíme (nepodepsaný exe, který se rozbaluje do dočasné složky, zadržela ruční kontrola Nexusu). Instalátor je druhé stažení pro pohodlí.
+Opus. Může začít hned. Rozhodnuto 22. 11.: instalátor se nahrává jen na GitHub k vydání, na Nexus Mods ne (každý nahraný soubor tam prochází kontrolou znovu a spustitelný instalátor by nejspíš šel k ruční). Na Nexusu zůstává jen zip. Dále: zip se složkou zůstává hlavní podobou, k jednomu samorozbalovacímu exe se nevracíme (nepodepsaný exe, který se rozbaluje do dočasné složky, zadržela ruční kontrola Nexusu). Instalátor je druhé stažení pro pohodlí.
 1. Skript Inno Setup v `installer/` (uživatel ho už používá u NETWATCH): instalace pro jednoho uživatele bez práv správce, zástupce v nabídce Start, odinstalace. Knihovnu a nastavení uživatele instalátor ani odinstalace nemažou; na to je v aplikaci „Remove AFTERLIFE from this PC…“.
 2. Krok ve workflow `build.yml`: instalátor se sestaví ze stejné složky jako zip a přibude k vydání se svým SHA-256. Zip zůstává.
-3. `README.md` a `docs/USER-GUIDE.md`: dvě cesty instalace. `CHANGELOG.md`.
+3. `README.md` a `docs/USER-GUIDE.md`: dvě cesty instalace, instalátor s odkazem na GitHub Releases. `CHANGELOG.md`. Do předávky napiš větu pro popis na Nexusu s odkazem na instalátor a upozorni uživatele, ať si před zveřejněním ověří, že pravidla Nexusu takový odkaz dovolují.
 4. Neověřeno bude: běh instalátoru ve Windows, hlášení SmartScreen u nepodepsaného souboru (položka A pro uživatele). Podpis kódu je samostatné rozhodnutí uživatele, sem nepatří.
 
 ## F-kontrola
