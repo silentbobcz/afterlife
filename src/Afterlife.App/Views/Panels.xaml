@@ -232,8 +232,8 @@
                          Visibility="{Binding IsOnline, Converter={StaticResource BoolToVis}}">
                 <StackPanel>
                     <TextBlock Style="{StaticResource MonoLabel}" Text="UPDATES" />
-                    <CheckBox Margin="0,8,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesAuto}" Content="Look for newer versions when AFTERLIFE starts" />
-                    <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesHourly}" Content="Look again every hour while AFTERLIFE is open" />
+                    <CheckBox Margin="0,8,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesAuto}" Content="Look for newer versions of your mods when AFTERLIFE starts" />
+                    <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesHourly}" Content="Look for newer versions of your mods every hour while AFTERLIFE is open" />
                     <TextBlock Margin="28,2,0,0" Style="{StaticResource Meta}" Text="Core mods are checked either way." />
                     <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesActiveOnly}" IsEnabled="{Binding AnyAutoCheck}"
                               Content="On its own, check only the mods switched on in the selected profile" />
