@@ -2,7 +2,7 @@
 
 Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`** (sloučeno 22. 11. včetně volného pořadí O11 a O12). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O14.“ Balík O16 jde pustit vedle něj (jiné soubory).
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O15.“ Balík O17 jde pustit vedle něj (jiné soubory).
 
 ## Pravidla dávky
 
@@ -18,14 +18,16 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | nic | hotovo, zkontrolováno |
 | F-kontrola | Fable | Kontrola O8 | nic | hotovo, bez nálezu; dávka čeká na vyzkoušení (A10) |
-| O10 | Sonnet | Náhled volného pořadí v MODS a kategoriích | nic | hotovo, zkontrolováno; čeká na B4 |
+| O10 | Sonnet | Náhled volného pořadí v MODS a kategoriích | nic | hotovo, schváleno (B4) |
 | O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | nic | hotovo, zkontrolováno |
 | O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | nic | hotovo, zkontrolováno |
-| F-pořadí | Fable | Kontrola O11 a O12 | nic | hotovo; čeká na vyzkoušení (A13) |
-| O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
-| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | návrh hotový, zkontrolováno; čeká na B6 |
-| O15 | Opus | Export a import load listu v kódu | B6 | čeká |
-| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | hotovo, zkontrolováno; čeká na vyzkoušení (A14) |
+| F-pořadí | Fable | Kontrola O11 a O12 | nic | hotovo, vyzkoušeno uživatelem (A13) |
+| O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | nic | návrh schválen (B5); do kódu jako O17 |
+| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | hotovo, schváleno (B6) |
+| O15 | Opus | Export a import load listu v kódu | nic | může začít |
+| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | hotovo, vyzkoušeno uživatelem (A14) |
+| O17 | Opus | Nové texty dialogu při vypnutí modu v kódu a oprava výpočtu jeho částí | nic | může začít |
+| F-kontrola 3 | Fable | Kontrola O15 a O17 | O15, O17 | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -100,7 +102,7 @@ Pro uživatele položka B6 v `UKOLY.md`: schválit formát a rozhodnout sporné 
 
 ### O15. Load list v kódu
 
-Opus. Čeká na B6. Čtení a zápis formátu jako čistá logika v `Afterlife.Core` s testy (zápis a zpětné čtení dá totéž, ručně upravený soubor s chybou dá srozumitelnou hlášku s číslem řádku), napojení v okně novým souborem, zápis pořadí přes stávající `ApplyLayoutAsync`. Návod (oddíl 10 a 16), FAQ, CHANGELOG, položka A v `UKOLY.md`. Proč Opus a ne Sonnet: import zakládá kategorie a mění profil, chyba by přeházela pořadí.
+Opus. Může začít hned: formát je schválen 23. 11. (B6) podle `docs/previews/load-list-format.md`, u bodů D1 až D7 platí doporučené možnosti A, tlačítka se jmenují EXPORT ORDER a IMPORT ORDER, poznámky kontroly v oddíle 8 jsou závazné (shoda jen podle jména je v náhledu vidět jednotlivě). Čtení a zápis formátu jako čistá logika v `Afterlife.Core` s testy (zápis a zpětné čtení dá totéž, ručně upravený soubor s chybou dá srozumitelnou hlášku s číslem řádku), napojení v okně novým souborem, zápis pořadí přes stávající `ApplyLayoutAsync`. Návod (oddíl 10 a 16), FAQ, CHANGELOG, položka A v `UKOLY.md`. Proč Opus a ne Sonnet: import zakládá kategorie a mění profil, chyba by přeházela pořadí.
 
 ## O16. Tlačítka FILTERS a SORT
 
@@ -108,6 +110,19 @@ Sonnet. Může začít hned. Uživatel 22. 11.: tlačítka FILTERS a ⇅ splýva
 1. Statický náhled `docs/previews/filter-sort-buttons.html`: horní část okna s odkazy a hledáním, tři varianty barvy tlačítek jen z tokenů `App.xaml` (například žlutý obrys, fialová jako kategorie, plné tmavé tlačítko se světlým textem), vždy ve stavu klidném, aktivním (filtr zapnutý, seznam seřazený) a pod myší.
 2. Popisek řazení: „⇅ SORT · LOAD ORDER“, „⇅ SORT · NAME“ … a varianta kratší; ukaž, jak se vejde na nejmenší šířku okna.
 3. Do kódu až po schválení (položka B7 v `UKOLY.md`); pak je to změna stylu dvou tlačítek a jednoho textu, s úpravou návodu tam, kde se tlačítko jmenuje.
+
+## O17. Dialog při vypnutí modu: nové texty a oprava výpočtu
+
+Opus. Může začít hned; texty schválil uživatel 23. 11. (B5). Proč Opus: mění se i výpočet toho, co dialog nabízí.
+1. Texty podle tabulky v `docs/previews/switch-off-dialog-texts.md`, všechny varianty (jeden mod, výběr, kategorie, všechny mody, core mody, druhý dialog kolekce). Jednotné a množné číslo dvěma větami, žádné „mod(s)“. Stejné znění dostanou i zaškrtávátka v „DELETE EVERYWHERE?“ a „REMOVE FROM GAME?“, která dnešní text sdílejí.
+2. Věta pod nadpisem každé části: nové místo v `ConfirmVm` (`ViewModels/Overlays/Dialogs.cs`) a v šabloně `Views/Dialogs.xaml`, styl `Meta`, zalamování. Dlouhé jméno modu v nadpisu zkrať na zhruba 30 znaků s výpustkou.
+3. Oprava výpočtu: části „NOT NEEDED ANY MORE“ a „STAYS ON“ se dnes počítají jen z vypínaného modu (`OverviewBuilder.UnneededRequirements` a `KeptRequirements` dostávají jen `ids`). Když je zaškrtnuté vypnutí závislých modů, počítej je z celé množiny, která se opravdu vypne; po změně zaškrtnutí se obě části přepočítají. Logika patří do `Afterlife.Infrastructure` s testy (mod A potřebuje L, mod B potřebuje L a A: vypnutí A i B nabídne L).
+4. Kolekce: dva dialogy po sobě zůstávají; Cancel ve druhém dál ruší celé vypnutí, ale text druhého dialogu to řekne („Cancel leaves the collection on.“). Výchozí zaškrtnutí druhého dialogu sjednoť s dialogem jednoho modu (nezaškrtnuto).
+5. CHANGELOG, návod (oddíl 9), položka A v `UKOLY.md` s třemi příklady k vyzkoušení.
+
+## F-kontrola 3
+
+Fable. Projít O15 a O17 proti schváleným návrhům a předávkám; u O15 hlavně: zápis a zpětné čtení dá totéž, import nemění nic mimo vybraný profil kromě kategorií a pořadí bloků, záloha před importem vzniká, chybný soubor nic nezmění. Testy, překlad obou edic, opravy zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty` (fronta má přes 20 kB: hotové balíky a předávky do `archiv/`).
 
 ## Co do fronty nepatří
 
