@@ -22,6 +22,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | B4, C9 | čeká |
 | O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | O11 | čeká |
 | F-pořadí | Fable | Kontrola O11 a O12 | O12 | čeká |
+| O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | nic | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -69,6 +70,12 @@ Sonnet. Čeká na O11. Ctrl+↑/↓ posune vybrané mody o řádek, Ctrl+Home/En
 ### F-pořadí
 
 Fable. Projít O11 a O12 proti náhledu a předávkám, hlavně: pořadí v `modlist.txt` po APPLY odpovídá číslům v seznamu; řazení ⇅ ani filtr pořadí nemění; nic se nepřehází při startu se starou knihovnou. Testy, překlad obou edic, opravy zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
+
+## O13. Srozumitelnější dialog při vypnutí modu
+
+Sonnet. Uživatel 22. 11. dialog vyzkoušel: funguje, ale logice nerozumí. Soubor `ViewModels/MainViewModel.Library.cs` (nadpisy „ALSO SWITCH OFF WHAT NEEDS IT?“, „ONLY IT NEEDED, NOW ON“, „IT NEEDS, STAYS ON“ a věty kolem), šablona v `Views/Dialogs.xaml`. Chování se nemění, jen texty a případně pořadí tří částí.
+1. Napiš návrh nových textů jako tabulku „dnes → nově“ do předávky: každá část jednou celou větou, která říká, co se stane s kterými mody (například „These mods need it and will stop working: switch them off too?“). Žádné zkratky typu „IT NEEDS“.
+2. Pro uživatele položka B v `UKOLY.md` s tou tabulkou; do kódu až po schválení.
 
 ## Co do fronty nepatří
 
