@@ -112,10 +112,12 @@ public sealed partial class MainViewModel
                 if (on.Count > 0) c.SetEnabledMany(profileId, on, true);
                 if (off.Count > 0) c.SetEnabledMany(profileId, off, false);
             });
-        var message = $"Load order loaded from the list: {plan.Moved.Count} moved, {on.Count} switched on, {off.Count} switched off. Apply to update the game."
+        var message = $"Load order loaded from the list: {plan.Moved.Count} moved, {on.Count} switched on, {off.Count} switched off."
             + (backup ? " The previous order is saved in the library (exports)." : "");
+        // a changed order gets the note about conflict winners and APPLY from ApplyLayoutAsync
+        var reordered = plan.OrderChanged || plan.TakesOwnOrder;
         await ApplyLayoutAsync(plan.Layout, plan.Order.ToList(), message);
-        Say(message, Tone.Ok);
+        if (!reordered) Say(message + " Apply to update the game.", Tone.Ok);
     }
 
     /// <summary>
