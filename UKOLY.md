@@ -2,19 +2,16 @@
 
 Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Můžou začít hned: O15 (load list v kódu, Opus) a O17 (nové texty dialogu při vypnutí modu, Opus). Sahají na jiné soubory, jdou pustit vedle sebe. Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O15.“
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Druhá dávka je uzavřená a v archivu; pro modely teď nic nečeká, další balíky vzniknou z toho, co najdeš při zkoušení.
 
-Pracovní verze plné edice z 22. 11. pozdě večer: `AFTERLIFE-test-1c1256e-win-x64.zip` ve složce `zkusebni`. Obsahuje vše z `main` včetně volného pořadí modů a fialových tlačítek FILTERS a SORT; zkouší se na ní všechny položky A. Starší zipy smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
+Poslední pracovní verze plné edice je `AFTERLIFE-test-1c1256e-win-x64.zip` ve složce `zkusebni` (22. 11.). Neobsahuje ještě load list (A16) ani nový dialog při vypnutí modu (A15); na ty je potřeba nová pracovní verze, řekni si o ni. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
 
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-
-## B. Schválit
-
-| # | Co | Kde to najdu | Na co se dívat | Stav |
-|---|---|---|---|---|
+| A15 | Nový dialog při vypnutí modu (O17) | Další pracovní verze; seznam modů | 1. Vypni mod, který potřebuje jiný zapnutý mod: nadpis „SWITCH OFF ‹JMÉNO›?“, část WILL STOP WORKING s větou a zaškrtnutým „Switch off this mod too“. 2. Najdi mod A, který potřebuje knihovnu L, a mod B, který potřebuje L i A. Vypni A: L je v části NOT NEEDED ANY MORE; odškrtni vypnutí B a L se má hned přesunout do STAYS ON. 3. Vypni kolekci, která používala mod mimo sebe: druhý dialog „SWITCH OFF UNUSED MODS?“ má prázdné zaškrtnutí a větu, že Cancel nechá kolekci zapnutou. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
+| A16 | Export a import load listu (O15) | Další pracovní verze; tlačítka EXPORT ORDER a IMPORT ORDER vedle EXPORT LIST pod seznamem | 1. EXPORT ORDER: ulož soubor a otevři ho v Poznámkovém bloku, je čitelný? 2. V souboru přehoď dva řádky, jeden mod přepni z `+` na `-`, přidej řádek `@category Zkouska` s jedním modem pod ním a dej IMPORT ORDER: náhled má přesně říct, co se změní; po LOAD se seznam změní a APPLY ukáže změnu pořadí. 3. Naimportuj týž soubor podruhé: má říct, že se nic nemění. V knihovně ve složce `exports` má být záloha původního pořadí. Neověřeno: nic z toho neběželo v okně; stahování chybějících modů u Premium a přidání kolekce z náhledu. | ☐ čeká na sestavení |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -35,6 +32,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | O15 (export a import load listu) a O17 (nový dialog při vypnutí modu) hotové a zkontrolované, 375 testů; zkouší se v A16 a A15. Druhá dávka fronty je uzavřená a v archivu. |
 | 23. 11. | Vyzkoušeno na pracovní verzi `1c1256e`: A2, A7, A8, A13 (volné pořadí modů) a A14 (fialová tlačítka) v pořádku. A12 (web a dokumentace): bez výhrad teď, úpravy případně později. |
 | 23. 11. | Schváleno: B4 (náhled volného pořadí), B5 (nové texty dialogu při vypnutí modu, do kódu jde jako O17) a B6 (formát load listu; u bodů D1 až D7 platí doporučené možnosti A, tlačítka EXPORT ORDER a IMPORT ORDER; do kódu jde jako O15). |
 | 22. 11. | B7: vybrána varianta B (fialová) a dlouhý popisek; O16 je v kódu a zkontrolované, zkouší se v A14. O14 a O16 sloučeny do `main`. |
