@@ -2,10 +2,6 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## Unreleased
-
-- **Settings in tabs**: the settings are no longer one long column. Tabs on the left (Game & library, Nexus Mods, Updates, Display, Kept files, Diagnostics, FIXER) and the chosen tab on the right, in one fixed size; the settings open on the tab used last. The tabs show short facts: the size of the kept files and a green dot when the Nexus key works. *Remove AFTERLIFE from this PC…* sits apart at the bottom. New: **Show** opens the folder of each kind of kept file before you delete it, and the FIXER tab says what FIXER is and that it is not out yet. In AFTERLIFE Offline the Updates tab is visible with a lock.
-
 ## 1.0.0-beta.1
 
 The first beta: the features are together and from here on they are mostly tuned. Everything below is new since alpha.9.
@@ -21,6 +17,7 @@ The first beta: the features are together and from here on they are mostly tuned
 - **Overlays use a bigger window**: lists in overlays (Scan manual mods, download history, collection management, plan preview, FOMOD, settings, guide and others) keep their size at the smallest window and grow with it, so a maximised window shows more rows instead of empty space.
 - **Switching a mod off shows both directions**: besides the switched-on mods that need it, the dialog lists the mods only it needed (with their own checkbox, unticked by default) and, to read only, what it needs that stays on because another mod uses it. Core mods are never offered. A mod without such links still goes off without a question.
 - **Start position on small screens**: the window is fitted to the work area before it is shown, so it starts centred instead of sticking out of a 1536 × 824 work area (1920 × 1080 at 125 %).
+- **Settings in tabs**: the settings are no longer one long column. Tabs on the left (Game & library, Nexus Mods, Updates, Display, Kept files, Diagnostics, FIXER) and the chosen tab on the right, in one fixed size; the settings open on the tab used last. The tabs show short facts: the size of the kept files and a green dot when the Nexus key works. *Remove AFTERLIFE from this PC…* sits apart at the bottom. New: **Show** opens the folder of each kind of kept file before you delete it, and the FIXER tab says what FIXER is and that it is not out yet. In AFTERLIFE Offline the Updates tab is visible with a lock.
 
 ## 1.0.0-alpha.9
 

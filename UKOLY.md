@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/kind-hopper-az2rax`. Čeká volné pořadí načítání: začni balíkem O10 (náhled), O11 čeká na B4 a C9.
+**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `main`. Čeká volné pořadí načítání: začni balíkem O10 (náhled), O11 čeká na B4 a C9.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 jsi dostal 22. 11. jako zip (název nese hash commitu). Položky A2 až A9 se zkouší na něm. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
 
@@ -34,7 +34,7 @@ Doporučená možnost je vždy první.
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
 | C9 | Kam padají nové mody při volném pořadí (O11) | Až půjde mody v MODS libovolně táhnout, musí mít nový mod nějaké výchozí místo. Platí pro import, stažení i aktualizaci na nový mod (aktualizace drží místo starého). | 1. Na konec MODS (bez kategorie): je hned vidět, kam přibyl, a nic jiného se neposune. 2. Abecedně mezi ostatní v MODS. 3. Na začátek MODS. | ☐ čeká |
-| C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1. Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A9 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
+| C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1, od 22. 11. i s nastavením v záložkách (A10). Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A10 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
 
 ## D. Dodat
 
