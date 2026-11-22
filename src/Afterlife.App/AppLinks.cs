@@ -7,6 +7,8 @@ public static class AppLinks
 {
     public const string Sponsors = "https://github.com/sponsors/silentbobcz?frequency=one-time&sponsor=silentbobcz";
     public const string Source = "https://github.com/silentbobcz/afterlife";
+    public const string Website = "https://afterlife-13h.pages.dev";
+    public const string WebGuide = "https://afterlife-13h.pages.dev/guide.html";
     public const string ContactEmail = "silentbob@silentbob.cz";
     public const string ContactMailto = "mailto:silentbob@silentbob.cz?subject=AFTERLIFE";
     public const string CdprFanContent = "https://www.cdprojektred.com/en/fan-content";

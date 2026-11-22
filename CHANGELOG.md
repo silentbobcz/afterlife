@@ -6,6 +6,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 The first beta: the features are together and from here on they are mostly tuned. Everything below is new since alpha.9.
 
+- **Guide on the web**: the user guide, FAQ, changelog and privacy notes are now also a website at [afterlife-13h.pages.dev](https://afterlife-13h.pages.dev). **About** has a **WEBSITE** button and the quick guide links to the full guide on the web.
 - **FILTERS and SORT buttons**: violet instead of cyan so they no longer pass for links, lit when a filter is on or the list is sorted; the sort button now reads **SORT · LOAD ORDER**, **SORT · NAME** and so on.
 - **Free load order**: drag any mod up or down inside MODS and inside a category (several checked mods move together), not only into another category; local edits stay below their mod. Every row shows its place in the load order (#1, #2 …), **A→Z** in a header sorts that section by name once, new mods go to the end of MODS and each profile keeps its own order. Existing lists keep the order they had.
 - **Keyboard moves, LOAD BEFORE and dimmed numbers**: **Ctrl+Up** / **Ctrl+Down** move the checked mods (or the selected row) by one place in the load order inside their section, **Ctrl+Home** / **Ctrl+End** to its start or end. In the Conflicts tab a conflicting `.archive` file that another mod wins gets **LOAD BEFORE ‹mod›**, which puts the mod just before that one. The number of a mod without any `.archive` in `archive/pc/mod` is dimmed: the load order does not affect it.

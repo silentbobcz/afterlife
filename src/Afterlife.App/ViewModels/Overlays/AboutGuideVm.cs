@@ -30,6 +30,7 @@ public sealed class AboutVm : OverlayVm
         new("JetBrains Mono font", "SIL OFL 1.1"),
     ];
     public ICommand SourceCommand { get; } = new RelayCommand(() => AppLinks.Open(AppLinks.Source));
+    public ICommand WebsiteCommand { get; } = new RelayCommand(() => AppLinks.Open(AppLinks.Website));
     public ICommand SupportCommand { get; } = new RelayCommand(() => AppLinks.Open(AppLinks.Sponsors));
     public ICommand ContactCommand { get; } = new RelayCommand(() => AppLinks.Open(AppLinks.ContactMailto));
     public ICommand FanContentCommand { get; } = new RelayCommand(() => AppLinks.Open(AppLinks.CdprFanContent));
@@ -68,6 +69,7 @@ public sealed partial class GuideVm : OverlayVm
     public override string Title => "QUICK GUIDE";
     [ObservableProperty] private bool _showAll;
     [RelayCommand] private void ToggleAll() => ShowAll = !ShowAll;
+    [RelayCommand] private void OpenWebGuide() => AppLinks.Open(AppLinks.WebGuide);
     public string ToggleLabel => ShowAll ? "‹ SHOW LESS" : "SHOW EVERYTHING ›";
     partial void OnShowAllChanged(bool value) => OnPropertyChanged(nameof(ToggleLabel));
 }

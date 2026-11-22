@@ -466,7 +466,10 @@
                 <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A select all · Esc closes a panel." />
             </Grid>
             </StackPanel>
-            <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource SmallAccentButton}" Command="{Binding ToggleAllCommand}" Content="{Binding ToggleLabel}" />
+            <WrapPanel Margin="0,8,0,0">
+                <Button Style="{StaticResource SmallAccentButton}" Command="{Binding ToggleAllCommand}" Content="{Binding ToggleLabel}" Margin="0,0,14,0" />
+                <Button Style="{StaticResource LinkButton}" FontSize="12" VerticalAlignment="Center" Command="{Binding OpenWebGuideCommand}" Content="Full guide on the web ↗" />
+            </WrapPanel>
         </StackPanel>
         </ScrollViewer>
     </DataTemplate>

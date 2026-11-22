@@ -10,6 +10,7 @@ Pracovní verze plné edice z 22. 11. pozdě večer: `AFTERLIFE-test-1c1256e-win
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
+| A15 | Odkazy na web s návodem v aplikaci | Okno About; rychlý návod (QUICK GUIDE) | V About kliknout na WEBSITE a v rychlém návodu dole na „Full guide on the web ↗“; obojí má otevřít web v prohlížeči. Zkontrolovat, že se tlačítka v About vejdou vedle sebe. | ☐ čeká na sestavení |
 
 ## B. Schválit
 
@@ -22,7 +23,6 @@ Doporučená možnost je vždy první.
 
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
-| C10 | Zveřejnění webu s návodem na Cloudflare | Web se staví z repozitáře (složka `site`), ale projekt v Cloudflare Pages musíš založit ty ve svém účtu. Postup a hodnoty jsou v `site/README.md`. Potom se sám obnoví po každé změně v `main`. | 1. Založit projekt v Cloudflare Pages podle `site/README.md` a napsat adresu; doplní se do README, na Nexus a do aplikace. 2. Zatím nezveřejňovat, návod číst jen na GitHubu. | ☐ čeká |
 | C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1, od 22. 11. i s nastavením v záložkách (A10). Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A10 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
 
 ## D. Dodat
@@ -35,6 +35,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | C10: web s návodem běží na Cloudflare Pages, <https://afterlife-13h.pages.dev>, a obnovuje se po každém pushi do `main`. Adresa je v README, v okně About (tlačítko WEBSITE) a pod vestavěným návodem; na Nexus ji vkládáš ty. Úvodní stránka webu ještě mluví o Premium a API: oprava je balík O18. |
 | 23. 11. | Vyzkoušeno na pracovní verzi `1c1256e`: A2, A7, A8, A13 (volné pořadí modů) a A14 (fialová tlačítka) v pořádku. A12 (web a dokumentace): bez výhrad teď, úpravy případně později. |
 | 23. 11. | Schváleno: B4 (náhled volného pořadí), B5 (nové texty dialogu při vypnutí modu, do kódu jde jako O17) a B6 (formát load listu; u bodů D1 až D7 platí doporučené možnosti A, tlačítka EXPORT ORDER a IMPORT ORDER; do kódu jde jako O15). |
 | 22. 11. | B7: vybrána varianta B (fialová) a dlouhý popisek; O16 je v kódu a zkontrolované, zkouší se v A14. O14 a O16 sloučeny do `main`. |

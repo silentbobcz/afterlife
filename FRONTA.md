@@ -2,7 +2,7 @@
 
 Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`** (sloučeno 22. 11. včetně volného pořadí O11 a O12). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O15.“ Balík O17 jde pustit vedle něj (jiné soubory).
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O15.“ Balíky O17 a O18 jdou pustit vedle něj (jiné soubory).
 
 ## Pravidla dávky
 
@@ -27,6 +27,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O15 | Opus | Export a import load listu v kódu | nic | může začít |
 | O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | hotovo, vyzkoušeno uživatelem (A14) |
 | O17 | Opus | Nové texty dialogu při vypnutí modu v kódu a oprava výpočtu jeho částí | nic | může začít |
+| O18 | Sonnet | Web: viditelné upozornění, že na Nexusu je AFTERLIFE Offline, a proč | nic | může začít |
 | F-kontrola 3 | Fable | Kontrola O15 a O17 | O15, O17 | čeká |
 
 ## O8. Přestavba nastavení v kódu
@@ -119,6 +120,14 @@ Opus. Může začít hned; texty schválil uživatel 23. 11. (B5). Proč Opus: m
 3. Oprava výpočtu: části „NOT NEEDED ANY MORE“ a „STAYS ON“ se dnes počítají jen z vypínaného modu (`OverviewBuilder.UnneededRequirements` a `KeptRequirements` dostávají jen `ids`). Když je zaškrtnuté vypnutí závislých modů, počítej je z celé množiny, která se opravdu vypne; po změně zaškrtnutí se obě části přepočítají. Logika patří do `Afterlife.Infrastructure` s testy (mod A potřebuje L, mod B potřebuje L a A: vypnutí A i B nabídne L).
 4. Kolekce: dva dialogy po sobě zůstávají; Cancel ve druhém dál ruší celé vypnutí, ale text druhého dialogu to řekne („Cancel leaves the collection on.“). Výchozí zaškrtnutí druhého dialogu sjednoť s dialogem jednoho modu (nezaškrtnuto).
 5. CHANGELOG, návod (oddíl 9), položka A v `UKOLY.md` s třemi příklady k vyzkoušení.
+
+## O18. Web: upozornění na edici Offline
+
+Sonnet. Může začít hned, jiné soubory než O15 a O17. Uživatel 23. 11.: na webu <https://afterlife-13h.pages.dev> chybí jasná poznámka, že ke stažení (na Nexusu i na GitHubu) je **AFTERLIFE Offline**, a proč. Dnes `site/home.md` hned pod úvodem propaguje Premium a přímé stahování přes API; jediná zmínka o Offline je malá poznámka `<p class="note">` až pod tabulkou Premium.
+1. V `site/home.md` hned pod úvodní odstavec a nad tlačítka ke stažení dej výrazný blok (nový styl v `site/style.css`, jen tokeny z `App.xaml`, například žlutý okraj): stahuje se AFTERLIFE Offline; proč: Nexus Mods dovoluje programům používat své API, až aplikaci zaregistruje, a do té doby se AFTERLIFE k Nexusu vůbec nepřipojuje; co funguje (vše, co pracuje se soubory na disku) a co je se zámkem (stahování, aktualizace, kolekce). Dvě až čtyři věty, odkaz do FAQ (`faq.html#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock`).
+2. Oddíl „Better with Nexus Mods Premium“ přepiš v budoucím čase („once the full edition is out…“) nebo ho přesuň pod oddíl „What it does“ s nadpisem, ze kterého je jasné, že jde o plánovanou plnou edici. Spodní poznámku pak smaž, ať se neopakuje.
+3. Stejné ověření v `README.md` (oddíl ke stažení) a v `docs/USER-GUIDE.md` na začátku: krátká věta o Offline nahoře, pokud tam ještě není; fakta ber z FAQ, nic nevymýšlej.
+4. `cd site && npm ci && npm run build`, zkontroluj `dist/index.html` v prohlížeči (i úzké okno). Po sloučení do `main` se web obnoví sám. Text pro popis na Nexusu se stejným sdělením dej do předávky; vkládá ho uživatel.
 
 ## F-kontrola 3
 

@@ -394,6 +394,7 @@
             <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="{Binding Trademarks}" />
             <WrapPanel Margin="0,14,0,0">
                 <Button Style="{StaticResource AccentButton}" Command="{Binding SourceCommand}" Content="SOURCE CODE" Margin="0,0,10,0" />
+                <Button Style="{StaticResource AccentButton}" Command="{Binding WebsiteCommand}" Content="WEBSITE" Margin="0,0,10,0" />
                 <Button Style="{StaticResource AccentButton}" Command="{Binding SupportCommand}" Content="♥ SUPPORT AFTERLIFE" Margin="0,0,10,0" />
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
                     <Button Style="{StaticResource MailIconButton}" Command="{Binding ContactCommand}" AutomationProperties.Name="Contact the author by e-mail" />
