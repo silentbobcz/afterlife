@@ -25,7 +25,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
 | O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | čeká |
 | O15 | Opus | Export a import load listu v kódu | B6 | čeká |
-| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | čeká |
+| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | náhled hotový; do kódu po B7 |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -148,3 +148,12 @@ Sonnet. Může začít hned. Uživatel 22. 11.: tlačítka FILTERS a ⇅ splýva
 **O13** (22. 11., Sonnet jako podřízený agent; kontrola Fable)
 - Stav: návrh textů v `docs/previews/switch-off-dialog-texts.md`, v kódu nic. Čeká na B5.
 - Kontrola potvrdila dvě věci v logice, které návrh textů neřeší a patří k zapracování: (1) části „only it needed“ a „stays on“ se počítají jen z vypínaného modu, bez závislých modů, které se zaškrtnutou volbou vypnou zároveň (`OverviewBuilder.UnneededRequirements`, `KeptRequirements` dostávají jen `ids`); (2) u kolekce jdou dva dialogy po sobě a Cancel ve druhém zruší celé vypnutí (`MainViewModel.Collections.cs`). Zapracování textů potřebuje malé místo pro větu pod nadpisem části (`ConfirmVm`, `Dialogs.xaml`).
+
+**Předávka O16** (22. 11., Sonnet)
+- Stav: náhled hotový, kód čeká na B7.
+- Změněno: `docs/previews/filter-sort-buttons.html` (nový, bez kódu aplikace).
+- Obsah: dnešní vzhled a tři varianty (A žlutý obrys, B fialová, C tmavé plné) ve stavu klidném, aktivním a pod myší; popisek „SORT · režim“ dlouhý i krátký; pásy pro šířku panelu 760 a 640 px.
+- Doporučení: C, dlouhý popisek (v klidu nejtišší, aktivní stav žlutě).
+- Ověřeno: stránka se v prohlížeči načte a vykreslí.
+- Neověřeno: vzhled ve WPF, přesná šířka panelu při okně 1612 px.
+- Pro uživatele: B7 v UKOLY.md.

@@ -22,6 +22,7 @@ Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `3
 |---|---|---|---|---|
 | B4 | Náhled volného pořadí (O10) | `docs/previews/free-load-order.html` v repozitáři (dvojklik; po `git pull` v klonu). Přepínač LOAD ORDER / ⇅ NAME nahoře, tlačítka A→Z fungují na zkoušku. | Čísla pořadí na řádcích, čára při tažení, tlačítko A→Z a jeho potvrzení, mod s místními úpravami; pod náhledem texty hlášek. Stačí „B4 schváleno“ nebo co změnit. Kód (O11) se už píše podle zadání; co změníš, se do něj doplní. | ☐ čeká na tebe |
 | B5 | Nové texty dialogu při vypnutí modu (O13) | `docs/previews/switch-off-dialog-texts.md`: tabulka „dnes → nově“ | Jsou nové věty srozumitelné? Každá ze tří částí má nadpis a jednu větu, co se stane s kterými mody. Stačí „B5 schváleno“ nebo co změnit; do aplikace se texty dostanou až potom. | ☐ čeká na tebe |
+| B7 | Vzhled tlačítek FILTERS a SORT (O16) | `docs/previews/filter-sort-buttons.html` v repozitáři (dvojklik; po `git pull`) | Vyber variantu A (žlutý obrys), B (fialová) nebo C (tmavé plné) a delší („SORT · LOAD ORDER“) či kratší popisek. Stačí např. „B7 A, delší“. Do aplikace až potom. Neověřeno: skutečná šířka panelu při okně 1612 px. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
