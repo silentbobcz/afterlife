@@ -103,13 +103,13 @@ Sonnet. Uživatel 22. 11. dialog vyzkoušel: funguje, ale logice nerozumí. Soub
 - Pro uživatele: B4.
 
 **O11** (22. 11., Opus jako podřízený agent; kontrola Fable)
-- Stav: hotovo na větvi `free-load-order`, psáno bez čekání na B4. Jádro `Afterlife.Core/LoadOrder.cs` (`MoveGroup`, `SortSection`, `Arrange`, převzetí starých profilů), okno `MainViewModel.LoadOrder.cs`, styly `Views/LoadOrder.xaml`, testy `FreeLoadOrderTests.cs`.
+- Stav: hotovo, sloučeno do `main`; psáno bez čekání na B4. Jádro `Afterlife.Core/LoadOrder.cs` (`MoveGroup`, `SortSection`, `Arrange`, převzetí starých profilů), okno `MainViewModel.LoadOrder.cs`, styly `Views/LoadOrder.xaml`, testy `FreeLoadOrderTests.cs`.
 - Rozhodnuto při výrobě: profil bez vlastního pořadí se dál ukazuje podle názvu a nic se nezapisuje, vlastním se stane prvním tažením (do té doby nový mod padá podle abecedy); každý profil staré knihovny se jednou ukáže podle názvu (klíč `order.takeover`); vrstva sedí vždy v sekci svého modu; A→Z jen u profilu, který jde upravit.
 - Kontrola: kolize názvu testovací třídy opravena; logika přesunu, řazení sekce a převzetí bez nálezu. Vědomě ponecháno: když dřívější aktualizace přejmenovala archivy, první start srovná pořadí archivů v profilu a APPLY ukáže změnu `modlist.txt` bez zásahu uživatele.
 - Ověřeno: sestavení obou edic a testy na GitHubu. Neověřeno: vše v okně (A13).
 
 **O12** (22. 11., Sonnet jako podřízený agent; kontrola Fable)
-- Stav: hotovo na větvi `free-load-order`. `LoadOrder.MoveInSection` a `IsOrderedArchive`, `MainViewModel.OrderKeys.cs`, tlačítko LOAD BEFORE v záložce Conflicts, tlumené číslo u modů bez archivů.
+- Stav: hotovo, sloučeno do `main`. `LoadOrder.MoveInSection` a `IsOrderedArchive`, `MainViewModel.OrderKeys.cs`, tlačítko LOAD BEFORE v záložce Conflicts, tlumené číslo u modů bez archivů.
 - Rozhodnuto při výrobě: klávesy berou zaškrtnuté mody, jinak vybraný řádek; přeskakují i řádky skryté hledáním; vítěz konfliktu se hledá podle přesného jména modu (u dvou verzí téhož jména první); tlumená barva je `TagLine`.
 - Kontrola: odstraněna zbloudilá vsuvka v `MainWindow.xaml.cs`, která by nešla přeložit. Ověřeno: sestavení a 335 testů. Neověřeno: vše v okně (A13), hlavně fokus kláves v seznamu a čitelnost tlumeného čísla.
 
