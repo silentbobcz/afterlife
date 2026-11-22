@@ -16,8 +16,8 @@ of a session that added or settled something there.
 
 - The newest state is on the branch named at the top of `FRONTA.md` (normally `main`). Start your work branch from it,
   commit and push there. Pushing a work branch does not trigger GitHub Actions; a push to `main` does.
-- Do not push to `main`, do not tag, do not change the version in `Directory.Build.props` unless the owner says so in
-  this session: merging and releasing are the owner's call.
+- Do not tag and do not change the version in `Directory.Build.props` unless the owner says so: releasing is the
+  owner's call.
 - Commit only your own files (`git add <file>`, not `-A`); another session may work in the same branch.
 
 ## Checks (work in a Linux cloud session too)

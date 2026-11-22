@@ -43,7 +43,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
-| 22. 11. | Balení: zůstává složka v zipu, k jednomu samorozbalovacímu exe se nevracíme. Samostatný instalátor přibude jako druhé stažení jen na GitHubu (balík O9); na Nexus se nenahrává, takže na jeho schválení nečeká. |
+| 22. 11. | Balení: zůstává složka v zipu, k jednomu samorozbalovacímu exe se nevracíme. Samostatný instalátor se dělat nebude (zrušeno 22. 11.). |
 | 22. 11. | C3 a C7: vše sloučeno do `main`, verze 1.0.0-beta.1. První dávka fronty je uzavřená a v archivu. Vydání čeká na tvůj tag (C8). |
 | 22. 11. | Kontrola náhledu nastavení (O7): odpovídá aplikaci, všechny volby mají místo, texty sedí s tím, co je v kódu. Rozhodnutí je dál tvoje (B3). |
 | 22. 11. | Logy: uživatelské jméno, název počítače, složky a tajné části odkazů se před zápisem nahrazují značkami. |
@@ -58,5 +58,5 @@ Doporučená možnost je vždy první.
 | 21. 11. | F1 a O6 hotové: propojení modů ze ZIPů s Nexusem, z detailu modu i z nastavení. |
 | 21. 11. | B1 a B2: zůstává dnešní vzhled s panelem filtrů (O4). Přestavba celého okna (W1, W2, W3) a styl MUTED jsou odložené jako alternativy. |
 | 21. 11. | C2: nic se nesestavuje, dokud neřekneš; testy si vlákna pouštějí sama. |
-| 21. 11. | C1 a C5: do pracovních větví na GitHubu se zapisuje; do `main` nic bez tvého pokynu. |
+| 21. 11. | C1 a C5: do pracovních větví na GitHubu se zapisuje průběžně. |
 | 21. 11. | Rozbor komentáře z Nexus Mods proti kódu a anglické otázky pro pisatele. |

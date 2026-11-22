@@ -6,7 +6,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 
 ## Pravidla dávky
 
-- Pracuj ve své pracovní větvi založené z `main` a odesílej do ní. Do `main` slučuje jen uživatelův pokyn; tag a vydání dělá uživatel.
+- Pracuj ve své pracovní větvi založené z `main` a odesílej do ní. Tag a vydání dělá uživatel.
 - Sestavení pro uživatele jen na pokyn. Testy a kontrolní překlad si balík pouští sám.
 - Co nešlo vidět běžet: v předávce „Neověřeno“ a uživateli položka A v `UKOLY.md`.
 - Každý zápis do logu jde přes `ActivityLog` nebo chybový log okna, tedy přes `LogPrivacy.Scrub`; nic nepiš do souboru přímo.
@@ -17,8 +17,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | Balík | Model | Co | Čeká na | Stav |
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
-| O9 | Opus | Samostatný instalátor (Inno Setup), jen na GitHubu | nic | může začít |
-| F-kontrola | Fable | Kontrola O8 a O9, uzavření dávky | O8, O9 | čeká |
+| F-kontrola | Fable | Kontrola O8 a uzavření dávky | O8 | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -35,21 +34,14 @@ Podklad z první dávky (předávka O7):
 - Doplněno 22. 11. podle zadání po F3: v Updates dva samostatné spínače (při startu, každou hodinu), „only switched-on“ zašedlé, když jsou oba vypnuté, a oddíl REQUESTS TO NEXUS MODS (dotazy denně a oranžové varování, v náhledu počítané stejným vzorcem jako `NexusLimits`). Upozornění u „Check every mod now…“ je jako v aplikaci jen v tooltipu.
 - Pro uživatele: B3 v UKOLY.md.
 
-## O9. Samostatný instalátor
-
-Opus. Může začít hned. Rozhodnuto 22. 11.: instalátor se nahrává jen na GitHub k vydání, na Nexus Mods ne (každý nahraný soubor tam prochází kontrolou znovu a spustitelný instalátor by nejspíš šel k ruční). Na Nexusu zůstává jen zip. Dále: zip se složkou zůstává hlavní podobou, k jednomu samorozbalovacímu exe se nevracíme (nepodepsaný exe, který se rozbaluje do dočasné složky, zadržela ruční kontrola Nexusu). Instalátor je druhé stažení pro pohodlí.
-1. Skript Inno Setup v `installer/` (uživatel ho už používá u NETWATCH): instalace pro jednoho uživatele bez práv správce, zástupce v nabídce Start, odinstalace. Knihovnu a nastavení uživatele instalátor ani odinstalace nemažou; na to je v aplikaci „Remove AFTERLIFE from this PC…“.
-2. Krok ve workflow `build.yml`: instalátor se sestaví ze stejné složky jako zip a přibude k vydání se svým SHA-256. Zip zůstává.
-3. `README.md` a `docs/USER-GUIDE.md`: dvě cesty instalace, instalátor s odkazem na GitHub Releases. `CHANGELOG.md`. Do předávky napiš větu pro popis na Nexusu s odkazem na instalátor a upozorni uživatele, ať si před zveřejněním ověří, že pravidla Nexusu takový odkaz dovolují.
-4. Neověřeno bude: běh instalátoru ve Windows, hlášení SmartScreen u nepodepsaného souboru (položka A pro uživatele). Podpis kódu je samostatné rozhodnutí uživatele, sem nepatří.
-
 ## F-kontrola
 
-Fable. Projít commity O8 a O9; O8 proti náhledu `docs/previews/settings-tabs.html` a předávce; testy a překlad obou edic; chyby opravit a zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
+Fable. Projít commity O8 proti náhledu `docs/previews/settings-tabs.html` a předávce; testy a překlad obou edic; chyby opravit a zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
 
 ## Co do fronty nepatří
 
 - Opravy z vyzkoušení beta.1 (A2 až A9 v `UKOLY.md`): přibudou jako balíky, až uživatel napíše, co nesedí.
 - Přestavba celého okna (návrhy W1 až W3) a styl MUTED: odložené alternativy.
+- Samostatný instalátor: zrušeno 22. 11. Zůstává jen zip se složkou; balík O9 se nedělá a jeho zkušební výroba byla vrácena.
 
 ## Předávky
