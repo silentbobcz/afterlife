@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FILTERS and SORT buttons</title>
+<!-- Static preview, no code behind it: three looks for the FILTERS and SORT buttons next to the search.
+     Colours are the tokens of src/Afterlife.App/App.xaml; fonts fall back to system fonts, nothing is loaded from the net. -->
+<style>
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --v: #B98CFF;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08);
+  --ytint: rgba(252,238,10,.08); --ytint-h: rgba(252,238,10,.18);
+  --vtint: rgba(185,140,255,.10); --vtint-h: rgba(185,140,255,.20);
+  --disp: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+  --body: "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--body); }
+body { padding: 16px; max-width: 1180px; margin: 0 auto; }
+h1 { margin: 0 0 6px; font: 700 18px var(--disp); letter-spacing: .12em; color: var(--y); }
+h2 { margin: 26px 0 8px; font: 700 13px var(--disp); letter-spacing: .1em; color: var(--c); }
+p, li { color: var(--t2); font-size: 13px; line-height: 1.55; margin: 0 0 6px; }
+code { font-family: var(--mono); font-size: 12px; color: var(--c); }
+.row-note { font: 11px var(--mono); color: var(--t3); margin: 12px 0 4px; letter-spacing: .06em; }
+
+/* the library header: the real action buttons are cut-corner, 32 px high, display font 12.5 */
+.panel { background: var(--bg2); border: 1px solid var(--line2); padding: 12px 14px; }
+.panel.narrow { max-width: 760px; }
+.panel.tiny { max-width: 640px; }
+.head { display: flex; align-items: center; gap: 8px; }
+.title { font: 700 15px var(--disp); letter-spacing: .1em; color: var(--y); margin-right: auto; white-space: nowrap; }
+.act { font: 600 12.5px var(--disp); color: var(--c); border: 1px solid var(--c); background: var(--ctint); height: 32px; padding: 0 14px; white-space: nowrap;
+  display: inline-flex; align-items: center; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.acts { display: flex; gap: 8px; }
+.meta { font: 11px var(--mono); color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 60px; }
+.search { width: 150px; height: 30px; border: 1px solid var(--line2); background: var(--bg); color: var(--t3); font: 12px var(--body); padding: 6px 8px; flex: none; }
+.line2 { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+
+/* the new buttons: .btn plus a variant on the parent */
+.btn { font: 600 12.5px var(--disp); height: 32px; padding: 0 14px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid; flex: none;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); letter-spacing: .04em; }
+.btn .g { font-family: var(--mono); font-size: 12px; }
+/* A: yellow outline */
+.A .btn { color: var(--y); border-color: var(--y); background: transparent; }
+.A .btn:hover, .A .btn.hover { background: var(--ytint-h); }
+.A .btn.on { background: var(--ytint); }
+/* B: violet, like categories */
+.B .btn { color: var(--v); border-color: var(--v); background: transparent; }
+.B .btn:hover, .B .btn.hover { background: var(--vtint-h); }
+.B .btn.on { background: var(--vtint); }
+/* C: filled dark button, light text */
+.C .btn { color: var(--t); border-color: var(--line2); background: var(--bg3); }
+.C .btn:hover, .C .btn.hover { background: var(--sel); border-color: var(--t2); }
+.C .btn.on { border-color: var(--y); color: var(--y); background: var(--sel); }
+
+.states { display: grid; grid-template-columns: 50px 1fr; gap: 8px 12px; align-items: center; margin-top: 8px; }
+.states .k { font: 11px var(--mono); color: var(--t3); }
+.grp { display: flex; gap: 8px; flex-wrap: wrap; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 980px) { .cols { grid-template-columns: 1fr; } }
+.card { background: var(--bg2); border: 1px solid var(--line2); padding: 12px; }
+.card h3 { margin: 0 0 4px; font: 700 12px var(--mono); color: var(--t); letter-spacing: .08em; }
+.card p { margin-bottom: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+td, th { border: 1px solid var(--line2); padding: 5px 8px; text-align: left; color: var(--t2); vertical-align: top; }
+th { color: var(--t); font: 700 11px var(--mono); }
+</style>
+</head>
+<body>
+<h1>FILTERS and SORT: three looks</h1>
+<p>Today both buttons look like the cyan <b>+ ADD MOD</b> and <b>GET NEW MODS</b> above them, so they pass for links. Below: the top of the library panel with today's look, then three ways to set the two buttons apart. Each button is shown calm, active (filter on, list sorted) and under the mouse.</p>
+
+<h2>Today, for comparison</h2>
+<div class="panel">
+  <div class="head"><span class="title">MOD LIBRARY</span><div class="acts"><span class="act">+ ADD MOD</span><span class="act">+ ADD COLLECTION</span><span class="act">GET NEW MODS ↗</span></div></div>
+  <div class="line2"><span class="meta">212 mods · 3 off · 2 not applied yet</span><span class="search">Search mods…</span><span class="act">⧩ FILTERS</span><span class="act">⇅ LOAD ORDER</span></div>
+</div>
+
+<h2>Three variants (all colours are tokens from App.xaml)</h2>
+<div class="cols">
+  <div class="card A"><h3>A · YELLOW OUTLINE</h3><p>Token <code>Y</code>, transparent inside. Same yellow as the panel titles, so the pair reads as view controls, not as actions.</p>
+    <div class="states"><span class="k">calm</span><div class="grp"><span class="btn"><span class="g">⧩</span>FILTERS</span><span class="btn"><span class="g">⇅</span>SORT · LOAD ORDER</span></div>
+    <span class="k">active</span><div class="grp"><span class="btn on"><span class="g">⧩</span>FILTERS · 2</span><span class="btn on"><span class="g">⇅</span>SORT · NAME</span></div>
+    <span class="k">mouse</span><div class="grp"><span class="btn hover"><span class="g">⧩</span>FILTERS</span><span class="btn hover"><span class="g">⇅</span>SORT · LOAD ORDER</span></div></div></div>
+  <div class="card B"><h3>B · VIOLET</h3><p>Token <code>V</code> (the category colour). Clearly different from cyan; risk: violet already means category in the list.</p>
+    <div class="states"><span class="k">calm</span><div class="grp"><span class="btn"><span class="g">⧩</span>FILTERS</span><span class="btn"><span class="g">⇅</span>SORT · LOAD ORDER</span></div>
+    <span class="k">active</span><div class="grp"><span class="btn on"><span class="g">⧩</span>FILTERS · 2</span><span class="btn on"><span class="g">⇅</span>SORT · NAME</span></div>
+    <span class="k">mouse</span><div class="grp"><span class="btn hover"><span class="g">⧩</span>FILTERS</span><span class="btn hover"><span class="g">⇅</span>SORT · LOAD ORDER</span></div></div></div>
+  <div class="card C"><h3>C · FILLED DARK</h3><p>Tokens <code>Bg3</code>, <code>Line2</code>, <code>T</code>; yellow only when active. Quietest at rest, most obvious when something is switched on.</p>
+    <div class="states"><span class="k">calm</span><div class="grp"><span class="btn"><span class="g">⧩</span>FILTERS</span><span class="btn"><span class="g">⇅</span>SORT · LOAD ORDER</span></div>
+    <span class="k">active</span><div class="grp"><span class="btn on"><span class="g">⧩</span>FILTERS · 2</span><span class="btn on"><span class="g">⇅</span>SORT · NAME</span></div>
+    <span class="k">mouse</span><div class="grp"><span class="btn hover"><span class="g">⧩</span>FILTERS</span><span class="btn hover"><span class="g">⇅</span>SORT · LOAD ORDER</span></div></div></div>
+</div>
+
+<h2>In the library header (variant C, then variant A with filter and sort on)</h2>
+<div class="panel C">
+  <div class="head"><span class="title">MOD LIBRARY</span><div class="acts"><span class="act">+ ADD MOD</span><span class="act">+ ADD COLLECTION</span><span class="act">GET NEW MODS ↗</span></div></div>
+  <div class="line2"><span class="meta">212 mods · 3 off · 2 not applied yet</span><span class="search">Search mods…</span><span class="btn"><span class="g">⧩</span>FILTERS</span><span class="btn"><span class="g">⇅</span>SORT · LOAD ORDER</span></div>
+</div>
+<div class="panel A" style="margin-top:10px">
+  <div class="line2" style="margin-top:0"><span class="meta">212 mods · 3 off · 2 not applied yet</span><span class="search">Search mods…</span><span class="btn on"><span class="g">⧩</span>FILTERS · 2</span><span class="btn on"><span class="g">⇅</span>SORT · NAME</span></div>
+</div>
+
+<h2>SORT wording and the narrowest window</h2>
+<table>
+<tr><th>Mode</th><th>Long (recommended)</th><th>Short</th></tr>
+<tr><td>load order</td><td>⇅ SORT · LOAD ORDER</td><td>⇅ SORT</td></tr>
+<tr><td>name</td><td>⇅ SORT · NAME</td><td>⇅ NAME</td></tr>
+<tr><td>newest</td><td>⇅ SORT · NEWEST</td><td>⇅ NEWEST</td></tr>
+<tr><td>state</td><td>⇅ SORT · STATE</td><td>⇅ STATE</td></tr>
+<tr><td>size</td><td>⇅ SORT · SIZE</td><td>⇅ SIZE</td></tr>
+</table>
+<p style="margin-top:8px">The long label is the widest case. The strips below are the same row at about 760 px and 640 px (the real panel width in the smallest window, 1612 px, is not measured). In both, the status text gives way with an ellipsis first and the buttons never wrap.</p>
+<div class="row-note">PANEL ≈ 760 px, long label</div>
+<div class="panel narrow C"><div class="line2" style="margin-top:0"><span class="meta">212 mods · 3 off · 2 not applied yet</span><span class="search">Search mods…</span><span class="btn on"><span class="g">⧩</span>FILTERS · 12</span><span class="btn on"><span class="g">⇅</span>SORT · LOAD ORDER</span></div></div>
+<div class="row-note">PANEL ≈ 640 px, long label</div>
+<div class="panel tiny C"><div class="line2" style="margin-top:0"><span class="meta">212 mods · 3 off · 2 not applied yet</span><span class="search">Search mods…</span><span class="btn on"><span class="g">⧩</span>FILTERS · 12</span><span class="btn on"><span class="g">⇅</span>SORT · LOAD ORDER</span></div></div>
+<div class="row-note">PANEL ≈ 640 px, short label</div>
+<div class="panel tiny C"><div class="line2" style="margin-top:0"><span class="meta">212 mods · 3 off · 2 not applied yet</span><span class="search">Search mods…</span><span class="btn on"><span class="g">⧩</span>FILTERS · 12</span><span class="btn on"><span class="g">⇅</span>SORT</span></div></div>
+
+<h2>What changes in the app after approval</h2>
+<ol>
+<li>One new style for the two buttons in <code>App.xaml</code> (next to <code>AccentButton</code>), applied to both in <code>MainWindow.xaml</code>.</li>
+<li><code>MainViewModel.Sorting.cs</code>: <code>SortLabel</code> becomes <code>"⇅ SORT · " + ModSort.Label(SortBy)</code>; tooltips stay.</li>
+<li><code>docs/USER-GUIDE.md</code>: where the buttons are named, the <b>⇅</b> button becomes the <b>SORT</b> button.</li>
+</ol>
+<p>Not checked: the real WPF look (this is HTML) and the exact panel width at 1612 px. To decide: variant A, B or C, and the long or short SORT label.</p>
+</body>
+</html>
