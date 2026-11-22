@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free load order in MODS</title>
+<!-- Static preview, no code behind it: it shows layout and wording of the free load order inside MODS and categories.
+     Colours are the tokens of src/Afterlife.App/App.xaml; fonts fall back to system fonts, nothing is loaded from the net. -->
+<style>
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --o: #FF9F1C; --v: #B98CFF;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --tagtext: #C9C7BB; --tagline: #3A4256; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08); --vtint: rgba(185,140,255,.10);
+  --disp: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+  --body: "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--body); }
+body { padding: 16px; }
+code { font-family: var(--mono); font-size: 12px; color: var(--c); }
+
+.page-head { max-width: 1280px; margin: 0 auto 12px; }
+.page-head h1 { margin: 0 0 6px; font: 700 18px var(--disp); letter-spacing: .12em; color: var(--y); }
+.page-head h1 span { color: var(--m); }
+.page-head p { margin: 0; color: var(--t2); font-size: 13px; line-height: 1.5; }
+.ctl { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin-top: 12px; }
+.seg-label { font: 11px var(--mono); color: var(--t3); margin-right: 6px; letter-spacing: .08em; }
+.seg { display: inline-flex; border: 1px solid var(--line2); }
+.seg button { background: none; border: 0; color: var(--t2); font: 500 11.5px var(--mono); padding: 6px 12px; cursor: pointer; letter-spacing: .06em; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button.on { background: var(--ctint); color: var(--c); }
+.quiet { background: none; border: 0; color: var(--t2); font: 12.5px var(--body); cursor: pointer; padding: 0; }
+.quiet:hover { color: var(--t); text-decoration: underline; }
+
+.stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .stage { grid-template-columns: 1fr; } }
+
+/* ---------- the list panel (today's look) ---------- */
+.panel { background: var(--bg2); border: 1px solid var(--line2); padding: 14px 14px 10px; min-width: 0; }
+.panel-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.panel-top .title { font: 700 15px var(--disp); letter-spacing: .1em; color: var(--y); }
+.sortbtn { font: 700 11px var(--mono); color: var(--t); border: 1px solid var(--line2); background: none; padding: 5px 10px; cursor: pointer; }
+.sortbtn.on { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.note { margin-top: 8px; padding: 5px 10px; border: 1px solid var(--c); background: var(--ctint); font-size: 12.5px; display: none; justify-content: space-between; gap: 12px; align-items: center; }
+.note.show { display: flex; }
+.note button { background: none; border: 0; color: var(--t2); font: 12.5px var(--body); cursor: pointer; white-space: nowrap; }
+.note button:hover { color: var(--t); text-decoration: underline; }
+.cols { display: grid; grid-template-columns: 30px 1fr 120px 150px 62px; margin: 12px 8px 6px 18px; font: 11px var(--mono); color: var(--t2); }
+.cols :last-child { text-align: right; }
+
+/* block headers */
+.block { position: relative; margin: 14px 0 6px; padding: 8px 12px 8px 12px; background: var(--bg3); border: 1px solid var(--tone); display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 0); }
+.block .ico { width: 28px; height: 28px; border: 1px solid var(--tone); background: color-mix(in srgb, var(--tone) 10%, transparent); display: grid; place-items: center; font: 700 11px var(--mono); color: var(--tone); position: relative; }
+.block .lock { position: absolute; right: -4px; bottom: -4px; width: 8px; height: 8px; background: var(--y); }
+.block .lab { font: 700 11px var(--mono); color: var(--tone); }
+.block .nm { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.block .cnt { font: 12px var(--mono); color: var(--t2); }
+.hbtns { display: flex; align-items: center; gap: 8px; }
+.cat { margin: 8px 0 4px 22px; padding: 4px 12px 4px 6px; background: var(--vtint); border-left: 3px solid var(--v); border-bottom: 1px solid var(--v); display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; }
+.cat .ico { width: 22px; height: 22px; border: 1px solid var(--v); background: var(--vtint); }
+.cat .lab { font: 700 11px var(--mono); color: var(--v); margin-right: 8px; }
+.cat .nm { font-size: 13px; font-weight: 600; }
+.cat .cnt { font: 11.5px var(--mono); color: var(--t2); }
+.small { font: 700 10.5px var(--mono); min-height: 26px; padding: 0 11px; color: var(--t2); background: none; border: 1px solid var(--line2); cursor: pointer;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.small:hover:not(:disabled) { color: var(--c); border-color: var(--c); }
+.small.az { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.small.az:disabled { color: var(--t3); border-color: var(--line2); background: none; cursor: not-allowed; }
+.link { background: none; border: 0; color: var(--t2); font: 11.5px var(--body); cursor: pointer; padding: 0; }
+.tog { width: 40px; height: 24px; border: 1.5px solid var(--t3); background: var(--bg3); position: relative; justify-self: end; }
+.tog::after { content: ""; position: absolute; left: 4px; top: 4px; width: 15px; height: 14px; background: var(--t3); }
+.tog.on { border-color: var(--y); background: var(--bg); }
+.tog.on::after { left: auto; right: 4px; background: var(--y); }
+
+/* rows */
+.row { position: relative; display: grid; grid-template-columns: 30px 1fr 120px 150px 62px; align-items: center; padding: 8px 8px 8px 18px; border-bottom: 1px solid var(--line); min-height: 54px; }
+.row:hover { background: var(--sel); }
+.row.col { box-shadow: inset 2px 0 0 rgba(0,240,255,.55); }
+.chk { width: 16px; height: 16px; border: 1.5px solid var(--t3); }
+.nameline { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.grip { color: var(--t3); font-size: 11px; cursor: ns-resize; align-self: center; }
+.num { font: 700 11.5px var(--mono); color: var(--c); min-width: 34px; text-align: right; }
+.nmx { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.layer { background: rgba(185,140,255,.04); min-height: 42px; }
+.layer .nmx { color: var(--tagtext); font-weight: 500; }
+.layer .lnk { font: 10.5px var(--mono); color: var(--v); border: 1px solid var(--v); padding: 0 5px; margin-left: 4px; white-space: nowrap; }
+.tags { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.tag { font: 10px var(--mono); color: var(--tagtext); background: rgba(201,199,187,.05); border: 1px solid var(--tagline); padding: 0 5px; }
+.ver { font: 12px var(--mono); }
+.chip { justify-self: start; font: 700 11px var(--mono); padding: 2px 8px; border: 1px solid var(--tone); color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, transparent); }
+.hide-num .num, .hide-num .grip { display: none; }
+.lockmark { font: 11px var(--mono); color: var(--o); min-width: 34px; text-align: right; }
+
+/* drag demo */
+.row.dragging { opacity: .5; outline: 1px dashed var(--c); outline-offset: -2px; background: var(--ctint); }
+.dropwrap { position: relative; }
+.dropline { position: relative; height: 0; z-index: 2; }
+.dropline::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: var(--c); box-shadow: 0 0 8px rgba(0,240,255,.6); }
+.dropline::after { content: attr(data-label); position: absolute; right: 8px; top: 3px; font: 700 10.5px var(--mono); color: var(--bg); background: var(--c); padding: 1px 7px; }
+.ghost { position: absolute; z-index: 3; right: 190px; margin-top: 14px; padding: 6px 12px; background: var(--bg); border: 1px solid var(--c); font: 600 13px var(--body); color: var(--t); box-shadow: 0 4px 18px rgba(0,0,0,.6); pointer-events: none; }
+.ghost small { display: block; font: 10.5px var(--mono); color: var(--c); }
+.hide-num .row.dragging { opacity: 1; outline: 0; background: none; }
+.hide-num .row.dragging.layer { background: rgba(185,140,255,.04); }
+
+/* side column */
+.side { display: grid; gap: 14px; position: sticky; top: 12px; }
+.card { background: var(--bg2); border: 1px solid var(--line2); padding: 16px 18px; position: relative; }
+.card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--y); }
+.card h3 { margin: 0 0 8px; font: 700 12px var(--mono); letter-spacing: .1em; color: var(--t2); }
+.dlg-title { font: 700 15px var(--disp); letter-spacing: .08em; color: var(--y); margin-bottom: 10px; }
+.dlg p { font-size: 13px; line-height: 1.5; margin: 0 0 8px; }
+.dlg .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.btn { font: 700 11.5px var(--mono); padding: 8px 14px; background: none; border: 1px solid var(--line2); color: var(--t2); cursor: pointer; }
+.btn.acc { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.dlg.flash { border-color: var(--c); }
+.toast { font-size: 12.5px; color: var(--g); min-height: 18px; margin-top: 8px; }
+.legend { font-size: 12.5px; line-height: 1.55; color: var(--t2); }
+.legend b { color: var(--t); font-weight: 600; }
+
+/* text below */
+.doc { max-width: 1280px; margin: 26px auto 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 1000px) { .doc { grid-template-columns: 1fr; } }
+.doc .card { padding: 18px 22px; }
+.doc h2 { margin: 0 0 10px; font: 700 14px var(--disp); letter-spacing: .12em; color: var(--y); }
+.doc li { font-size: 13px; line-height: 1.55; color: var(--t); }
+.doc ul { margin: 0; padding-left: 18px; }
+.doc li { margin-bottom: 5px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { font: 700 11px var(--mono); color: var(--t2); letter-spacing: .06em; }
+td:first-child { color: var(--t2); width: 28%; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>AFTER<span>LIFE</span> / free load order in MODS</h1>
+  <p>Preview of the list as it looks today, with the new parts added: order numbers, a drop line, an A&rarr;Z button per section and local-edit layers that travel with their mod. Nothing here is saved. Click <code>A&rarr;Z</code> in a header to try the confirmation; use the switch below to see the &ldquo;sorted for viewing&rdquo; state. New mods land at the end of MODS, without a category.</p>
+  <div class="ctl">
+    <span><span class="seg-label">LIST VIEW</span><span class="seg" id="viewSeg"><button data-v="order" class="on">LOAD ORDER</button><button data-v="name">&#8645; NAME</button></span></span>
+    <button class="quiet" id="reset">Reset demo</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="panel" id="panel">
+    <div class="panel-top">
+      <span class="title">MODS</span>
+      <button class="sortbtn" id="sortBtn" title="Cycle how the list is shown. Only changes the view, never the load order.">&#8645; SORT</button>
+    </div>
+    <div class="note" id="note"><span>Sorted by name for viewing only. The load order is unchanged; dragging mods is off until you go back.</span><button id="back">Back to load order</button></div>
+    <div class="cols"><span><span class="chk" style="display:inline-block"></span></span><span>MOD &middot; TAGS</span><span>VERSION</span><span>DEPLOYED</span><span>IN PROFILE</span></div>
+    <div id="list"></div>
+  </div>
+
+  <div class="side">
+    <div class="card dlg" id="dlg">
+      <h3>CONFIRMATION (shown when you press A&rarr;Z)</h3>
+      <div class="dlg-title" id="dTitle"></div>
+      <p id="dBody1"></p>
+      <p id="dBody2"></p>
+      <div class="btns"><button class="btn" id="dCancel">CANCEL</button><button class="btn acc" id="dOk">SORT A&rarr;Z</button></div>
+      <div class="toast" id="toast"></div>
+    </div>
+    <div class="card legend">
+      <h3>WHAT YOU SEE</h3>
+      <div><b>#n</b> is the place in the game&rsquo;s load order, counted after CORE MODS, top to bottom. Inside MODS the mods without a category come first, then each category.</div>
+      <div style="margin-top:8px"><b>Dashed rows + cyan line</b>: <i>Better Vehicle Handling</i> is being dragged together with its <b>&#9492;</b> layer (local edits); it will land where the line is.</div>
+      <div style="margin-top:8px"><b>CORE MODS</b> is locked: no number, no handle. <b>COLLECTION</b> is locked as well; its mods keep their order and are numbered.</div>
+    </div>
+  </div>
+</div>
+
+<div class="doc">
+  <div class="card">
+    <h2>WHAT CHANGES COMPARED TO TODAY</h2>
+    <ul>
+      <li><b>Today:</b> inside MODS and inside every category the list is sorted by name and the load order cannot be set by hand. A drop inside the same section only shows a message; the only way to move a mod is into another category.</li>
+      <li><b>New:</b> the list follows the order of the profile. Drag a row (or several checked rows) anywhere inside MODS or a category, or across a category boundary; several rows keep their current order as a group.</li>
+      <li><b>Numbers:</b> every mod after CORE MODS shows its place (#1, #2 &hellip;) in the LOAD ORDER view, the same order the game gets in <code>modlist.txt</code>. The numbers and handles are hidden while the list is sorted for viewing (&#8645;).</li>
+      <li><b>Layers:</b> a <b>&#9492;</b> row stays right below its mod, has no handle and no number of its own, and moves with its mod.</li>
+      <li><b>A&rarr;Z</b> in the MODS header and in each category header sorts that one section by name, once, after a confirmation. It touches nothing else; dragging works afterwards. Disabled while the list is sorted for viewing.</li>
+      <li><b>New mods</b> (import, download) land at the end of MODS, without a category. An update keeps the place of the old version.</li>
+      <li><b>Existing libraries:</b> the current (alphabetical) order is taken over unchanged.</li>
+      <li><b>Not changed:</b> CORE MODS and collections, categories as blocks, the &#8645; view sort (view only).</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>TEXTS PROPOSED</h2>
+    <table>
+      <tr><th>WHERE</th><th>TEXT</th></tr>
+      <tr><td>Number tooltip</td><td>Place in the load order. Mods higher up load first and win conflicts.</td></tr>
+      <tr><td>Handle tooltip</td><td>Drag to change the load order, also into another category</td></tr>
+      <tr><td>Layer row tooltip</td><td>Local edits. They move together with their mod.</td></tr>
+      <tr><td>A&rarr;Z tooltip</td><td>Sort this section by name (asks first)</td></tr>
+      <tr><td>A&rarr;Z tooltip, view sorted</td><td>Go back to the load order to sort this section</td></tr>
+      <tr><td>Dialog title, MODS</td><td>Sort MODS by name?</td></tr>
+      <tr><td>Dialog title, category</td><td>Sort category &ldquo;Visuals&rdquo; by name?</td></tr>
+      <tr><td>Dialog text, MODS</td><td>The 22 mods in MODS without a category will be put in alphabetical order. This replaces the order you set by hand.<br>Categories, collections and CORE MODS are not touched. The new order is written with the next APPLY.</td></tr>
+      <tr><td>Dialog text, category</td><td>The 10 mods in &ldquo;Visuals&rdquo; will be put in alphabetical order. This replaces the order you set by hand.<br>Other categories, MODS, collections and CORE MODS are not touched. The new order is written with the next APPLY.</td></tr>
+      <tr><td>Dialog buttons</td><td>SORT A&rarr;Z, CANCEL</td></tr>
+      <tr><td>After sorting</td><td>MODS sorted by name. Press APPLY to write the new load order.</td></tr>
+      <tr><td>Already sorted (no dialog)</td><td>MODS is already in alphabetical order.</td></tr>
+      <tr><td>Drop line label</td><td>drop here: loads after #16, before #17 (numbers of the neighbours)</td></tr>
+      <tr><td>Sorted-view note</td><td>unchanged: Sorted by name for viewing only. The load order is unchanged; dragging mods is off until you go back.</td></tr>
+      <tr><td>Message of today</td><td>the message for a drop inside the same section goes away; the drop reorders.</td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // Hand-set order (deliberately not alphabetical). st: dep = deployed, off, todep. layer = local edits of the mod above it.
+  function fresh() {
+    return {
+      core: [
+        { n: 'RED4ext', v: '1.27.0', t: ['framework'] }, { n: 'redscript', v: '0.5.28', t: ['framework'] },
+        { n: 'ArchiveXL', v: '1.22.1', t: ['framework'] }, { n: 'TweakXL', v: '1.10.6', t: ['framework'] }
+      ],
+      col: [
+        { n: 'Enhanced Weather Pack', v: '3.2', t: ['visuals'] },
+        { n: 'Streets Crowd Density+', v: '2.0.1', t: ['world'] },
+        { n: 'Neon Signs Remastered', v: '1.4', t: ['visuals'] }
+      ],
+      mods: [
+        { n: 'Appearance Menu Mod', v: '2.14', t: ['character'] },
+        { n: 'Better Vehicle Handling', v: '4.1', t: ['vehicles', 'gameplay'], drag: 1 },
+        { n: 'Better Vehicle Handling', layer: 1, v: 'local', t: ['local edits'], drag: 1 },
+        { n: 'Cyberpunk Radio Expansion', v: '1.8', t: ['audio'] },
+        { n: 'Darker Nights', v: '2.3', t: ['visuals'] },
+        { n: 'Edgerunners Jacket Retexture', v: '1.0', t: ['clothing'] },
+        { n: 'Faster Elevators', v: '1.2', t: ['gameplay'] },
+        { n: 'Immersive Gun Sounds', v: '5.0', t: ['audio', 'weapons'] },
+        { n: 'Johnny Silverhand Wardrobe', v: '1.6', t: ['clothing'] },
+        { n: 'Wider Driving FOV', v: '1.1', t: ['vehicles'] },
+        { n: 'Lifepath Dialogue Expanded', v: '2.2', t: ['dialogue'] },
+        { n: 'Minimap Rework', v: '3.0', t: ['ui'] },
+        { n: 'No Intro Videos', v: '1.0', t: ['ui'] },
+        { n: 'Photo Mode Unlocker', v: '1.5', t: ['photo mode'], st: 'off', on: 0 },
+        { n: 'Quick Hack Tweaks', v: '2.1', t: ['netrunner'] },
+        { n: 'Realistic Reload Times', v: '1.3', t: ['weapons'] },
+        { n: 'Stash Anywhere', v: '1.9', t: ['convenience'] },
+        { n: 'Sunset Boulevard Lights', v: '1.0', t: ['visuals'] },
+        { n: 'Better Loot Tables', v: '2.4', t: ['gameplay'] },
+        { n: 'Weapon Spread Fix', v: '1.0.2', t: ['weapons'] },
+        { n: 'Vendor Stock Refresh', v: '1.1', t: ['economy'], st: 'todep' },
+        { n: 'Ripperdoc Prices Rebalanced', v: '1.2', t: ['economy'] },
+        { n: 'Smoother Crowd Pathing', v: '1.0', t: ['world'] }
+      ],
+      vis: [
+        { n: 'Nova LUT', v: '1.5', t: ['visuals'] }, { n: 'Ray Traced Reflections Fix', v: '1.0', t: ['visuals'] },
+        { n: 'HD Reworked Textures', v: '4.0', t: ['textures'] }, { n: 'Neon Rain Particles', v: '2.1', t: ['visuals'] },
+        { n: 'Clean Chrome Skyline', v: '1.3', t: ['visuals'] }, { n: 'Photoreal Skin Pack', v: '2.0', t: ['character'] },
+        { n: 'Dynamic Fog Tweak', v: '1.1', t: ['visuals'], st: 'off', on: 0 }, { n: 'Soft Shadows Fix', v: '1.0', t: ['visuals'] },
+        { n: 'Vivid Billboards', v: '1.7', t: ['textures'] }, { n: 'Night City Skybox', v: '2.2', t: ['visuals'] }
+      ],
+      gp: [
+        { n: 'Netrunner Overhaul', v: '3.1', t: ['netrunner'] }, { n: 'Smarter Enemy AI', v: '1.9', t: ['gameplay'] },
+        { n: 'Hardcore Survival Needs', v: '2.0', t: ['gameplay'] }, { n: 'Cyberware Capacity Rebalance', v: '1.4', t: ['cyberware'] },
+        { n: 'Faster Skill Progression', v: '1.2', t: ['gameplay'] }, { n: 'Sandevistan Slow-Mo Plus', v: '1.0', t: ['cyberware'] },
+        { n: 'Realistic Fall Damage', v: '1.1', t: ['gameplay'] }, { n: 'Perk Respec Anywhere', v: '1.0', t: ['convenience'] }
+      ]
+    };
+  }
+  var DROP_AFTER_REAL = 12; // static demo: the drop line sits after the 12th mod of MODS (not counting the dragged one)
+  var data = fresh(), view = 'order', pending = null;
+  var ST = { dep: ['&#10003; DEPLOYED', 'var(--g)'], off: ['&times; OFF', 'var(--t3)'], todep: ['+ TO DEPLOY', 'var(--c)'] };
+  var NAMES = { mods: 'MODS', vis: 'Visuals', gp: 'Gameplay' };
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  // A unit is a mod plus the layer rows right below it; units move and sort as one.
+  function units(items) {
+    var u = [];
+    items.forEach(function (it) { if (it.layer && u.length) u[u.length - 1].push(it); else u.push([it]); });
+    return u;
+  }
+  function flatten(u) { return [].concat.apply([], u); }
+  function byName(a, b) { return a[0].n.toLowerCase().localeCompare(b[0].n.toLowerCase()); }
+  function shown(key) { return view === 'order' ? data[key] : flatten(units(data[key]).sort(byName)); }
+  function count(key) { return data[key].filter(function (i) { return !i.layer; }).length; }
+
+  function rowHtml(it, num, extra) {
+    var st = ST[it.st || 'dep'], on = it.on === 0 ? '' : ' on';
+    var cls = 'row' + (it.layer ? ' layer' : '') + (extra || '') + (it.drag ? ' dragging' : '');
+    var name;
+    if (it.layer) {
+      name = '<span class="nameline" style="padding-left:34px"><span class="nmx" style="color:var(--v)">&#9492;</span><span class="nmx" title="Local edits. They move together with their mod.">' + esc(it.n) + ' &middot; local edits</span><span class="lnk">moves with parent</span></span>';
+    } else {
+      var head = num === null
+        ? '<span class="lockmark" title="CORE MODS load first and are not numbered">core</span>'
+        : '<span class="grip" title="Drag to change the load order, also into another category">&#8942;&#8942;</span><span class="num" title="Place in the load order. Mods higher up load first and win conflicts.">#' + num + '</span>';
+      if (extra === ' col' || num === null) head = (num === null ? head : '<span class="num" title="Place in the load order. Mods higher up load first and win conflicts.">#' + num + '</span>');
+      name = '<span class="nameline">' + head + '<span class="nmx">' + esc(it.n) + '</span></span>';
+    }
+    return '<div class="' + cls + '"><span><span class="chk" style="display:' + (it.layer ? 'none' : 'block') + '"></span></span>' +
+      '<div style="min-width:0">' + name + '<div class="tags" style="padding-left:' + (it.layer ? 52 : 0) + 'px">' + it.t.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') + '</div></div>' +
+      '<span class="ver">' + esc(it.v) + '</span><span class="chip" style="--tone:' + st[1] + '">' + st[0] + '</span><span class="tog' + on + '"></span></div>';
+  }
+  function azBtn(key) {
+    var dis = view !== 'order';
+    return '<button class="small az" data-az="' + key + '"' + (dis ? ' disabled title="Go back to the load order to sort this section"' : ' title="Sort this section by name (asks first)"') + '>A&rarr;Z</button>';
+  }
+
+  function render() {
+    var sorted = view === 'name';
+    $('panel').classList.toggle('hide-num', sorted);
+    $('note').classList.toggle('show', sorted);
+    $('sortBtn').classList.toggle('on', sorted);
+    $('sortBtn').innerHTML = sorted ? '&#8645; NAME' : '&#8645; SORT';
+    Array.prototype.forEach.call($('viewSeg').children, function (b) { b.classList.toggle('on', b.dataset.v === view); });
+    var h = '', n = 0;
+
+    h += '<div class="block" style="--tone:var(--y)"><div class="ico">&#9632;<span class="lock"></span></div><div><div class="lab">CORE MODS</div><div class="nm">Frameworks</div></div><span class="cnt">' + data.core.length + ' mods &middot; locked</span><span class="tog on"></span></div>';
+    data.core.forEach(function (it) { h += rowHtml(it, null, ' core'); });
+
+    h += '<div class="block" style="--tone:var(--c)"><div class="ico">&#9671;<span class="lock"></span></div><div><div class="lab">COLLECTION</div><div class="nm">Night City Overhaul</div></div><span class="cnt">' + data.col.length + ' mods &middot; order locked</span><span class="tog on"></span></div>';
+    data.col.forEach(function (it) { n++; h += rowHtml(it, n, ' col'); });
+
+    h += '<div class="block" style="--tone:var(--t)"><div class="ico">&#9776;</div><div><div class="lab">MODS</div><div class="nm">Mods and categories</div></div><span class="cnt">' + (count('mods') + count('vis') + count('gp')) + ' mods</span><div class="hbtns"><button class="small" disabled style="opacity:.6">+ CATEGORY</button>' + azBtn('mods') + '</div></div>';
+    h += '<div class="dropwrap">';
+    var realNotDragged = 0;
+    shown('mods').forEach(function (it) {
+      if (!it.layer) n++;
+      h += rowHtml(it, n);
+      if (!sorted && !it.layer && !it.drag && ++realNotDragged === DROP_AFTER_REAL) {
+        h += '<div class="dropline" data-label="drop here: loads after #' + n + ', before #' + (n + 1) + '"></div><div class="ghost"><small>2 rows</small>Better Vehicle Handling + &#9492; local edits</div>';
+      }
+    });
+    h += '</div>';
+    [['vis', 'Visuals'], ['gp', 'Gameplay']].forEach(function (c) {
+      h += '<div class="cat"><div class="ico"></div><div style="display:flex;align-items:baseline"><span class="lab">CATEGORY</span><span class="nm">' + c[1] + '</span></div><span class="cnt">' + count(c[0]) + ' mods</span><div class="hbtns">' + azBtn(c[0]) + '<button class="link">Rename</button><button class="link">Remove</button><span class="tog on" style="width:34px"></span></div></div>';
+      shown(c[0]).forEach(function (it) { n++; h += rowHtml(it, n); });
+    });
+    $('list').innerHTML = h;
+  }
+
+  function label(key) { return key === 'mods' ? 'MODS' : '“' + NAMES[key] + '”'; }
+  function isSorted(key) {
+    var names = units(data[key]).map(function (u) { return u[0].n.toLowerCase(); });
+    return names.every(function (x, i) { return i === 0 || names[i - 1].localeCompare(x) <= 0; });
+  }
+  function fillDialog(key) {
+    var c = count(key);
+    $('dTitle').textContent = key === 'mods' ? 'Sort MODS by name?' : 'Sort category “' + NAMES[key] + '” by name?';
+    $('dBody1').textContent = key === 'mods'
+      ? 'The ' + c + ' mods in MODS without a category will be put in alphabetical order. This replaces the order you set by hand.'
+      : 'The ' + c + ' mods in “' + NAMES[key] + '” will be put in alphabetical order. This replaces the order you set by hand.';
+    $('dBody2').textContent = key === 'mods'
+      ? 'Categories, collections and CORE MODS are not touched. The new order is written with the next APPLY.'
+      : 'Other categories, MODS, collections and CORE MODS are not touched. The new order is written with the next APPLY.';
+  }
+  function closeDialog() { pending = null; $('dlg').classList.remove('flash'); }
+
+  $('list').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-az]');
+    if (!b || b.disabled) return;
+    var key = b.dataset.az;
+    if (isSorted(key)) { closeDialog(); $('toast').textContent = label(key) + ' is already in alphabetical order.'; return; }
+    pending = key; fillDialog(key); $('dlg').classList.add('flash'); $('toast').textContent = '';
+  });
+  $('dOk').addEventListener('click', function () {
+    if (!pending) { $('toast').textContent = 'Press A→Z in a header first.'; return; }
+    var key = pending;
+    data[key] = flatten(units(data[key]).sort(byName));
+    closeDialog(); render();
+    $('toast').textContent = label(key) + ' sorted by name. Press APPLY to write the new load order.';
+  });
+  $('dCancel').addEventListener('click', function () { closeDialog(); $('toast').textContent = ''; });
+  $('viewSeg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; view = b.dataset.v; render(); });
+  $('sortBtn').addEventListener('click', function () { view = view === 'order' ? 'name' : 'order'; render(); });
+  $('back').addEventListener('click', function () { view = 'order'; render(); });
+  $('reset').addEventListener('click', function () { data = fresh(); view = 'order'; closeDialog(); $('toast').textContent = ''; fillDialog('mods'); render(); });
+  fillDialog('mods'); render();
+})();
+</script>
+</body>
+</html>
