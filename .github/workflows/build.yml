@@ -55,6 +55,27 @@ jobs:
           "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
           Write-Host "$((Get-ChildItem $dir -Recurse -File).Count) files in $zip"
 
+      # a test build of the full edition for the owner, only when the workflow is started by hand;
+      # it is an artifact of the run and never part of a release
+      - name: Test build of the full edition
+        if: github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -o publish/full
+          if ((Get-FileHash publish/full/AFTERLIFE.dll).Hash -eq (Get-FileHash publish/offline/AFTERLIFE.dll).Hash) { throw "The full build is identical to AFTERLIFE Offline" }
+          $dir = "test/AFTERLIFE"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item publish/full/* $dir -Recurse
+          Get-ChildItem $dir -Filter *.pdb -Recurse | Remove-Item
+          Copy-Item README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
+          Compress-Archive -Path $dir -DestinationPath "test/AFTERLIFE-test-$($env:GITHUB_SHA.Substring(0,7))-win-x64.zip"
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: AFTERLIFE-full-test
+          path: test/*.zip
+
       - uses: actions/upload-artifact@v4
         with:
           name: AFTERLIFE-win-x64
