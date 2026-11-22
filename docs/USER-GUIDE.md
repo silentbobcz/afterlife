@@ -79,7 +79,7 @@ The **search** box above the list filters by name and tag; **✕** or Esc clears
 
 When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
-The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order. Inside MODS and every category the mods are sorted by name (local edits stay right below their mod); collections keep the curator's order. Profiles are sorted by name too, with *Mods off* first.
+The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category the mods are sorted by name (local edits stay right below their mod); collections keep the curator's order. Profiles are sorted by name too, with *Mods off* first.
 
 Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **RESET ORDER**, **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
@@ -168,9 +168,27 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 - **USE THIS MOD** makes the selected mod win one file.
 - **USE THIS MOD FOR ALL n FILES** makes it win every conflict it has, in one click.
 
-Archive mods (`archive/pc/mod`) are loaded by the game in an order: mods higher in the list load first and win. Inside MODS and every category the mods are sorted by name, so to load a mod earlier put it into a category and move that category up. Inside an unlocked collection you can drag rows by the **⋮⋮** handle. AFTERLIFE writes the order to `modlist.txt` when you apply. **Reset order** returns to the game's default (alphabetical by archive name). Mods of a collection keep the curator's order unless you unlock it (section 12).
+### Load order
 
-The blocks are part of the order: CORE MODS load first, then the blocks from top to bottom. Inside MODS the mods without a category load first, then the categories from top to bottom. Moving a block, a category, or a mod into another category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. Mods of a collection stay in their collection; CORE MODS cannot be moved.
+**Where it matters.** Only archive mods (`.archive` files in `archive/pc/mod`) have a load order. When two of them change the same game asset, the one that loads first wins. The order (written to `modlist.txt`) does not affect scripts, CET, RED4ext, TweakXL and other mods; for them only the file conflicts above count.
+
+**How the list maps to the order.** The top of the list loads first and wins:
+
+1. CORE MODS (always first, cannot be moved),
+2. then the blocks from top to bottom (every COLLECTION and MODS),
+3. inside MODS: the mods without a category first, then each category from top to bottom,
+4. inside MODS and inside every category the mods are **sorted by name**; inside a collection they keep the curator's order.
+
+**To load one mod before another** (for example a texture fix that must win over a bigger texture pack):
+
+1. In the MODS header click **+ CATEGORY** and name it, for example *Load first*.
+2. Drag the mod onto that category, or select it and use **MOVE TO CATEGORY**.
+3. Move the category up with its **⋮⋮** handle or the small arrows. Categories always load after the mods of MODS that have no category; if the other mod is one of those, put it into a category too and place the two categories in the order you want.
+4. **APPLY CHANGES**. The preview shows the new order before anything is written.
+
+A category with a single mod in it is fine: that is the intended way to pin one mod. Dragging a row up or down inside MODS or inside the same category does nothing, because the order there is by name.
+
+Inside an unlocked collection you can drag rows by the **⋮⋮** handle ([section 12](#12-collections)). Moving a block, a category, or a mod into another category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. **Reset order** returns to the game's default (alphabetical by archive name). Sorting the list (**⇅**) changes only the view, never the order.
 
 ## 11. Nexus Mods: key, downloads, updates
 
