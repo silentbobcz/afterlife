@@ -31,7 +31,7 @@ public sealed record SettingsActions(
     Action<bool, bool, bool, int> SetUpdateChecks,
     Action CheckAllMods);
 
-/// <summary>Game, library, Nexus Mods, display, diagnostics.</summary>
+/// <summary>Settings in tabs: game and library, Nexus Mods, updates, display, kept files, diagnostics, FIXER.</summary>
 public sealed partial class SettingsVm : OverlayVm
 {
     private readonly SettingsActions _a;
@@ -163,7 +163,7 @@ public sealed partial class SettingsVm : OverlayVm
     [ObservableProperty] private bool _fixerInbox;
 
     public string FixerFolder => Path.Combine(Library, "fixer", "inbox");
-    public string FixerHint => "For FIXER, the quest editor for Cyberpunk 2077. While this is on, AFTERLIFE takes the quests FIXER leaves in the fixer\\inbox folder of the library: "
+    public string FixerHint => "While this is on, AFTERLIFE takes the quests FIXER leaves in the fixer\\inbox folder of the library: "
         + "they arrive in the category FIXER, switched on in the selected profile, and go into the game with APPLY CHANGES like any other mod. Off: the folder is not read.";
 
     partial void OnFixerInboxChanged(bool value)
@@ -247,6 +247,7 @@ public sealed partial class SettingsVm : OverlayVm
         HasRemoved = s.RemovedBytes > 0 || s.RemovedBatches > 0;
         HasDownloads = s.Downloads > 0;
         HasTemp = s.TempBytes > 0;
+        KeptTotal = Size(s.RemovedBytes + s.DownloadBytes + s.TempBytes);
     }
 
     public static string Size(long b) => b switch

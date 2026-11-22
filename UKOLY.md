@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `main`. Po schválení B3 stačí do nového vlákna napsat: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O8.“
+**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/kind-hopper-az2rax`. Pro modely teď nic nečeká; další balíky vzniknou z toho, co najdeš při zkoušení.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 jsi dostal 22. 11. jako zip (název nese hash commitu). Položky A2 až A9 se zkouší na něm. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
 
@@ -18,12 +18,7 @@ Zkušební sestavení plné edice 1.0.0-beta.1 jsi dostal 22. 11. jako zip (náz
 | A7 | Řazení seznamu (F2) | Nové sestavení; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | 1. Proklikej NAME, NEWEST, STATE, SIZE: řadí se uvnitř bloků, core mody zůstávají. 2. Při řazení nejde mod přetáhnout a nad seznamem je vysvětlení. 3. Klikni „Back to load order“, dej APPLY: v plánu nesmí být žádná změna pořadí. | ☐ čeká na tebe |
 | A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na tebe |
 | A9 | Kontrola aktualizací a oddíl UPDATES v nastavení (F3) | Další sestavení (po `e0a53b4`); Settings → UPDATES, tlačítko CHECK UPDATES | 1. Klikni CHECK UPDATES: má doběhnout rychle a říct, kolik modů má novější verzi. 2. V nastavení vypni a zapni automatickou kontrolu, změň počet dní; po zavření a otevření nastavení má hodnota zůstat. 3. „Check every mod now…“ přečte všechny mody: sleduj průběh v dolní liště a napiš, jak dlouho to trvalo a kolik modů máš. 4. Nastav počet dní na 1: řádek pod ním má ukázat počet dotazů denně; u velmi velké knihovny oranžové varování. Neověřeno: nic z toho jsem neviděl běžet; limity Nexusu znám jen z odpovědí serveru. | ☐ čeká na tebe |
-
-## B. Promyslet a rozhodnout
-
-| # | Co | Kde to najdu | Co mám rozhodnout | Stav |
-|---|---|---|---|---|
-| B3 | Nové nastavení se záložkami vlevo | [docs/previews/settings-tabs.html](docs/previews/settings-tabs.html), doma `D:/_AI/afterlife/docs/previews/settings-tabs.html` po `git pull` na `main`; otevři dvojklikem | Proklikej záložky, přepni okno 2560 × 1440 a edici OFFLINE; pod náhledem je, kam se která volba přesunula. Napiš „B3 schváleno“ nebo co změnit. Pak ho O8 přestaví v kódu. | ☐ čeká na tebe |
+| A10 | Nastavení se záložkami (O8) | Další sestavení (po kontrole); tlačítko SETTINGS vlevo | 1. Proklikej záložky vlevo: obsah se mění, okno se nehýbe, vybraná záložka má barevný pruh. 2. V Kept files klikni Show u všech tří řádků: otevře se složka. 3. Zavři a znovu otevři nastavení: otevře se na poslední záložce. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na sestavení |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -43,6 +38,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | B3 schváleno, O8 hotové a zkontrolované (bez nálezu): nastavení se záložkami vlevo je v kódu, zkouší se v A10. Instalátor (O9) je zrušený a jeho zkušební výroba vrácená. |
 | 22. 11. | Balení: zůstává složka v zipu, k jednomu samorozbalovacímu exe se nevracíme. Samostatný instalátor se dělat nebude (zrušeno 22. 11.). |
 | 22. 11. | C3 a C7: vše sloučeno do `main`, verze 1.0.0-beta.1. První dávka fronty je uzavřená a v archivu. Vydání čeká na tvůj tag (C8). |
 | 22. 11. | Kontrola náhledu nastavení (O7): odpovídá aplikaci, všechny volby mají místo, texty sedí s tím, co je v kódu. Rozhodnutí je dál tvoje (B3). |

@@ -1,8 +1,8 @@
 # AFTERLIFE: fronta pro modely (2. dávka)
 
-Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`.** Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
+Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `claude/kind-hopper-az2rax`** (`main` + O8, bez instalátoru). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O8.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej další balík.“
 
 ## Pravidla dávky
 
@@ -16,8 +16,8 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 
 | Balík | Model | Co | Čeká na | Stav |
 |---|---|---|---|---|
-| O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
-| F-kontrola | Fable | Kontrola O8 a uzavření dávky | O8 | čeká |
+| O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | nic | hotovo, zkontrolováno |
+| F-kontrola | Fable | Kontrola O8 | nic | hotovo, bez nálezu; dávka čeká na vyzkoušení (A10) |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -45,3 +45,15 @@ Fable. Projít commity O8 proti náhledu `docs/previews/settings-tabs.html` a p�
 - Samostatný instalátor: zrušeno 22. 11. Zůstává jen zip se složkou; balík O9 se nedělá a jeho zkušební výroba byla vrácena.
 
 ## Předávky
+
+**O8** (22. 11., Opus)
+- Stav: hotovo. Nové `Views/SettingsView.xaml` (šablona se záložkami, sloučená v `MainWindow.xaml`; stará šablona z `Panels.xaml` pryč) a `ViewModels/Overlays/SettingsVm.Tabs.cs` (výběr záložky, údaje na záložkách, složky uložených souborů). `LibraryPaths.Removed` místo vlastní cesty v `Quarantine`.
+- Logika voleb beze změny, jen přesun. Nové: odkazy Show u uložených souborů (dočasné soubory otevřou `staging`; chybějící složka otevře knihovnu), rámeček o FIXERu, součet uložených souborů, zelená tečka u funkčního klíče, verze dole, v Offline záložka Updates se zámkem a zašedlými volbami.
+- Rozhodl jsem sám: záložka se pamatuje jen do zavření aplikace (ne do databáze); Link mods jen s uloženým klíčem jako dřív; v CHANGELOGu nový nadpis „Unreleased“ nad beta.1 (číslo doplní vydání).
+- Ověřeno: 322 testů, překlad plné i Offline edice.
+- Neověřeno: nic z okna jsem neviděl běžet (A10); hlavně barva vybrané záložky, rolování delších textů ve Windows písmech, zámek u Updates.
+- Pro uživatele: A10 v UKOLY.md.
+
+
+**F-kontrola O8** (22. 11., Fable): prošel jsem commit `90f6cc1` proti náhledu a předávce. Chybu jsem nenašel, nic jsem neopravoval. Ověřil jsem, že každá vazba v `Views/SettingsView.xaml` má protějšek v `SettingsVm`, že záložky předávají hodnotu výčtu (ne text) a že v nastavení zůstaly všechny volby včetně dvou přepínačů kontroly aktualizací a varování o dotazech. Sloučeno s větví bez instalátoru; testy a překlad obou edic viz stav níže. Neověřeno zůstává vše, co je vidět jen v okně (A10).
+

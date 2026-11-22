@@ -1,0 +1,429 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Afterlife.App.Controls"
+                    xmlns:vm="clr-namespace:Afterlife.App.ViewModels">
+    <!-- Settings: tabs on the left, the chosen tab on the right. One fixed size, so nothing moves when the tab changes. -->
+
+    <!-- a tab on the left; Tag is its accent colour -->
+    <Style x:Key="SettingsTabButton" TargetType="RadioButton">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Foreground" Value="{StaticResource T}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid x:Name="Root" Background="Transparent">
+                        <Rectangle x:Name="Bar" Width="3" HorizontalAlignment="Left" Fill="{TemplateBinding Tag}" Visibility="Hidden" />
+                        <ContentPresenter x:Name="Content" Margin="12,8,10,8" TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource CTint}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource Bg3}" />
+                            <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Content" Property="TextElement.Foreground" Value="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="TabNumber" TargetType="TextBlock" BasedOn="{StaticResource Mono}">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{StaticResource T3}" />
+        <Setter Property="Width" Value="26" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="TabLabel" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="TabSub" TargetType="TextBlock" BasedOn="{StaticResource Meta}">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Margin" Value="26,1,0,0" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <!-- heading of a tab: "// NAME" -->
+    <Style x:Key="TabHeading" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- a group inside a tab: a line above and a small label -->
+    <Style x:Key="GroupLabel" TargetType="TextBlock" BasedOn="{StaticResource MonoLabel}">
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+    <Style x:Key="Group" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource Line}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="0,12,0,12" />
+    </Style>
+    <!-- grey note under a check box -->
+    <Style x:Key="CheckNote" TargetType="TextBlock" BasedOn="{StaticResource Meta}">
+        <Setter Property="Margin" Value="28,2,0,0" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <DataTemplate DataType="{x:Type vm:SettingsVm}">
+        <Grid Width="896" Height="520">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="214" />
+                <ColumnDefinition Width="22" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ===== tabs ===== -->
+            <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0" Padding="0,0,14,0">
+                <DockPanel LastChildFill="False">
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <Border Height="1" Background="{StaticResource Line}" Margin="0,0,0,12" />
+                        <Button Margin="12,0,0,0" HorizontalAlignment="Left" Style="{StaticResource QuietLinkButton}" FontSize="12" Command="{Binding RemoveFromPcCommand}" Content="Remove AFTERLIFE from this PC…" />
+                        <TextBlock Margin="12,8,0,0" Style="{StaticResource Mono}" FontSize="10.5" Foreground="{StaticResource T3}" Text="{Binding VersionText}" />
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Top">
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource Y}" GroupName="SettingsTabs" IsChecked="{Binding IsGameTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Game}" AutomationProperties.Name="Game and library">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="01" /><TextBlock Style="{StaticResource TabLabel}" Text="GAME &amp; LIBRARY" /></StackPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="Game folder, library folder" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource M}" GroupName="SettingsTabs" IsChecked="{Binding IsNexusTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Nexus}" AutomationProperties.Name="Nexus Mods">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Ellipse DockPanel.Dock="Right" Width="7" Height="7" Fill="{StaticResource G}" VerticalAlignment="Center" ToolTip="The key works"
+                                             Visibility="{Binding NexusKeyWorks, Converter={StaticResource BoolToVis}}" />
+                                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="02" /><TextBlock Style="{StaticResource TabLabel}" Text="NEXUS MODS" /></StackPanel>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="Account, linking, nxm:// links" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource C}" GroupName="SettingsTabs" IsChecked="{Binding IsUpdatesTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Updates}" AutomationProperties.Name="Updates">
+                            <StackPanel>
+                                <DockPanel>
+                                    <ContentControl DockPanel.Dock="Right" Focusable="False" Template="{StaticResource LockIcon}" VerticalAlignment="Center"
+                                                    Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}" />
+                                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="03" /><TextBlock Style="{StaticResource TabLabel}" Text="UPDATES" /></StackPanel>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="When and what to check" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource T}" GroupName="SettingsTabs" IsChecked="{Binding IsDisplayTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Display}" AutomationProperties.Name="Display">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="04" /><TextBlock Style="{StaticResource TabLabel}" Text="DISPLAY" /></StackPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="Animations, mod list" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource M}" GroupName="SettingsTabs" IsChecked="{Binding IsStorageTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Storage}" AutomationProperties.Name="Kept files">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource T2}" VerticalAlignment="Center" Text="{Binding KeptTotal}" />
+                                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="05" /><TextBlock Style="{StaticResource TabLabel}" Text="KEPT FILES" /></StackPanel>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="Undo copies, archives, temp" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource O}" GroupName="SettingsTabs" IsChecked="{Binding IsDiagnosticsTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Diagnostics}" AutomationProperties.Name="Diagnostics">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="06" /><TextBlock Style="{StaticResource TabLabel}" Text="DIAGNOSTICS" /></StackPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="Activity log, bug report" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Style="{StaticResource SettingsTabButton}" Tag="{StaticResource T}" GroupName="SettingsTabs" IsChecked="{Binding IsFixerTab, Mode=OneWay}"
+                                     Command="{Binding SelectTabCommand}" CommandParameter="{x:Static vm:SettingsTab.Fixer}" AutomationProperties.Name="FIXER">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource TabNumber}" Text="07" /><TextBlock Style="{StaticResource TabLabel}" Text="FIXER" /></StackPanel>
+                                <TextBlock Style="{StaticResource TabSub}" Text="Quests from the quest editor" />
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ===== the chosen tab ===== -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" Focusable="False">
+                <StackPanel Margin="0,0,10,0">
+                    <Border Margin="0,0,0,12" Padding="12,8" BorderThickness="1" BorderBrush="{Binding MessageTone, Converter={StaticResource ToneBrush}}"
+                            Background="{Binding MessageTone, Converter={StaticResource ToneTint}}" Visibility="{Binding Message, Converter={StaticResource NullToVis}}">
+                        <TextBlock Style="{StaticResource Body}" FontSize="12.5" Text="{Binding Message}" TextWrapping="Wrap" />
+                    </Border>
+
+                    <!-- 01 GAME & LIBRARY -->
+                    <StackPanel Visibility="{Binding IsGameTab, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// " /><Run Foreground="{StaticResource Y}" Text="GAME &amp; LIBRARY" /></TextBlock>
+                        <TextBlock Margin="0,4,0,12" Style="{StaticResource Meta}" FontSize="12.5" Text="Where the game is and where AFTERLIFE keeps your mods." />
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource GroupLabel}" Text="GAME" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource Mono}" FontSize="12.5" Text="{Binding GameFolder}" TextTrimming="CharacterEllipsis" ToolTip="{Binding GameFolder}" />
+                                        <TextBlock Style="{StaticResource Meta}" Text="{Binding GameVersion}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenGameCommand}" Content="Open in Explorer" VerticalAlignment="Center" />
+                                    <Button Grid.Column="2" Margin="14,0,0,0" Style="{StaticResource AccentButton}" Command="{Binding ChangeGameCommand}" Content="CHANGE…" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                                </Grid>
+                                <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding GameFolderHint}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource GroupLabel}" Text="LIBRARY" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource Mono}" FontSize="12.5" VerticalAlignment="Center" Text="{Binding Library}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Library}" />
+                                    <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenLibraryCommand}" Content="Open in Explorer" VerticalAlignment="Center" />
+                                    <Button Grid.Column="2" Margin="14,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenScanCommand}" Content="Removed mods…" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- 02 NEXUS MODS -->
+                    <StackPanel Visibility="{Binding IsNexusTab, Converter={StaticResource BoolToVis}}">
+                        <Grid>
+                            <TextBlock Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// NEXUS MODS" /></TextBlock>
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="1" Padding="7,1" BorderBrush="{Binding NexusTone, Converter={StaticResource ToneBrush}}"
+                                    Visibility="{Binding NexusTier, Converter={StaticResource NullToVis}}">
+                                <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Text="{Binding NexusTier}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" />
+                            </Border>
+                        </Grid>
+                        <StackPanel Margin="0,8,0,0" Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource O}" Text="OFFLINE EDITION · NO API KEY · NO CONNECTION TO NEXUS MODS" TextWrapping="Wrap" />
+                            <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding OfflineNote}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Margin="0,4,0,0" Visibility="{Binding IsOnline, Converter={StaticResource BoolToVis}}">
+                            <Border Style="{StaticResource Group}" BorderThickness="0" Padding="0,4,0,12">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource GroupLabel}" Text="ACCOUNT" />
+                                    <TextBlock Style="{StaticResource Meta}" Text="{Binding NexusHint}" TextWrapping="Wrap" />
+                                    <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}" Command="{Binding LoginNexusCommand}" Content="LOG IN WITH NEXUS MODS"
+                                            Visibility="{Binding SsoAvailable, Converter={StaticResource BoolToVis}}" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid>
+                                            <TextBox x:Name="NexusKeyBox" Style="{StaticResource DarkTextBox}" Text="{Binding NexusKeyInput, UpdateSourceTrigger=PropertyChanged}" FontFamily="{StaticResource MonoFont}"
+                                                     AutomationProperties.Name="Nexus Mods API key" />
+                                            <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Meta}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Setter Property="Text" Value="Paste your personal API key" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Text, ElementName=NexusKeyBox}" Value="">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding HasNexusKey}" Value="True">
+                                                                <Setter Property="Text" Value="Key saved · paste a new one to replace it" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                        <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource PrimaryButton}" Command="{Binding SaveKeyCommand}" Content="SAVE KEY" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                                    </Grid>
+                                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Body}" FontSize="12.5" Text="{Binding NexusStatus}" Foreground="{Binding NexusTone, Converter={StaticResource ToneBrush}}" TextWrapping="Wrap" />
+                                    <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                                        <Button Style="{StaticResource LinkButton}" Command="{Binding OpenKeyPageCommand}" Content="Get my API key on nexusmods.com ↗" />
+                                        <Button Margin="16,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding CheckKeyCommand}" Content="Check again" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
+                                        <Button Margin="16,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding ForgetKeyCommand}" Content="Remove key" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Group}" Visibility="{Binding HasNexusKey, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource GroupLabel}" Text="LINK MODS" />
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Margin="14,0,0,0" VerticalAlignment="Center" Style="{StaticResource LinkButton}" Command="{Binding LinkModsCommand}" Content="Link all unlinked mods…" />
+                                        <TextBlock Style="{StaticResource Meta}" TextWrapping="Wrap" Text="Mods added from files get their Nexus page once Nexus confirms them; one list, one question." />
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Group}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource GroupLabel}" Text="DOWNLOAD LINKS" />
+                                    <CheckBox Style="{StaticResource PlainCheck}" IsChecked="{Binding NxmHandler}" Content="Open Mod Manager Download links in AFTERLIFE (nxm://)" />
+                                    <TextBlock Style="{StaticResource CheckNote}" Text="{Binding NxmHint}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 03 UPDATES: in the Offline edition visible, locked -->
+                    <StackPanel Visibility="{Binding IsUpdatesTab, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// " /><Run Foreground="{StaticResource C}" Text="UPDATES" /></TextBlock>
+                        <Border Margin="0,8,0,0" Padding="10,8" BorderThickness="1" BorderBrush="{StaticResource Line2}" Background="{StaticResource OTint}"
+                                Visibility="{Binding IsOffline, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ContentControl Focusable="False" Template="{StaticResource LockIcon}" VerticalAlignment="Center" />
+                                    <TextBlock Margin="6,0,0,0" Style="{StaticResource Mono}" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource O}" Text="NEEDS NEXUS MODS" />
+                                </StackPanel>
+                                <TextBlock Margin="0,2,0,0" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" Text="Comes with the full edition, once Nexus Mods registers AFTERLIFE." />
+                            </StackPanel>
+                        </Border>
+                        <StackPanel IsEnabled="{Binding IsOnline}">
+                            <TextBlock Margin="0,8,0,12" Style="{StaticResource Meta}" FontSize="12.5" TextWrapping="Wrap" Text="AFTERLIFE asks Nexus Mods for newer versions of the mods that are linked to their page." />
+                            <Border Style="{StaticResource Group}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource GroupLabel}" Text="ON ITS OWN" />
+                                    <CheckBox Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesAuto}" Content="Look for newer versions of your mods when AFTERLIFE starts" />
+                                    <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesHourly}" Content="Look for newer versions of your mods every hour while AFTERLIFE is open" />
+                                    <TextBlock Style="{StaticResource CheckNote}" Text="Core mods are checked either way." />
+                                    <CheckBox Margin="0,6,0,0" Style="{StaticResource PlainCheck}" IsChecked="{Binding CheckUpdatesActiveOnly}" IsEnabled="{Binding AnyAutoCheck}"
+                                              Content="On its own, check only the mods switched on in the selected profile" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Group}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource GroupLabel}" Text="FULL READ" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Read every mod in full once in" />
+                                        <TextBox Style="{StaticResource DarkTextBox}" Width="48" Margin="8,0" Padding="6,0" MaxLength="3" Text="{Binding FullCheckDays, UpdateSourceTrigger=LostFocus}" AutomationProperties.Name="Days between full checks" />
+                                        <TextBlock Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="days (0 = never)" />
+                                    </StackPanel>
+                                    <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" TextWrapping="Wrap" Text="{Binding UpdatesHint}" />
+                                    <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource LinkButton}" Command="{Binding CheckAllModsCommand}" Content="Check every mod now…"
+                                            ToolTip="{Binding CheckAllTip}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Group}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource GroupLabel}" Text="REQUESTS TO NEXUS MODS" />
+                                    <TextBlock Style="{StaticResource Meta}" TextWrapping="Wrap" Text="{Binding UpdatesLoad}" />
+                                    <!-- the days between full reads are too few for this library -->
+                                    <Border Margin="0,8,0,0" Padding="10,6" BorderThickness="1" BorderBrush="{StaticResource O}" Background="{StaticResource OTint}"
+                                            Visibility="{Binding HasUpdatesWarning, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" Foreground="{StaticResource O}" Text="{Binding UpdatesWarning}" />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 04 DISPLAY -->
+                    <StackPanel Visibility="{Binding IsDisplayTab, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Margin="0,0,0,8" Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// " /><Run Foreground="{StaticResource T}" Text="DISPLAY" /></TextBlock>
+                        <Border Style="{StaticResource Group}" BorderThickness="0">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource GroupLabel}" Text="ANIMATIONS" />
+                                <CheckBox Style="{StaticResource PlainCheck}" IsChecked="{Binding ReduceMotion}" Content="Reduce motion" />
+                                <TextBlock Style="{StaticResource CheckNote}" Text="Stops the background, glitches, scans and the breach animation." />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource GroupLabel}" Text="MOD LIST" />
+                                <CheckBox Style="{StaticResource PlainCheck}" IsChecked="{Binding VirtualizeList}" Content="Draw only the visible rows (experimental)"
+                                          ToolTip="Off: every row of the list is drawn at once, as before. On: only the rows on screen are drawn, so a long list opens and scrolls faster." />
+                                <TextBlock Style="{StaticResource CheckNote}" Text="Faster with hundreds of mods. Switch it off again if the list jumps while scrolling or dragging." />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- 05 KEPT FILES -->
+                    <StackPanel Visibility="{Binding IsStorageTab, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// KEPT FILES" /></TextBlock>
+                        <TextBlock Margin="0,4,0,12" Style="{StaticResource Meta}" FontSize="12.5" TextWrapping="Wrap"
+                                   Text="Copies AFTERLIFE keeps so you can undo. Deleting them frees space; the game, the mods in the library and the profiles stay. Show opens the folder in Explorer, so you can look before you delete." />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="30" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Removed files (undo)" />
+                            <TextBlock Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" VerticalAlignment="Center" Text="{Binding RemovedSize}" />
+                            <Button Grid.Column="2" Margin="0,0,16,0" Style="{StaticResource LinkButton}" FontSize="12" Content="Show" Command="{Binding ShowRemovedCommand}" />
+                            <Button Grid.Column="3" Style="{StaticResource QuietLinkButton}" FontSize="12" Content="Delete" Command="{Binding PurgeRemovedCommand}" IsEnabled="{Binding HasRemoved}" />
+                            <TextBlock Grid.Row="1" Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Downloaded archives" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" VerticalAlignment="Center" Text="{Binding DownloadSize}" />
+                            <Button Grid.Row="1" Grid.Column="2" Margin="0,0,16,0" Style="{StaticResource LinkButton}" FontSize="12" Content="Show" Command="{Binding ShowDownloadsCommand}" />
+                            <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource QuietLinkButton}" FontSize="12" Content="Delete" Command="{Binding PurgeDownloadsCommand}" IsEnabled="{Binding HasDownloads}" />
+                            <TextBlock Grid.Row="2" Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="Temporary files" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" VerticalAlignment="Center" Text="{Binding TempSize}" />
+                            <Button Grid.Row="2" Grid.Column="2" Margin="0,0,16,0" Style="{StaticResource LinkButton}" FontSize="12" Content="Show" Command="{Binding ShowTempCommand}" />
+                            <Button Grid.Row="2" Grid.Column="3" Style="{StaticResource QuietLinkButton}" FontSize="12" Content="Delete" Command="{Binding PurgeTempCommand}" IsEnabled="{Binding HasTemp}" />
+                            <TextBlock Grid.Row="3" Style="{StaticResource Meta}" FontSize="12.5" VerticalAlignment="Center" Text="Together" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource T2}" VerticalAlignment="Center" Text="{Binding KeptTotal}" />
+                        </Grid>
+                        <Button Margin="0,18,0,0" HorizontalAlignment="Left" Style="{StaticResource DangerButton}" Command="{Binding PurgeAllCommand}" Content="DELETE ALL KEPT FILES" />
+                    </StackPanel>
+
+                    <!-- 06 DIAGNOSTICS -->
+                    <StackPanel Visibility="{Binding IsDiagnosticsTab, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// " /><Run Foreground="{StaticResource O}" Text="DIAGNOSTICS" /></TextBlock>
+                        <TextBlock Margin="0,4,0,12" Style="{StaticResource Meta}" FontSize="12.5" Text="For finding problems and for a bug report." />
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource GroupLabel}" Text="ACTIVITY LOG" />
+                                <CheckBox Style="{StaticResource PlainCheck}" IsChecked="{Binding ActivityLog}" Content="Log what AFTERLIFE does" />
+                                <TextBlock Style="{StaticResource CheckNote}" Text="{Binding ActivityLogHint}" />
+                                <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource LinkButton}" Command="{Binding OpenLogsCommand}" Content="Open log folder" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource GroupLabel}" Text="BUG REPORT" />
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Margin="14,0,0,0" VerticalAlignment="Center" Style="{StaticResource LinkButton}" Command="{Binding CopyDiagnosticsCommand}" Content="Copy diagnostics" />
+                                    <TextBlock Style="{StaticResource Meta}" TextWrapping="Wrap" Text="Mod list, versions and the last errors, without your key or paths." />
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- 07 FIXER -->
+                    <StackPanel Visibility="{Binding IsFixerTab, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Style="{StaticResource TabHeading}"><Run Foreground="{StaticResource M}" Text="// " /><Run Foreground="{StaticResource T}" Text="FIXER" /></TextBlock>
+                        <Border Margin="0,10,0,12" Padding="12,10" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1">
+                            <DockPanel>
+                                <Rectangle DockPanel.Dock="Left" Width="3" Margin="-12,-10,9,-10" Fill="{StaticResource O}" />
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource O}" Text="IN DEVELOPMENT · NOT RELEASED YET" />
+                                    <TextBlock Margin="0,3,0,0" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" Text="{Binding FixerAbout}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <CheckBox Style="{StaticResource PlainCheck}" IsChecked="{Binding FixerInbox}" Content="Take quests from FIXER (drop box in the library)" ToolTip="{Binding FixerFolder}" />
+                        <TextBlock Style="{StaticResource CheckNote}" Text="{Binding FixerHint}" />
+                        <TextBlock Margin="28,6,0,0" Style="{StaticResource Meta}" TextWrapping="Wrap"><Run Text="Drop box: " /><Run FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource T}" Text="{Binding FixerFolder, Mode=OneWay}" /></TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

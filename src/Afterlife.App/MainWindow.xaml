@@ -25,6 +25,7 @@
                 <ResourceDictionary Source="Views/Dialogs.xaml" />
                 <ResourceDictionary Source="Views/CollectionViews.xaml" />
                 <ResourceDictionary Source="Views/Panels.xaml" />
+                <ResourceDictionary Source="Views/SettingsView.xaml" />
                 <ResourceDictionary Source="Views/FilterPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
