@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main` (včetně volného pořadí modů, O11 a O12). Pro modely teď čeká jen zapracování textů dialogu po B5.
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main` (včetně volného pořadí modů, O11 a O12). Pro modely čeká: O14 (návrh formátu load listu, Opus) a O16 (náhled tlačítek FILTERS a SORT, Sonnet), obojí může začít hned; zapracování textů dialogu po B5.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `34f6b02` (`AFTERLIFE-test-34f6b02-win-x64.zip`, u tebe ve složce `zkusebni`). Obsahuje vše z `main` včetně nastavení v záložkách; položky A2 až A11 se zkouší na něm. Starší zip (`6e633d0`) smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
 
@@ -42,6 +42,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | Dva nové nápady zapsané do fronty: export a import load listu (O14 návrh formátu, O15 kód) a jiná barva a popisek tlačítek FILTERS a SORT (O16). |
 | 22. 11. | Výroba jedním vláknem: O10 (náhled), O11 (volné pořadí v kódu), O12 (klávesy, LOAD BEFORE) a návrh textů O13 hotové a zkontrolované; sestavení a 335 testů sloučeno do `main`. Kontrola opravila tři věci (text v náhledu, kolizi názvu testů, nepřeložitelnou vsuvku). |
 | 22. 11. | C9: nové mody při volném pořadí padají na konec MODS (bez kategorie). Aktualizace drží místo staré verze. |
 | 22. 11. | Vyzkoušeno na sestavení `34f6b02`: A4, A5, A6, A9, A10 a A11 v pořádku. A3 v pořádku, ale logika dialogu při vypnutí modu není srozumitelná: texty se přepíšou (balík O13). A2: historie stahování v pořádku, Scan manual mods je krátké (zůstává otevřené). A7: čekal jsi ruční pořadí uvnitř MODS a kategorií; to je O10 až O12. |

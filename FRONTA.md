@@ -2,7 +2,7 @@
 
 Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`** (sloučeno 22. 11. včetně volného pořadí O11 a O12). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O10.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O14.“ Balík O16 jde pustit vedle něj (jiné soubory).“
 
 ## Pravidla dávky
 
@@ -23,6 +23,9 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | nic | hotovo, zkontrolováno |
 | F-pořadí | Fable | Kontrola O11 a O12 | nic | hotovo; čeká na vyzkoušení (A13) |
 | O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
+| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | čeká |
+| O15 | Opus | Export a import load listu v kódu | B6 | čeká |
+| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -76,6 +79,35 @@ Fable. Projít O11 a O12 proti náhledu a předávkám, hlavně: pořadí v `mod
 Sonnet. Uživatel 22. 11. dialog vyzkoušel: funguje, ale logice nerozumí. Soubor `ViewModels/MainViewModel.Library.cs` (nadpisy „ALSO SWITCH OFF WHAT NEEDS IT?“, „ONLY IT NEEDED, NOW ON“, „IT NEEDS, STAYS ON“ a věty kolem), šablona v `Views/Dialogs.xaml`. Chování se nemění, jen texty a případně pořadí tří částí.
 1. Napiš návrh nových textů jako tabulku „dnes → nově“ do předávky: každá část jednou celou větou, která říká, co se stane s kterými mody (například „These mods need it and will stop working: switch them off too?“). Žádné zkratky typu „IT NEEDS“.
 2. Pro uživatele položka B v `UKOLY.md` s tou tabulkou; do kódu až po schválení.
+
+## Load list: export a import (O14, O15)
+
+Proč: uživatel chce pořadí načítání vynést do souboru a zase načíst (záloha, přenos na jiný počítač, sdílení s někým dalším, ruční úprava v editoru). Není to dnešní EXPORT LIST (`ExportVm`: soupis aktivních modů s verzemi pro hlášení chyb); ten zůstává. Zadání uživatele z 22. 11.:
+- Export v čitelné textové podobě s jasnou syntaxí, aby si ho člověk mohl upravit ručně; kolekce a kategorie jsou označené znaky.
+- Import: kolekce a kategorie, které v knihovně nejsou, se založí a mody se k nim zatřídí.
+- Mody ze souboru, které v knihovně nejsou: buď nabídnout ke stažení, nebo přeskočit (rozhodne uživatel podle návrhu). Mody v knihovně, které v souboru nejsou: návrh řekne, kam přijdou.
+
+### O14. Návrh formátu (bez kódu)
+
+Opus. Může začít hned. Výstup je dokument `docs/previews/load-list-format.md`, žádný kód.
+1. Projdi, co pořadí dnes tvoří: profil (`ProfileState.Entries`, zapnuto/vypnuto), `BlockLayout` (bloky, kategorie), kolekce (zámek pořadí, kurátorovo pořadí), vrstvy „└“, CORE MODS, `modlist.txt`. Sepiš, co z toho do souboru patří a co ne.
+2. Navrhni formát: jeden textový soubor, řádek na mod, značky pro kolekci a kategorii, komentáře, hlavička s verzí formátu. Ukaž celý příklad na knihovně o zhruba 15 modech se dvěma kategoriemi a jednou kolekcí. Zvaž, jestli být čitelný i pro jiné správce (prostý seznam archivů jako `modlist.txt`) a řekni proč ano nebo ne.
+3. Čím se mod pozná při importu: id a soubor na Nexusu, když je mod propojený; jinak jméno a verze. Co když sedí jméno, ale jiná verze. Plná edice vs. Offline (Offline nemá id z Nexusu a nic nestahuje).
+4. Pravidla importu jako tabulka případ → co se stane: kategorie chybí (založit), kolekce chybí (založit jako blok, nebo nabídnout přidání kolekce z Nexusu), mod chybí v knihovně, mod je v knihovně a není v souboru, mod je v zamčené kolekci, core mod v souboru, vrstva. U sporných případů dvě až tři možnosti s doporučením.
+5. Co import mění: jen pořadí a zatřídění ve vybraném profilu, nebo i zapnuto/vypnuto; návrh náhledu před importem („co se změní“) a že do hry se nic nedostane před APPLY.
+6. Kde to bude v okně (vedle EXPORT LIST a RESET ORDER) a texty tlačítek a hlášek.
+Pro uživatele položka B6 v `UKOLY.md`: schválit formát a rozhodnout sporné případy.
+
+### O15. Load list v kódu
+
+Opus. Čeká na B6. Čtení a zápis formátu jako čistá logika v `Afterlife.Core` s testy (zápis a zpětné čtení dá totéž, ručně upravený soubor s chybou dá srozumitelnou hlášku s číslem řádku), napojení v okně novým souborem, zápis pořadí přes stávající `ApplyLayoutAsync`. Návod (oddíl 10 a 16), FAQ, CHANGELOG, položka A v `UKOLY.md`. Proč Opus a ne Sonnet: import zakládá kategorie a mění profil, chyba by přeházela pořadí.
+
+## O16. Tlačítka FILTERS a SORT
+
+Sonnet. Může začít hned. Uživatel 22. 11.: tlačítka FILTERS a ⇅ splývají s odkazy nahoře; chce jinou barvu a u řazení slovo SORT. Dnes: `FilterPanelVm.ButtonLabel` („⧩ FILTERS“), `MainViewModel.Sorting.cs` `SortLabel` („⇅ LOAD ORDER“), tlačítka v `MainWindow.xaml` vedle hledání.
+1. Statický náhled `docs/previews/filter-sort-buttons.html`: horní část okna s odkazy a hledáním, tři varianty barvy tlačítek jen z tokenů `App.xaml` (například žlutý obrys, fialová jako kategorie, plné tmavé tlačítko se světlým textem), vždy ve stavu klidném, aktivním (filtr zapnutý, seznam seřazený) a pod myší.
+2. Popisek řazení: „⇅ SORT · LOAD ORDER“, „⇅ SORT · NAME“ … a varianta kratší; ukaž, jak se vejde na nejmenší šířku okna.
+3. Do kódu až po schválení (položka B7 v `UKOLY.md`); pak je to změna stylu dvou tlačítek a jednoho textu, s úpravou návodu tam, kde se tlačítko jmenuje.
 
 ## Co do fronty nepatří
 
