@@ -23,7 +23,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | nic | hotovo, zkontrolováno |
 | F-pořadí | Fable | Kontrola O11 a O12 | nic | hotovo; čeká na vyzkoušení (A13) |
 | O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
-| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | čeká |
+| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | návrh hotový ve větvi `o14-load-list-format`; čeká na B6 |
 | O15 | Opus | Export a import load listu v kódu | B6 | čeká |
 | O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | čeká |
 
@@ -148,3 +148,10 @@ Sonnet. Může začít hned. Uživatel 22. 11.: tlačítka FILTERS a ⇅ splýva
 **O13** (22. 11., Sonnet jako podřízený agent; kontrola Fable)
 - Stav: návrh textů v `docs/previews/switch-off-dialog-texts.md`, v kódu nic. Čeká na B5.
 - Kontrola potvrdila dvě věci v logice, které návrh textů neřeší a patří k zapracování: (1) části „only it needed“ a „stays on“ se počítají jen z vypínaného modu, bez závislých modů, které se zaškrtnutou volbou vypnou zároveň (`OverviewBuilder.UnneededRequirements`, `KeptRequirements` dostávají jen `ids`); (2) u kolekce jdou dva dialogy po sobě a Cancel ve druhém zruší celé vypnutí (`MainViewModel.Collections.cs`). Zapracování textů potřebuje malé místo pro větu pod nadpisem části (`ConfirmVm`, `Dialogs.xaml`).
+
+**O14** (22. 11., Opus)
+- Stav: hotovo. Návrh `docs/previews/load-list-format.md` (větev `o14-load-list-format`), bez kódu: formát `AFTERLIFE LOAD LIST 1`, sekce `@core`/`@collection`/`@mods`/`@category`, řádky `+`/`-` s volitelnými poli `verze | nexus= | file= | md5=`, příklad na 16 modech.
+- Zjištěno v kódu: kategorie a pořadí bloků (`BlockLayout`, `ui.layout`) jsou jedny pro celou knihovnu, ne pro profil; import do jednoho profilu tedy mění zatřídění ve všech. Návrh to říká v náhledu (případ 9).
+- Rozhodl jsem sám: čitelnost pro jiné správce ne (důvod v oddíle 2); `modlist.txt` a vítězové jednotlivých souborů do souboru nejdou; řádek s chybou zastaví celý import; členství v kolekci soubor nikdy nemění; tlačítka SAVE ORDER a LOAD ORDER vedle EXPORT LIST.
+- Sporné body D1 až D6 s doporučením v oddíle 4; podklad pro O15 v oddíle 7.
+- Ověřeno: jen dokument, testy netřeba. Pro uživatele: B6.

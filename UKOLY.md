@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main` (včetně volného pořadí modů, O11 a O12). Pro modely čeká: O14 (návrh formátu load listu, Opus) a O16 (náhled tlačítek FILTERS a SORT, Sonnet), obojí může začít hned; zapracování textů dialogu po B5.
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main` (včetně volného pořadí modů, O11 a O12). Pro modely čeká: O16 (náhled tlačítek FILTERS a SORT, Sonnet) může začít hned; O15 (load list v kódu) po B6, zapracování textů dialogu po B5. Návrh O14 je ve větvi `o14-load-list-format`.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `34f6b02` (`AFTERLIFE-test-34f6b02-win-x64.zip`, u tebe ve složce `zkusebni`). Obsahuje vše z `main` včetně nastavení v záložkách; položky A2 až A11 se zkouší na něm. Starší zip (`6e633d0`) smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
 
@@ -22,6 +22,7 @@ Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `3
 |---|---|---|---|---|
 | B4 | Náhled volného pořadí (O10) | `docs/previews/free-load-order.html` v repozitáři (dvojklik; po `git pull` v klonu). Přepínač LOAD ORDER / ⇅ NAME nahoře, tlačítka A→Z fungují na zkoušku. | Čísla pořadí na řádcích, čára při tažení, tlačítko A→Z a jeho potvrzení, mod s místními úpravami; pod náhledem texty hlášek. Stačí „B4 schváleno“ nebo co změnit. Kód (O11) se už píše podle zadání; co změníš, se do něj doplní. | ☐ čeká na tebe |
 | B5 | Nové texty dialogu při vypnutí modu (O13) | `docs/previews/switch-off-dialog-texts.md`: tabulka „dnes → nově“ | Jsou nové věty srozumitelné? Každá ze tří částí má nadpis a jednu větu, co se stane s kterými mody. Stačí „B5 schváleno“ nebo co změnit; do aplikace se texty dostanou až potom. | ☐ čeká na tebe |
+| B6 | Formát load listu: uložení a načtení pořadí do textového souboru (O14) | `docs/previews/load-list-format.md` ve větvi `o14-load-list-format` (na GitHubu: Code → přepnout větev → soubor). Ukázka souboru v oddíle 2, náhled dialogu v oddíle 5. | 1. Sedí podoba souboru a značky (`@category`, `+`/`-`)? 2. Rozhodni D1 až D6 v oddíle 4, stačí třeba „B6 schváleno, D2 B“; bez výhrad platí doporučené A. 3. Názvy tlačítek SAVE ORDER a LOAD ORDER. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -42,6 +43,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | O14: návrh formátu load listu hotový (`docs/previews/load-list-format.md`), čeká na B6. |
 | 22. 11. | Dva nové nápady zapsané do fronty: export a import load listu (O14 návrh formátu, O15 kód) a jiná barva a popisek tlačítek FILTERS a SORT (O16). |
 | 22. 11. | Výroba jedním vláknem: O10 (náhled), O11 (volné pořadí v kódu), O12 (klávesy, LOAD BEFORE) a návrh textů O13 hotové a zkontrolované; sestavení a 335 testů sloučeno do `main`. Kontrola opravila tři věci (text v náhledu, kolizi názvu testů, nepřeložitelnou vsuvku). |
 | 22. 11. | C9: nové mody při volném pořadí padají na konec MODS (bez kategorie). Aktualizace drží místo staré verze. |
