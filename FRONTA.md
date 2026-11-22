@@ -1,6 +1,6 @@
 # AFTERLIFE: fronta pro modely (2. dávka)
 
-Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`.** Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
+Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Kód: větev `main`. Nejnovější fronta a úkoly: větev `claude/kind-hopper-az2rax`** (do `main` se dostanou s dalším sloučením). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
 Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O8.“
 
@@ -17,7 +17,8 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | Balík | Model | Co | Čeká na | Stav |
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
-| F-kontrola | Fable | Kontrola O8 a uzavření dávky | O8 | čeká |
+| O9 | Opus | Samostatný instalátor (Inno Setup) jako druhé stažení | D2 | čeká na D2 |
+| F-kontrola | Fable | Kontrola O8 a O9, uzavření dávky | O8, O9 | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -34,9 +35,17 @@ Podklad z první dávky (předávka O7):
 - Doplněno 22. 11. podle zadání po F3: v Updates dva samostatné spínače (při startu, každou hodinu), „only switched-on“ zašedlé, když jsou oba vypnuté, a oddíl REQUESTS TO NEXUS MODS (dotazy denně a oranžové varování, v náhledu počítané stejným vzorcem jako `NexusLimits`). Upozornění u „Check every mod now…“ je jako v aplikaci jen v tooltipu.
 - Pro uživatele: B3 v UKOLY.md.
 
+## O9. Samostatný instalátor
+
+Opus. Čeká na D2 (Nexus Mods schválí nahranou verzi se složkou v zipu). Rozhodnuto 22. 11.: zip se složkou zůstává hlavní podobou, k jednomu samorozbalovacímu exe se nevracíme (nepodepsaný exe, který se rozbaluje do dočasné složky, zadržela ruční kontrola Nexusu). Instalátor je druhé stažení pro pohodlí.
+1. Skript Inno Setup v `installer/` (uživatel ho už používá u NETWATCH): instalace pro jednoho uživatele bez práv správce, zástupce v nabídce Start, odinstalace. Knihovnu a nastavení uživatele instalátor ani odinstalace nemažou; na to je v aplikaci „Remove AFTERLIFE from this PC…“.
+2. Krok ve workflow `build.yml`: instalátor se sestaví ze stejné složky jako zip a přibude k vydání se svým SHA-256. Zip zůstává.
+3. `README.md` a `docs/USER-GUIDE.md`: dvě cesty instalace. `CHANGELOG.md`.
+4. Neověřeno bude: běh instalátoru ve Windows, hlášení SmartScreen u nepodepsaného souboru (položka A pro uživatele). Podpis kódu je samostatné rozhodnutí uživatele, sem nepatří.
+
 ## F-kontrola
 
-Fable. Projít commity O8 proti náhledu `docs/previews/settings-tabs.html` a předávce; testy a překlad obou edic; chyby opravit a zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
+Fable. Projít commity O8 a O9; O8 proti náhledu `docs/previews/settings-tabs.html` a předávce; testy a překlad obou edic; chyby opravit a zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
 
 ## Co do fronty nepatří
 

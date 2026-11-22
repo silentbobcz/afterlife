@@ -38,11 +38,13 @@ Doporučená možnost je vždy první.
 | # | Co | Kde to vezmu | Stav |
 |---|---|---|---|
 | D1 | Odpověď pisatele komentáře | Komentáře u AFTERLIFE na Nexus Mods: snímek maximalizovaného okna, rozlišení a měřítko, příklad vypnutého modu, názvy ZIPů, pohledy, které chce. Vlož ji do vlákna, které na AFTERLIFE pracuje. | ☐ čeká |
+| D2 | Zpráva, že Nexus Mods schválil nahranou verzi | Stránka AFTERLIFE na Nexus Mods. Až schválení přijde, napiš to do vlákna: spustí se balík O9 (instalátor). | ☐ čeká |
 
 ## Hotovo
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | Balení: zůstává složka v zipu, k jednomu samorozbalovacímu exe se nevracíme. Po schválení na Nexusu přibude samostatný instalátor jako druhé stažení (balík O9, čeká na D2). |
 | 22. 11. | C3 a C7: vše sloučeno do `main`, verze 1.0.0-beta.1. První dávka fronty je uzavřená a v archivu. Vydání čeká na tvůj tag (C8). |
 | 22. 11. | Kontrola náhledu nastavení (O7): odpovídá aplikaci, všechny volby mají místo, texty sedí s tím, co je v kódu. Rozhodnutí je dál tvoje (B3). |
 | 22. 11. | Logy: uživatelské jméno, název počítače, složky a tajné části odkazů se před zápisem nahrazují značkami. |
