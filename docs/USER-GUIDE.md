@@ -90,7 +90,7 @@ The **search** box above the list filters by name and tag; **✕** or Esc clears
 
 **Filters.** The panel next to the list filters by state (on, off, not applied yet), by what needs attention (update available, conflict, missing requirement), by block (core mods, collections, your mods) and by tag; each line shows how many mods it matches. One click on a line means *must match*, a second click *must not match*, a third turns it off. **MATCH ALL** shows mods that fit every chosen line, **MATCH ANY** mods that fit at least one. **«** collapses the panel to a strip with the quick filters, **✕** hides it, and **⧩ FILTERS** next to the search brings it back; AFTERLIFE remembers how you left it. Filtering never changes the load order, and *Select all* takes only what the filter shows.
 
-**Sorting for viewing.** The **⇅** button next to FILTERS walks through **LOAD ORDER**, **NAME**, **NEWEST**, **STATE** and **SIZE**. Sorting stays inside each block and core mods keep their place. It changes only what you see: a line above the list says that the load order is unchanged, dragging mods is off while the list is sorted, and **Back to load order** returns.
+**Sorting for viewing.** The **SORT** button next to FILTERS walks through **LOAD ORDER**, **NAME**, **NEWEST**, **STATE** and **SIZE**. Sorting stays inside each block and core mods keep their place. It changes only what you see: a line above the list says that the load order is unchanged, dragging mods is off while the list is sorted, and **Back to load order** returns.
 
 When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
@@ -197,7 +197,7 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 3. inside MODS: the mods without a category first, then each category from top to bottom,
 4. inside MODS and inside every category the mods load in the order you give them; inside a collection they keep the curator's order.
 
-The number at the start of a row (**#1**, **#2** …) is its place in that order, counted after CORE MODS; it is shown only while the list is in load order (not while it is sorted with **⇅**).
+The number at the start of a row (**#1**, **#2** …) is its place in that order, counted after CORE MODS; it is shown only while the list is in load order (not while it is sorted with **SORT**).
 A number shown dimmer belongs to a mod without any `.archive` file in `archive/pc/mod`: the load order does not affect it (its tooltip says so).
 
 **To load one mod before another** (for example a texture fix that must win over a bigger texture pack):
@@ -205,11 +205,11 @@ A number shown dimmer belongs to a mod without any `.archive` file in `archive/p
 1. Drag the mod by its **⋮⋮** handle above the other one, inside MODS, inside a category or from one into another. A line shows where it lands. Several checked mods move together and keep their order.
 2. **APPLY CHANGES**. The preview shows the new order before anything is written.
 
-From the keyboard (only in the load order view, not while sorted with **⇅**): **Ctrl+Up** / **Ctrl+Down** move the checked mods (or the selected row) by one row inside their section (MODS, one category or an unlocked collection), **Ctrl+Home** / **Ctrl+End** to its start or end. They never cross into another section.
+From the keyboard (only in the load order view, not while sorted with **SORT**): **Ctrl+Up** / **Ctrl+Down** move the checked mods (or the selected row) by one row inside their section (MODS, one category or an unlocked collection), **Ctrl+Home** / **Ctrl+End** to its start or end. They never cross into another section.
 
 A mod's local edits (**└ name**) always stay right below the mod and move with it. Categories still group mods, and a whole category moves by its handle or the small arrows. **A→Z** in the header of MODS or a category sorts that section by name once, after a question; nothing changes in the game before you apply. New mods go to the end of MODS, without a category; an updated mod keeps the place of the old version. The order belongs to the profile: another profile can order the same mods differently (categories are shared by all profiles).
 
-Inside an unlocked collection you can drag rows the same way ([section 12](#12-collections)). Moving a mod, a block or a category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. Until you change the order of a profile, the game uses its default (alphabetical by archive name) and the list shows the mods of MODS by name. **Reset order** returns to that default. Sorting the list (**⇅**) changes only the view, never the order.
+Inside an unlocked collection you can drag rows the same way ([section 12](#12-collections)). Moving a mod, a block or a category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. Until you change the order of a profile, the game uses its default (alphabetical by archive name) and the list shows the mods of MODS by name. **Reset order** returns to that default. Sorting the list (**SORT**) changes only the view, never the order.
 
 ## 11. Nexus Mods: key, downloads, updates
 

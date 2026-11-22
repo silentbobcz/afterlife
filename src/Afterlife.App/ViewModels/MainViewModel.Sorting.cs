@@ -21,7 +21,7 @@ public sealed partial class MainViewModel
 
     /// <summary>The list shows another order than the game loads; reordering by drag is off meanwhile.</summary>
     public bool IsViewSorted => SortBy != ListSort.LoadOrder;
-    public string SortLabel => "⇅ " + ModSort.Label(SortBy);
+    public string SortLabel => "⇅ SORT · " + ModSort.Label(SortBy);
     public string SortNote => $"Sorted by {ModSort.Label(SortBy).ToLowerInvariant()} for viewing only. The load order is unchanged; dragging mods is off until you go back.";
 
     [RelayCommand] private void CycleSort() => SortBy = ModSort.Next(SortBy);

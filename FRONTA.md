@@ -25,7 +25,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
 | O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | čeká |
 | O15 | Opus | Export a import load listu v kódu | B6 | čeká |
-| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | náhled hotový; do kódu po B7 |
+| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | hotovo v kódu, čeká na sestavení v CI |
 
 ## O8. Přestavba nastavení v kódu
 

@@ -619,11 +619,11 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="2" Margin="8,0,0,0" Style="{StaticResource AccentButton}" VerticalAlignment="Center"
+                                <Button Grid.Column="2" Margin="8,0,0,0" Style="{StaticResource ViewButton}" Tag="{Binding Filters.HasActive}" VerticalAlignment="Center"
                                         Content="{Binding Filters.ButtonLabel}" Command="{Binding Filters.CycleCommand}"
                                         ToolTip="Filter panel: open, collapse to a strip, hide" AutomationProperties.Name="Filters" />
                                 <!-- sorting for viewing only: load order, name, newest, state, size -->
-                                <Button Grid.Column="3" Margin="8,0,0,0" Style="{StaticResource AccentButton}" VerticalAlignment="Center"
+                                <Button Grid.Column="3" Margin="8,0,0,0" Style="{StaticResource ViewButton}" Tag="{Binding IsViewSorted}" VerticalAlignment="Center"
                                         Content="{Binding SortLabel}" Command="{Binding CycleSortCommand}" AutomationProperties.Name="Sort the list"
                                         ToolTip="Sort the list for viewing: load order, name, newest, state, size. The load order in the game never changes by sorting." />
                                 <TextBlock Style="{StaticResource Meta}" Text="{Binding LibrarySubtitle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"

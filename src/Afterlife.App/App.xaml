@@ -50,6 +50,7 @@
             <SolidColorBrush x:Key="OTint" Color="{StaticResource OColor}" Opacity="0.10" />
             <SolidColorBrush x:Key="V" Color="{StaticResource VColor}" />
             <SolidColorBrush x:Key="VTint" Color="{StaticResource VColor}" Opacity="0.10" />
+            <SolidColorBrush x:Key="VTintHover" Color="{StaticResource VColor}" Opacity="0.20" />
             <SolidColorBrush x:Key="TagTextTint" Color="{StaticResource TagTextColor}" Opacity="0.05" />
             <SolidColorBrush x:Key="Scrim" Color="#050508" Opacity="0.82" />
 
@@ -188,6 +189,33 @@
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="Frame" Property="Background" Value="{StaticResource CTintHover}" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!-- FILTERS and SORT next to the search: view controls, violet so they do not pass for the cyan actions; Tag = "on" (filter active, list sorted) -->
+            <Style x:Key="ViewButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+                <Setter Property="Foreground" Value="{StaticResource V}" />
+                <Setter Property="BorderBrush" Value="{StaticResource V}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <c:CutBorder x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" Cut="8" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </c:CutBorder>
+                            <ControlTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
+                                    <Setter TargetName="Frame" Property="Background" Value="{StaticResource VTint}" />
+                                </DataTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Frame" Property="Background" Value="{StaticResource VTintHover}" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Opacity" Value="0.45" />
