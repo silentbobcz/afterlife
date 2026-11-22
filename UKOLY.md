@@ -2,9 +2,9 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main` (včetně volného pořadí modů, O11 a O12). Pro modely čeká: O14 (návrh formátu load listu, Opus) a O16 (náhled tlačítek FILTERS a SORT, Sonnet), obojí může začít hned; zapracování textů dialogu po B5.
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Pro modely teď nic nemůže začít: O15 (load list v kódu) čeká na B6, zapracování textů dialogu na B5.
 
-Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `34f6b02` (`AFTERLIFE-test-34f6b02-win-x64.zip`, u tebe ve složce `zkusebni`). Obsahuje vše z `main` včetně nastavení v záložkách; položky A2 až A11 se zkouší na něm. Starší zip (`6e633d0`) smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
+Pracovní verze plné edice z 22. 11. pozdě večer: `AFTERLIFE-test-1c1256e-win-x64.zip` ve složce `zkusebni`. Obsahuje vše z `main` včetně volného pořadí modů a fialových tlačítek FILTERS a SORT; zkouší se na ní všechny položky A. Starší zipy smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
 
 ## A. Vyzkoušet
 
@@ -14,7 +14,8 @@ Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `3
 | A7 | Řazení seznamu pro zobrazení (F2) | Zkušební sestavení `34f6b02`; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | Tohle tlačítko mění jen pohled (NAME, NEWEST, STATE, SIZE), pořadí načítání nemění. Ruční pořadí uvnitř MODS a kategorií, které jsi čekal, je samostatná práce: balíky O10 až O12, čekají na B4. Tady jen potvrď: 1. řazení funguje uvnitř bloků a core mody zůstávají; 2. „Back to load order“ a APPLY neukážou žádnou změnu pořadí. | ☐ čeká na tebe |
 | A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na tebe |
 | A12 | Web s návodem a opravená dokumentace | Náhled webu: ve složce `site` spusť `npm ci` a `npm run build`, pak otevři `site/dist/index.html`. Texty: `docs/USER-GUIDE.md`, `docs/FAQ.md`, `README.md`. V aplikaci tlačítko GUIDE nad seznamem (až v dalším zkušebním sestavení). | 1. Projdi úvodní stránku, hlavně oddíl o Nexus Premium: sedí tón? 2. V návodu si přečti oddíly 1 (dvě edice), 3 (filtry, řazení), 11 (aktualizace, limit, Premium) a 17 (nastavení). 3. Napiš, co chybí nebo je špatně. Neověřeno: dva nové řádky v rychlé nápovědě v okně (FILTERS, ⇅ SORT) nikdo neviděl běžet. | ☐ čeká na tebe |
-| A13 | Volné pořadí modů (O11, O12) | Další zkušební sestavení z `main`; seznam modů | 1. Přetáhni mod za úchyt ⋮⋮ nahoru a dolů uvnitř MODS a uvnitř kategorie, pak víc zaškrtnutých najednou: čísla #1, #2 … se přepočítají a APPLY ukáže změnu pořadí. 2. Zkus A→Z v hlavičce MODS a kategorie, Ctrl+↑/↓ a Ctrl+Home/End na vybraném modu a tlačítko LOAD BEFORE v záložce Conflicts u souboru `.archive`, který prohrává. 3. Po prvním spuštění zkontroluj, že se seznam nepřeházel a APPLY nehlásí změnu, kterou jsi neudělal; přepni profil a zpět. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
+| A13 | Volné pořadí modů (O11, O12) | Pracovní verze `AFTERLIFE-test-1c1256e-win-x64.zip` ve složce `zkusebni`; seznam modů | 1. Přetáhni mod za úchyt ⋮⋮ nahoru a dolů uvnitř MODS a uvnitř kategorie, pak víc zaškrtnutých najednou: čísla #1, #2 … se přepočítají a APPLY ukáže změnu pořadí. 2. Zkus A→Z v hlavičce MODS a kategorie, Ctrl+↑/↓ a Ctrl+Home/End na vybraném modu a tlačítko LOAD BEFORE v záložce Conflicts u souboru `.archive`, který prohrává. 3. Po prvním spuštění zkontroluj, že se seznam nepřeházel a APPLY nehlásí změnu, kterou jsi neudělal; přepni profil a zpět. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
+| A14 | Fialová tlačítka FILTERS a SORT (O16) | Pracovní verze `AFTERLIFE-test-1c1256e-win-x64.zip` ve složce `zkusebni`; vedle hledání nad seznamem | 1. Odlišují se teď od odkazů nahoře? 2. Zapni filtr a seřaď seznam: obě tlačítka mají být rozsvícená. 3. Zmenši okno na minimum: popisek „⇅ SORT · LOAD ORDER“ se musí vejít. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
 
 ## B. Schválit
 
@@ -22,7 +23,7 @@ Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `3
 |---|---|---|---|---|
 | B4 | Náhled volného pořadí (O10) | `docs/previews/free-load-order.html` v repozitáři (dvojklik; po `git pull` v klonu). Přepínač LOAD ORDER / ⇅ NAME nahoře, tlačítka A→Z fungují na zkoušku. | Čísla pořadí na řádcích, čára při tažení, tlačítko A→Z a jeho potvrzení, mod s místními úpravami; pod náhledem texty hlášek. Stačí „B4 schváleno“ nebo co změnit. Kód (O11) se už píše podle zadání; co změníš, se do něj doplní. | ☐ čeká na tebe |
 | B5 | Nové texty dialogu při vypnutí modu (O13) | `docs/previews/switch-off-dialog-texts.md`: tabulka „dnes → nově“ | Jsou nové věty srozumitelné? Každá ze tří částí má nadpis a jednu větu, co se stane s kterými mody. Stačí „B5 schváleno“ nebo co změnit; do aplikace se texty dostanou až potom. | ☐ čeká na tebe |
-| B7 | Vzhled tlačítek FILTERS a SORT (O16) | `docs/previews/filter-sort-buttons.html` v repozitáři (dvojklik; po `git pull`) | Vyber variantu A (žlutý obrys), B (fialová) nebo C (tmavé plné) a delší („SORT · LOAD ORDER“) či kratší popisek. Stačí např. „B7 A, delší“. Do aplikace až potom. Neověřeno: skutečná šířka panelu při okně 1612 px. | ✅ vybráno B, dlouhý; v kódu, čeká na kontrolu (A) |
+| B6 | Formát load listu: uložení a načtení pořadí do textového souboru (O14) | `docs/previews/load-list-format.md` v repozitáři (po `git pull`; na GitHubu se zobrazí i s tabulkami). Ukázka souboru v oddíle 2, náhled dialogu v oddíle 5. | 1. Sedí podoba souboru a značky (`@category`, `+`/`-`)? 2. Rozhodni D1 až D7 v oddíle 4, stačí třeba „B6 schváleno, D2 B“; bez výhrad platí doporučené A. 3. Názvy tlačítek EXPORT ORDER a IMPORT ORDER (kontrola je změnila: LOAD ORDER už je název pohledu na tlačítku řazení). 4. Nový bod D7 (vrstvy „└“ jen jako komentář) a poznámky kontroly v oddíle 8. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -43,6 +44,8 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | B7: vybrána varianta B (fialová) a dlouhý popisek; O16 je v kódu a zkontrolované, zkouší se v A14. O14 a O16 sloučeny do `main`. |
+| 22. 11. | O14: návrh formátu load listu hotový (`docs/previews/load-list-format.md`), čeká na B6. |
 | 22. 11. | Dva nové nápady zapsané do fronty: export a import load listu (O14 návrh formátu, O15 kód) a jiná barva a popisek tlačítek FILTERS a SORT (O16). |
 | 22. 11. | Výroba jedním vláknem: O10 (náhled), O11 (volné pořadí v kódu), O12 (klávesy, LOAD BEFORE) a návrh textů O13 hotové a zkontrolované; sestavení a 335 testů sloučeno do `main`. Kontrola opravila tři věci (text v náhledu, kolizi názvu testů, nepřeložitelnou vsuvku). |
 | 22. 11. | C9: nové mody při volném pořadí padají na konec MODS (bez kategorie). Aktualizace drží místo staré verze. |

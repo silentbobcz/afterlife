@@ -23,9 +23,9 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | nic | hotovo, zkontrolováno |
 | F-pořadí | Fable | Kontrola O11 a O12 | nic | hotovo; čeká na vyzkoušení (A13) |
 | O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
-| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | čeká |
+| O14 | Opus | Export a import load listu: návrh formátu souboru (bez kódu) | nic | návrh hotový, zkontrolováno; čeká na B6 |
 | O15 | Opus | Export a import load listu v kódu | B6 | čeká |
-| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | hotovo v kódu, čeká na sestavení v CI |
+| O16 | Sonnet | Tlačítka FILTERS a SORT: jiná barva a popisek, náhled | nic | hotovo, zkontrolováno; čeká na vyzkoušení (A14) |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -150,10 +150,18 @@ Sonnet. Může začít hned. Uživatel 22. 11.: tlačítka FILTERS a ⇅ splýva
 - Kontrola potvrdila dvě věci v logice, které návrh textů neřeší a patří k zapracování: (1) části „only it needed“ a „stays on“ se počítají jen z vypínaného modu, bez závislých modů, které se zaškrtnutou volbou vypnou zároveň (`OverviewBuilder.UnneededRequirements`, `KeptRequirements` dostávají jen `ids`); (2) u kolekce jdou dva dialogy po sobě a Cancel ve druhém zruší celé vypnutí (`MainViewModel.Collections.cs`). Zapracování textů potřebuje malé místo pro větu pod nadpisem části (`ConfirmVm`, `Dialogs.xaml`).
 
 **Předávka O16** (22. 11., Sonnet)
-- Stav: náhled hotový, kód čeká na B7.
+- Stav: hotovo. Uživatel vybral B (fialová) a dlouhý popisek; v kódu styl `ViewButton` v `App.xaml` a popisek „⇅ SORT · režim“.
 - Změněno: `docs/previews/filter-sort-buttons.html` (nový, bez kódu aplikace).
 - Obsah: dnešní vzhled a tři varianty (A žlutý obrys, B fialová, C tmavé plné) ve stavu klidném, aktivním a pod myší; popisek „SORT · režim“ dlouhý i krátký; pásy pro šířku panelu 760 a 640 px.
 - Doporučení: C, dlouhý popisek (v klidu nejtišší, aktivní stav žlutě).
 - Ověřeno: stránka se v prohlížeči načte a vykreslí.
 - Neověřeno: vzhled ve WPF, přesná šířka panelu při okně 1612 px.
-- Pro uživatele: B7 v UKOLY.md.
+- Kontrola (Fable): kód bez nálezu, sestavení a 335 testů na GitHubu. Neověřeno: vzhled v okně a šířka popisku při nejmenším okně (A14).
+
+**O14** (22. 11., Opus)
+- Stav: hotovo. Návrh `docs/previews/load-list-format.md`, bez kódu: formát `AFTERLIFE LOAD LIST 1`, sekce `@core`/`@collection`/`@mods`/`@category`, řádky `+`/`-` s volitelnými poli `verze | nexus= | file= | md5=`, příklad na 16 modech.
+- Zjištěno v kódu: kategorie a pořadí bloků (`BlockLayout`, `ui.layout`) jsou jedny pro celou knihovnu, ne pro profil; import do jednoho profilu tedy mění zatřídění ve všech. Návrh to říká v náhledu (případ 9).
+- Rozhodl jsem sám: čitelnost pro jiné správce ne (důvod v oddíle 2); `modlist.txt` a vítězové jednotlivých souborů do souboru nejdou; řádek s chybou zastaví celý import; členství v kolekci soubor nikdy nemění; tlačítka vedle EXPORT LIST (kontrola je přejmenovala na EXPORT ORDER a IMPORT ORDER).
+- Sporné body D1 až D6 s doporučením v oddíle 4; podklad pro O15 v oddíle 7.
+- Ověřeno: jen dokument, testy netřeba. Pro uživatele: B6.
+- Kontrola (Fable): návrh dává smysl a odpovídá zadání. Doplněno: případy 16 (pořadí sekcí, které okno neumí) a 17 (profil ve výchozím pořadí hry), bod D7 (vrstvy jen jako komentář), přejmenování tlačítek, poznámky v oddíle 8 (shoda jen podle jména musí být v náhledu vidět jednotlivě).
