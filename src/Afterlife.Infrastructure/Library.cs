@@ -12,6 +12,8 @@ public sealed class LibraryPaths(string root)
     public string Packages => Path.Combine(Root, "packages");
     public string Staging => Path.Combine(Root, "staging");
     public string Downloads => Path.Combine(Root, "downloads");
+    /// <summary>Files taken out of the game, kept so the removal can be undone.</summary>
+    public string Removed => Path.Combine(Root, "removed");
     public string Locks => Path.Combine(Root, "locks");
     public string Backups => Path.Combine(Root, "backups");
     /// <summary>Pictures of mods from their Nexus pages, one small file per mod.</summary>

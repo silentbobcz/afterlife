@@ -18,7 +18,7 @@ public sealed record RemovalResult(string? BatchId, int Moved, IReadOnlyList<str
 /// </summary>
 public sealed class Quarantine(LibraryPaths lib, IFileOps fs)
 {
-    public string Root => Path.Combine(lib.Root, "removed");
+    public string Root => lib.Removed;
 
     private string BatchDir(string id) => Path.Combine(Root, id);
     private string Manifest(string id) => Path.Combine(BatchDir(id), "manifest.json");

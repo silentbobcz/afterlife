@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## Unreleased
+
+- **Settings in tabs**: the settings are no longer one long column. Tabs on the left (Game & library, Nexus Mods, Updates, Display, Kept files, Diagnostics, FIXER) and the chosen tab on the right, in one fixed size; the settings open on the tab used last. The tabs show short facts: the size of the kept files and a green dot when the Nexus key works. *Remove AFTERLIFE from this PC…* sits apart at the bottom. New: **Show** opens the folder of each kind of kept file before you delete it, and the FIXER tab says what FIXER is and that it is not out yet. In AFTERLIFE Offline the Updates tab is visible with a lock.
+
 ## 1.0.0-beta.1
 
 The first beta: the features are together and from here on they are mostly tuned. Everything below is new since alpha.9.
