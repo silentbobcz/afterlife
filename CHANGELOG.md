@@ -19,6 +19,7 @@ The first beta: the features are together and from here on they are mostly tuned
 - **Start position on small screens**: the window is fitted to the work area before it is shown, so it starts centred instead of sticking out of a 1536 × 824 work area (1920 × 1080 at 125 %).
 - **Settings in tabs**: the settings are no longer one long column. Tabs on the left (Game & library, Nexus Mods, Updates, Display, Kept files, Diagnostics, FIXER) and the chosen tab on the right, in one fixed size; the settings open on the tab used last. The tabs show short facts: the size of the kept files and a green dot when the Nexus key works. *Remove AFTERLIFE from this PC…* sits apart at the bottom. New: **Show** opens the folder of each kind of kept file before you delete it, and the FIXER tab says what FIXER is and that it is not out yet. In AFTERLIFE Offline the Updates tab is visible with a lock.
 - **Documentation for the beta**: the user guide, the FAQ and the README describe the two editions, the folder in the zip, the filter panel, sorting, the settings in tabs, linking mods to Nexus Mods, the update checks with the request limit and what Nexus Mods Premium changes. The quick guide in the window explains FILTERS and ⇅ SORT. The folder `site` builds the same texts into a small website.
+- **A tidier folder**: the zip no longer carries thirteen language folders (`cs`, `de`, `fr` …). They held translations of .NET itself, not of AFTERLIFE, which is in English.
 
 ## 1.0.0-alpha.9
 

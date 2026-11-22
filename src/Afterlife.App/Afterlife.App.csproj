@@ -8,6 +8,8 @@
     <ApplicationIcon>Assets\afterlife.ico</ApplicationIcon>
     <Product>AFTERLIFE</Product>
     <Description>Unofficial mod manager for Cyberpunk 2077</Description>
+    <!-- the app is English only: leave out the translated .NET and WPF resources (folders cs, de, fr … next to the exe) -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
   <!-- -p:Edition=Offline builds AFTERLIFE Offline (see AppEdition.cs) -->
   <PropertyGroup Condition="'$(Edition)' == 'Offline'">
