@@ -20,6 +20,22 @@ of a session that added or settled something there.
   owner's call.
 - Commit only your own files (`git add <file>`, not `-A`); another session may work in the same branch.
 
+## Several sessions at once
+
+Several sessions often work on this repository on the same day. Without these rules they switch branches under each
+other and take the same task numbers.
+
+- Never switch the branch of a shared clone and never leave it off `main`. Do your work in a folder of your own:
+  `git worktree add <folder> -b <branch> origin/main`, and remove the worktree when the branch is merged.
+- A branch lives hours, not days: finish, get it checked, merge into `main` (only when the owner says so), delete it on
+  GitHub and locally. Before merging, bring `main` into the branch; `main` moves many times a day.
+- Take numbers for `UKOLY.md` items and `FRONTA.md` packages at merge time, from the `main` of that moment, not when
+  you start. Re-read both files right before you write to them; another session may have closed the batch meanwhile.
+- When one session runs helpers on packages, each helper gets a working copy of its own, does not commit and does not
+  write to `FRONTA.md` or `UKOLY.md`. The session that started them reads the real diff, runs the checks, writes the
+  handovers and merges.
+- Do not let an editor reformat the tables of `UKOLY.md` or `FRONTA.md`; a reformatted file blocks every merge.
+
 ## Checks (work in a Linux cloud session too)
 
 ```
@@ -29,6 +45,10 @@ dotnet build src/Afterlife.App -p:EnableWindowsTargeting=true
 ```
 
 The WPF window cannot run on Linux: what you could not see running goes to the handover as "not verified".
+
+On the owner's PC there is no .NET 10 SDK. Push the work branch and start the checks on GitHub:
+`gh workflow run build.yml --ref <branch>` (a pushed work branch alone starts nothing). A run started by hand also
+makes a test build of the full edition, the artifact `AFTERLIFE-full-test`; releases carry only AFTERLIFE Offline.
 
 ## Rules
 

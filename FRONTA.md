@@ -18,17 +18,15 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 |---|---|---|---|---|
 | O18 | Sonnet | Web: viditelné upozornění, že ke stažení je AFTERLIFE Offline, a proč | nic | může začít |
 
-Další balíky vzniknou z toho, co uživatel najde při zkoušení (A15 až A17 v ).
+Další balíky vzniknou z toho, co uživatel najde při zkoušení (A15 až A17 v `UKOLY.md`).
 
 ## O18. Web: upozornění na edici Offline
 
-Sonnet. Může začít hned. Uživatel 23. 11.: na webu <https://afterlife-13h.pages.dev> chybí jasná poznámka, že ke stažení (na Nexusu i na GitHubu) je **AFTERLIFE Offline**, a proč. Dnes  hned pod úvodem propaguje Premium a přímé stahování přes API; jediná zmínka o Offline je malá poznámka  až pod tabulkou Premium.
-1. V  hned pod úvodní odstavec a nad tlačítka ke stažení dej výrazný blok (nový styl v , jen tokeny z , například žlutý okraj): stahuje se AFTERLIFE Offline; proč: Nexus Mods dovoluje programům používat své API, až aplikaci zaregistruje, a do té doby se AFTERLIFE k Nexusu vůbec nepřipojuje; co funguje (vše, co pracuje se soubory na disku) a co je se zámkem (stahování, aktualizace, kolekce). Dvě až čtyři věty, odkaz do FAQ ().
+Sonnet. Může začít hned. Uživatel 23. 11.: na webu <https://afterlife-13h.pages.dev> chybí jasná poznámka, že ke stažení (na Nexusu i na GitHubu) je **AFTERLIFE Offline**, a proč. Dnes `site/home.md` hned pod úvodem propaguje Premium a přímé stahování přes API; jediná zmínka o Offline je malá poznámka `<p class="note">` až pod tabulkou Premium.
+1. V `site/home.md` hned pod úvodní odstavec a nad tlačítka ke stažení dej výrazný blok (nový styl v `site/style.css`, jen tokeny z `App.xaml`, například žlutý okraj): stahuje se AFTERLIFE Offline; proč: Nexus Mods dovoluje programům používat své API, až aplikaci zaregistruje, a do té doby se AFTERLIFE k Nexusu vůbec nepřipojuje; co funguje (vše, co pracuje se soubory na disku) a co je se zámkem (stahování, aktualizace, kolekce). Dvě až čtyři věty, odkaz do FAQ (`faq.html#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock`).
 2. Oddíl „Better with Nexus Mods Premium“ přepiš v budoucím čase („once the full edition is out…“) a přesuň pod oddíl „What it does“ s nadpisem, ze kterého je jasné, že jde o plánovanou plnou edici. Spodní poznámku pak smaž, ať se neopakuje. Důraz na výhody Premium zůstává (přání uživatele), jen nesmí vypadat jako popis toho, co se dnes stahuje.
-3. Stejné ověření v  (oddíl ke stažení) a v  na začátku: krátká věta o Offline nahoře, pokud tam ještě není; fakta ber z FAQ, nic nevymýšlej.
-4. added 1 package, and audited 2 packages in 740ms
-
-found 0 vulnerabilities, zkontroluj  v prohlížeči (i úzké okno). Po sloučení do  se web obnoví sám. Text pro popis na Nexusu se stejným sdělením dej do předávky; vkládá ho uživatel.
+3. Stejné ověření v `README.md` (oddíl ke stažení) a v `docs/USER-GUIDE.md` na začátku: krátká věta o Offline nahoře, pokud tam ještě není; fakta ber z FAQ, nic nevymýšlej.
+4. Ve složce `site` spusť `npm ci` a `npm run build`, zkontroluj `dist/index.html` v prohlížeči (i úzké okno). Po sloučení do `main` se web obnoví sám. Text pro popis na Nexusu se stejným sdělením dej do předávky; vkládá ho uživatel.
 
 ## Co do fronty nepatří
 
