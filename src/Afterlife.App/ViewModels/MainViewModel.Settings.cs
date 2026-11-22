@@ -104,7 +104,8 @@ public sealed partial class MainViewModel
         vm.SetFixerSilently(_fixerOn);
         vm.SetVirtualizeListSilently(VirtualizeList);
         var saved = AppSettings.Load();
-        vm.SetUpdateChecksSilently(saved.CheckUpdatesAuto, saved.CheckUpdatesActiveOnly, saved.FullCheckDays);
+        vm.SetUpdateChecksSilently(saved.CheckUpdatesAuto, saved.CheckUpdatesHourly, saved.CheckUpdatesActiveOnly, saved.FullCheckDays,
+            _overview?.Mods.Count(m => m.Package.LayerOfModId is null && NexusInfo.IdOf(m.Package) is { Id: not null, Confirmed: true }) ?? 0);
         Overlay = vm;
         vm.LoadStorageLater();
         if (vm.HasNexusKey) _ = CheckNexusAsync(vm);
@@ -218,13 +219,13 @@ public sealed partial class MainViewModel
     [ObservableProperty] private bool _virtualizeList;
 
     /// <summary>How the update check runs on its own; read again by every check.</summary>
-    private static void SetUpdateChecks(bool auto, bool activeOnly, int fullCheckDays)
+    private static void SetUpdateChecks(bool atStart, bool hourly, bool activeOnly, int fullCheckDays)
     {
         var current = AppSettings.Load();
         (current with
         {
             LibraryRoot = current.LibraryRoot ?? AppSettings.ResolveLibrary(null),
-            CheckUpdatesAuto = auto, CheckUpdatesActiveOnly = activeOnly, FullCheckDays = Math.Clamp(fullCheckDays, 0, 365),
+            CheckUpdatesAuto = atStart, CheckUpdatesHourly = hourly, CheckUpdatesActiveOnly = activeOnly, FullCheckDays = Math.Clamp(fullCheckDays, 0, 365),
         }).Save();
     }
 

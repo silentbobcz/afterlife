@@ -62,7 +62,7 @@ a { color: var(--c); }
 .quiet { font: 12.5px var(--disp); color: var(--t2); cursor: pointer; background: none; border: 0; padding: 0; }
 .quiet:hover { color: var(--t); text-decoration: underline; }
 
-.body { display: grid; grid-template-columns: 214px 660px; gap: 22px; height: 480px; }
+.body { display: grid; grid-template-columns: 214px 660px; gap: 22px; height: 520px; }
 
 /* tabs on the left */
 .rail { display: flex; flex-direction: column; border-right: 1px solid var(--line); padding-right: 14px; }
@@ -243,20 +243,25 @@ table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-spa
         <!-- 03 UPDATES -->
         <section class="page" id="p-updates" style="--acc: var(--c)">
           <div class="ph"><h2>Updates</h2></div>
-          <div class="lockbox only-offline"><b>🔒 NEEDS NEXUS MODS</b><br>Update checks come with the full edition, once Nexus Mods registers AFTERLIFE. The choices below show what will be here.</div>
+          <div class="lockbox only-offline"><b>🔒 NEEDS NEXUS MODS</b><br>Comes with the full edition, once Nexus Mods registers AFTERLIFE.</div>
           <div class="upd">
             <p class="lead">AFTERLIFE asks Nexus Mods for newer versions of the mods that are linked to their page.</p>
             <div class="grp">
               <div class="gl">ON ITS OWN</div>
-              <label class="chk"><input type="checkbox" checked><span>Look for newer versions at start and every hour</span><span class="meta">Core mods are always checked.</span></label>
-              <label class="chk"><input type="checkbox"><span>Check only the mods switched on in the selected profile</span></label>
+              <label class="chk"><input type="checkbox" id="u-start" checked><span>Look for newer versions of your mods when AFTERLIFE starts</span></label>
+              <label class="chk"><input type="checkbox" id="u-hour" checked><span>Look for newer versions of your mods every hour while AFTERLIFE is open</span><span class="meta">Core mods are checked either way.</span></label>
+              <label class="chk" id="u-only-row"><input type="checkbox" id="u-only"><span>On its own, check only the mods switched on in the selected profile</span></label>
             </div>
             <div class="grp">
               <div class="gl">FULL READ</div>
-              <div class="line" style="gap:8px;font-size:13px">Read every mod in full once in <input class="num" value="7"> days <span class="meta" style="margin:0">(0 = never)</span></div>
+              <div class="line" style="gap:8px;font-size:13px">Read every mod in full once in <input class="num" id="u-days" value="7" maxlength="3"> days <span class="meta" style="margin:0">(0 = never)</span></div>
               <p class="meta">Between full reads AFTERLIFE asks Nexus Mods only which mods changed: one request for the whole library. The full read is a safety net; the mods take turns, so about the same number is read every day.</p>
-              <div class="links"><button class="link">Check every mod now…</button></div>
-              <p class="meta">One request to Nexus Mods per mod. CHECK UPDATES in the main window reads only the mods that changed.</p>
+              <div class="links"><button class="link" title="Reads the file list of every linked mod: 640 requests, more than Nexus Mods allows in one hour (500). It will pause at the limit and finish by itself over the next hours.">Check every mod now…</button></div>
+            </div>
+            <div class="grp">
+              <div class="gl">REQUESTS TO NEXUS MODS</div>
+              <p class="meta" id="u-load" style="margin:0"></p>
+              <div class="lockbox" id="u-warn" style="display:none;margin:8px 0 0;color:var(--o);border-color:var(--o)"></div>
             </div>
           </div>
         </section>
@@ -329,8 +334,9 @@ table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-spa
       <tr><td>Link all unlinked mods…</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods · Link mods</td></tr>
       <tr><td>nxm:// links checkbox and hint</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods · Download links</td></tr>
       <tr><td>Offline edition note</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods (Offline only)</td></tr>
-      <tr><td>Check at start and every hour; only switched-on mods</td><td>UPDATES</td><td>03 Updates · On its own</td></tr>
-      <tr><td>Full read every N days, hint, Check every mod now…</td><td>UPDATES</td><td>03 Updates · Full read</td></tr>
+      <tr><td>Check at start; check every hour (two switches); only switched-on mods</td><td>UPDATES</td><td>03 Updates · On its own</td></tr>
+      <tr><td>Full read every N days, hint, Check every mod now… with its limit note</td><td>UPDATES</td><td>03 Updates · Full read</td></tr>
+      <tr><td>Requests a day for your mods, warning when the days are too few</td><td>UPDATES</td><td>03 Updates · Requests to Nexus Mods</td></tr>
       <tr><td>Reduce motion</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>04 Display</td></tr>
       <tr><td>Draw only the visible rows</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>04 Display</td></tr>
       <tr><td>Removed files, archives, temp files, DELETE ALL</td><td>04 · KEPT FILES</td><td>05 Kept files, total on the tab</td></tr>
@@ -346,12 +352,13 @@ table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-spa
   <div>
     <h3>WHY</h3>
     <ul class="why">
-      <li><b>Tabs on the left.</b> About twenty options no longer sit in one long column; each tab fits without scrolling at 1612 × 910.</li>
+      <li><b>Tabs on the left.</b> About twenty options no longer sit in one long column; each tab fits without scrolling at 1612 × 910 (Updates in Offline is the longest).</li>
       <li><b>One size for the dialog.</b> Switching tabs does not move anything. On a large screen the dialog stays the same size, because no tab is long enough to need more.</li>
       <li><b>Game and library together.</b> Both are only a folder with two links; on their own they would be two nearly empty tabs.</li>
-      <li><b>Updates is its own tab.</b> It has four choices and will grow; in Offline it stays visible with a lock, like the other Nexus features.</li>
+      <li><b>Updates is its own tab.</b> It has five choices and the request count; in Offline it stays visible with a lock, like the other Nexus features.</li>
       <li><b>Display and diagnostics apart.</b> Today's section 05 mixed appearance, logs and uninstall; each now has one purpose.</li>
       <li><b>Uninstall at the bottom, apart.</b> It is not a setting and should not sit next to a checkbox you click often.</li>
+      <li><b>Requests in plain sight.</b> Updates shows what your settings cost a day against the Nexus Mods limit; the orange warning appears only when full reads would take more than a tenth of the daily limit (about 2,000 mods read every day). Change the days in the preview to see the line follow.</li>
       <li><b>Short facts on the tabs.</b> Kept files shows the total size, Nexus Mods a green dot when the key works, so you see the state without opening the tab.</li>
     </ul>
   </div>
@@ -390,6 +397,23 @@ if (q.get('tab')) document.querySelector(`.tab[data-p="${q.get('tab')}"]`)?.clic
 if (q.get('ed') === 'offline') document.querySelector('#editions [data-ed="offline"]').click(); else edition('full');
 if (q.get('size') === 'big') document.querySelector('#sizes [data-w="2560"]').click();
 window.addEventListener('resize', layout); layout();
+function updLoad() {
+  const mods = 640, days = Math.max(0, Math.min(365, parseInt(document.getElementById('u-days').value) || 0));
+  const hourly = document.getElementById('u-hour').checked;
+  const perDay = (hourly ? 24 : 0) + (days <= 0 ? 0 : Math.ceil(mods / days));
+  document.getElementById('u-load').textContent = `With your ${mods} linked mods this costs about ${perDay.toLocaleString('en')} requests a day. Nexus Mods allows 20,000 a day and 500 an hour per key; when it is reached AFTERLIFE waits and goes on later.`;
+  const w = document.getElementById('u-warn');
+  if (perDay > 2000) { w.style.display = ''; w.textContent = `That is about ${perDay.toLocaleString('en')} requests a day for ${mods} mods, a large part of what Nexus Mods allows (20,000 a day for your key, for every program together). Use ${Math.max(1, Math.ceil(mods / 1976))} days or more.`; }
+  else w.style.display = 'none';
+  const any = document.getElementById('u-start').checked || hourly;
+  const ed = document.querySelector('#editions .on').dataset.ed;
+  document.getElementById('u-only').disabled = !any || ed === 'offline';
+  document.getElementById('u-only-row').classList.toggle('dis', !any || ed === 'offline');
+}
+['u-days','u-hour','u-start'].forEach(id => document.getElementById(id).addEventListener('input', updLoad));
+document.getElementById('u-hour').addEventListener('change', updLoad); document.getElementById('u-start').addEventListener('change', updLoad);
+document.querySelectorAll('#editions button').forEach(b => b.addEventListener('click', updLoad));
+updLoad();
 </script>
 </body>
 </html>

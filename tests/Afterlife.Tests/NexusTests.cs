@@ -364,3 +364,62 @@ public class UpdatePlanTests
         Assert.Equal(UpdatePlan.Phase("pkg-1", Week), UpdatePlan.Phase("pkg-1", Week)); // the same on every start
     }
 }
+
+public class NexusLimitsTests
+{
+    private static readonly DateTimeOffset Now = new(2026, 11, 21, 14, 20, 0, TimeSpan.Zero);
+
+    private static IEnumerable<KeyValuePair<string, IEnumerable<string>>> Headers(params (string Name, string Value)[] h) =>
+        h.Select(x => new KeyValuePair<string, IEnumerable<string>>(x.Name, [x.Value]));
+
+    [Fact]
+    public void Quota_is_read_from_the_rate_limit_headers()
+    {
+        var q = NexusLimits.Parse(Headers(("X-RL-Hourly-Remaining", "37"), ("x-rl-daily-remaining", "18000"), ("Content-Type", "application/json")), Now);
+        Assert.Equal((37, 18000), (q!.HourlyRemaining, q.DailyRemaining));
+        Assert.Null(NexusLimits.Parse(Headers(("Content-Type", "application/json")), Now));
+        Assert.Null(NexusLimits.Parse(Headers(("x-rl-hourly-remaining", "soon")), Now));
+    }
+
+    [Fact]
+    public void A_check_stops_at_the_reserve_and_rests_until_the_quota_is_back()
+    {
+        Assert.False(NexusLimits.ReserveReached(null));
+        Assert.False(NexusLimits.ReserveReached(new NexusQuota(300, 15000, Now)));
+        Assert.True(NexusLimits.ReserveReached(new NexusQuota(NexusLimits.HourlyReserve, 15000, Now)));
+        // hourly quota: the next full hour; daily quota: midnight GMT
+        Assert.Equal(new DateTimeOffset(2026, 11, 21, 15, 1, 0, TimeSpan.Zero), NexusLimits.ResumeAt(new NexusQuota(0, 15000, Now), Now));
+        Assert.Equal(new DateTimeOffset(2026, 11, 22, 0, 0, 0, TimeSpan.Zero), NexusLimits.ResumeAt(new NexusQuota(200, 10, Now), Now));
+        Assert.Equal(new DateTimeOffset(2026, 11, 21, 15, 1, 0, TimeSpan.Zero), NexusLimits.ResumeAt(null, Now)); // a bare 429
+    }
+
+    [Fact]
+    public void Settings_warn_only_when_full_reads_eat_a_large_part_of_the_daily_quota()
+    {
+        Assert.Equal(24 + 86, NexusLimits.RequestsPerDay(600, 7, auto: true));
+        Assert.Equal(0, NexusLimits.RequestsPerDay(600, 0, auto: false));
+        Assert.Null(NexusLimits.SettingsWarning(600, 1, auto: true));      // 624 a day is fine
+        Assert.Null(NexusLimits.SettingsWarning(600, 0, auto: true));      // never
+        var warning = NexusLimits.SettingsWarning(6000, 1, auto: true);    // 6,024 a day
+        Assert.Contains("4 days or more", warning);
+        Assert.Null(NexusLimits.SettingsWarning(6000, 4, auto: true));
+    }
+
+    [Fact]
+    public void A_pause_and_an_unfinished_full_run_survive_a_restart()
+    {
+        using var t = new TestEnv();
+        Assert.Null(NexusLimits.PausedUntil(t.C.Store, Now));
+        NexusLimits.Pause(t.C.Store, Now.AddMinutes(41));
+        t.Restart();
+        Assert.Equal(Now.AddMinutes(41), NexusLimits.PausedUntil(t.C.Store, Now));
+        Assert.Null(NexusLimits.PausedUntil(t.C.Store, Now.AddHours(1))); // over: checks run again
+
+        Assert.Null(NexusLimits.FullRunSince(t.C.Store));
+        NexusLimits.StartFullRun(t.C.Store, Now);
+        t.Restart();
+        Assert.Equal(Now, NexusLimits.FullRunSince(t.C.Store));
+        NexusLimits.EndFullRun(t.C.Store);
+        Assert.Null(NexusLimits.FullRunSince(t.C.Store));
+    }
+}

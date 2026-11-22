@@ -17,7 +17,7 @@ Zkušební sestavení plné edice jsi dostal 21. 11. jako `AFTERLIFE-test-e0a53b
 | A6 | Propojení s Nexusem z nastavení (O6) | Nové sestavení; Settings → 03 · NEXUS MODS | 1. Klikni na „Link all unlinked mods…“: nastavení se zavře a ukáže stejný seznam jako z detailu modu. | ☐ čeká na tebe |
 | A7 | Řazení seznamu (F2) | Nové sestavení; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | 1. Proklikej NAME, NEWEST, STATE, SIZE: řadí se uvnitř bloků, core mody zůstávají. 2. Při řazení nejde mod přetáhnout a nad seznamem je vysvětlení. 3. Klikni „Back to load order“, dej APPLY: v plánu nesmí být žádná změna pořadí. | ☐ čeká na tebe |
 | A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na tebe |
-| A9 | Kontrola aktualizací a oddíl UPDATES v nastavení (F3) | Další sestavení (po `e0a53b4`); Settings → UPDATES, tlačítko CHECK UPDATES | 1. Klikni CHECK UPDATES: má doběhnout rychle a říct, kolik modů má novější verzi. 2. V nastavení vypni a zapni automatickou kontrolu, změň počet dní; po zavření a otevření nastavení má hodnota zůstat. 3. „Check every mod now…“ přečte všechny mody: sleduj průběh v dolní liště a napiš, jak dlouho to trvalo a kolik modů máš. Neověřeno: nic z toho jsem neviděl běžet; limity Nexusu znám jen z odpovědí serveru. | ☐ čeká na sestavení |
+| A9 | Kontrola aktualizací a oddíl UPDATES v nastavení (F3) | Další sestavení (po `e0a53b4`); Settings → UPDATES, tlačítko CHECK UPDATES | 1. Klikni CHECK UPDATES: má doběhnout rychle a říct, kolik modů má novější verzi. 2. V nastavení vypni a zapni automatickou kontrolu, změň počet dní; po zavření a otevření nastavení má hodnota zůstat. 3. „Check every mod now…“ přečte všechny mody: sleduj průběh v dolní liště a napiš, jak dlouho to trvalo a kolik modů máš. 4. Nastav počet dní na 1: řádek pod ním má ukázat počet dotazů denně; u velmi velké knihovny oranžové varování. Neověřeno: nic z toho jsem neviděl běžet; limity Nexusu znám jen z odpovědí serveru. | ☐ čeká na sestavení |
 
 ## B. Promyslet a rozhodnout
 
@@ -32,6 +32,7 @@ Doporučená možnost je vždy první.
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
 | C3 | Sloučení do `main` a vydání alpha.10 | Nevratný krok. Rozhodnuto 21. 11.: nejdřív projít A2 až A8 na zkušebním sestavení. | Po zkoušce napiš „C3 vydat“, nebo co opravit. | ☐ čeká na A2 až A8 |
+| C7 | Číslo příští verze | Dávku považuješ za velkou aktualizaci a chceš posunout číslování (dnes 1.0.0-alpha.9). | 1. `1.0.0-beta.1`: konec alfy, funkce jsou pohromadě a dál se hlavně ladí. 2. `1.1.0-alpha.1`: nová řada, pořád alfa. 3. `1.0.0-alpha.10`: bez posunu. | ☐ čeká |
 
 ## D. Dodat
 
@@ -44,6 +45,7 @@ Doporučená možnost je vždy první.
 | Kdy | Co |
 |---|---|
 | 21. 11. | O7: náhled nastavení se záložkami vlevo je hotový, posuzuješ ho v B3. |
+| 21. 11. | Pojistka limitu Nexusu hotová: aplikace zná limit, zastaví se před ním, počká a pokračuje sama; nastavení varuje před příliš častou plnou kontrolou. 313 testů. |
 | 21. 11. | F3 hotové: kontrola aktualizací bez stropu 60, plné čtení každého modu jednou za N dní, volby v nastavení. 309 testů, překlad obou edic. |
 | 21. 11. | C6: nastavení se přestaví celé, se záložkami vlevo. Nejdřív náhled (O7, B3), pak kód (O8). Volby z F3 jsou do té doby v prostém oddílu UPDATES. |
 | 21. 11. | C4: kontrola aktualizací bude bez stropu 60, zapnuté a core mody první, tlačítko přes rozdíly, přepínač kontroly při startu a plné přečtení každého modu jednou za N dní (N v nastavení). Zadání je v balíku F3. |

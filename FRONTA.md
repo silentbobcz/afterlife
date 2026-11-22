@@ -60,7 +60,7 @@ Fable. Hotovo. Zadání potvrzeno uživatelem 21. 11. (C4); volby jsou zatím v 
 ## O7. Nové nastavení se záložkami vlevo (návrh, bez kódu)
 
 Opus. Může začít hned. Uživatel 21. 11. rozhodl nastavení přestavět: vzniklo pro pár voleb a dnes jich je kolem dvaceti v jednom rolovacím sloupci šířky 680 (`Views/Panels.xaml`, šablona `SettingsVm`).
-1. Statický náhled nastavení se záložkami vlevo: Game a Library · Nexus Mods (účet, propojení modů, nxm://) · Updates (volby z F3) · Display (animace, vykreslování řádků) · Storage (uložené soubory) · Diagnostics (log, diagnostika) · FIXER. Odinstalace samostatně až dole, mimo běžné volby.
+1. Statický náhled nastavení se záložkami vlevo: Game a Library · Nexus Mods (účet, propojení modů, nxm://) · Updates (volby z F3; kontrola při startu a kontrola každou hodinu jsou od 21. 11. dva samostatné přepínače) · Display (animace, vykreslování řádků) · Storage (uložené soubory) · Diagnostics (log, diagnostika) · FIXER. Odinstalace samostatně až dole, mimo běžné volby.
 2. V paletě a písmech ze skillu grafika-cyberpunk, v rozměru okna 1612 × 910 i 2560 × 1440. Všechny dnešní volby musí mít své místo; vypiš, kam se která přesunula.
 3. Odkaz na náhled zapsat k B3 v `UKOLY.md`.
 
@@ -107,10 +107,19 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 - Neověřeno: skutečné limity dotazů Nexusu jsem v dokumentaci neověřil, kód se řídí jen odpovědí 429; chování v okně (A9).
 - Rozhodl jsem sám: při vypnuté automatické kontrole se dál kontrolují jen core mody; plná kontrola je v nastavení, ne v hlavním okně; průběh v dolní liště se ukazuje jen u ruční kontroly s víc než 20 mody.
 
+**F3, doplněk: pojistka limitu Nexusu** (21. 11., Fable)
+- Nové `NexusLimits.cs` (Infrastructure, 4 testy). Limity podle nápovědy Nexusu: 20 000 dotazů denně a 500 za hodinu na klíč, pro všechny programy dohromady (ne 2 500 a 100, jak jsem dřív uváděl z paměti).
+- Aplikace čte zbývající dotazy z hlaviček odpovědí, kontrolu zastaví 50 dotazů před limitem (aby šlo dál stahovat), uloží pauzu do celé hodiny (nebo do půlnoci GMT u denního limitu) a do té doby se na nic neptá. Pak pokračuje sama, i s nedokončenou plnou kontrolou všech modů.
+- Hláška při dosažení limitu říká, kolik modů čeká a do kdy; když je počet dní mezi plnými čteními na knihovnu moc nízký, pošle uživatele do Settings → UPDATES.
+- V nastavení je řádek „kolik dotazů denně to stojí pro tvých N modů“ a oranžové varování, když plná čtení berou víc než desetinu denního limitu (s doporučeným počtem dní). U „Check every mod now…“ je upozornění, pokud je modů víc, než se vejde do hodiny.
+- Ověřeno: 313 testů, překlad obou edic. Neověřeno: názvy hlaviček `x-rl-hourly-remaining` a `x-rl-daily-remaining` mám z cizího klienta, ne z dokumentace; když je Nexus nepošle, funguje jen zastavení při odpovědi 429. Limity jsem četl z výsledku hledání, stránku nápovědy jsem neotevřel.
+- Poznámka uživatele k verzi (21. 11.): tuhle dávku považuje za velkou aktualizaci a chce posunout číslování verzí. Číslo vybere v C7; do té doby se verze v `Directory.Build.props` nemění a nadpis v `CHANGELOG.md` zůstává pracovní.
+
 **O7** (21. 11., Opus)
 - Stav: hotovo. Náhled `docs/previews/settings-tabs.html` (jeden soubor, bez kódu aplikace): klikací záložky, přepínač okna 1612 × 910 / 2560 × 1440 a edice FULL / OFFLINE, pod náhledem tabulka „kam se která volba přesunula“ a důvody.
 - Záložky: 01 Game & library · 02 Nexus Mods (Account, Link mods, Download links) · 03 Updates · 04 Display · 05 Kept files · 06 Diagnostics · 07 FIXER; „Remove AFTERLIFE from this PC…“ dole pod seznamem záložek, oddělené.
-- Rozhodl jsem sám: dialog má pevnou velikost 214 + 660 × 480 px a při větším okně neroste (nejdelší záložka má 416 px); Game a Library v jedné záložce; v Offline je záložka Updates vidět se zámkem a zašedlými volbami (dnes je oddíl schovaný); na záložkách krátké údaje (součet Kept files, zelená tečka u funkčního klíče Nexusu); dole pod záložkami verze aplikace.
+- Rozhodl jsem sám: dialog má pevnou velikost 214 + 660 × 520 px a při větším okně neroste (nejdelší je Updates v Offline, 486 px); Game a Library v jedné záložce; v Offline je záložka Updates vidět se zámkem a zašedlými volbami (dnes je oddíl schovaný); na záložkách krátké údaje (součet Kept files, zelená tečka u funkčního klíče Nexusu); dole pod záložkami verze aplikace.
 - Ověřeno: náhled v Chromiu, všechny záložky v obou edicích bez rolování.
 - Pro O8: šablona do `Views/SettingsView.xaml`, výběr záložky v `SettingsVm` (zapamatovat poslední), texty beze změny kromě rozdělení dlouhých popisků na řádek + šedou poznámku.
+- Doplněno 22. 11. podle zadání po F3: v Updates dva samostatné spínače (při startu, každou hodinu), „only switched-on“ zašedlé, když jsou oba vypnuté, a oddíl REQUESTS TO NEXUS MODS (dotazy denně a oranžové varování, v náhledu počítané stejným vzorcem jako `NexusLimits`). Upozornění u „Check every mod now…“ je jako v aplikaci jen v tooltipu.
 - Pro uživatele: B3 v UKOLY.md.
