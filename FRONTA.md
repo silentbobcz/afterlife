@@ -1,6 +1,6 @@
 # AFTERLIFE: fronta pro modely (2. dávka)
 
-Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Kód: větev `main`. Nejnovější fronta a úkoly: větev `claude/kind-hopper-az2rax`** (do `main` se dostanou s dalším sloučením). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
+Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`.** Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
 Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O8.“
 
