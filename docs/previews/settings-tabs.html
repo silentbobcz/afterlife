@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings with tabs</title>
+<!-- Static preview of the settings overlay with tabs on the left. No code behind it: it shows layout and wording only. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family: "Chakra Petch"; font-weight: 400; src: local("Chakra Petch"), url("../../src/Afterlife.App/Assets/Fonts/ChakraPetch-Regular.ttf"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 600; src: local("Chakra Petch SemiBold"), url("../../src/Afterlife.App/Assets/Fonts/ChakraPetch-SemiBold.ttf"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 700; src: local("Chakra Petch Bold"), url("../../src/Afterlife.App/Assets/Fonts/ChakraPetch-Bold.ttf"); }
+@font-face { font-family: "JetBrains Mono"; src: local("JetBrains Mono"), url("../../src/Afterlife.App/Assets/Fonts/JetBrainsMono.ttf"); }
+
+/* tokens from src/Afterlife.App/App.xaml */
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --o: #FF9F1C;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08); --ctint-h: rgba(0,240,255,.18); --mtint: rgba(255,42,109,.10); --otint: rgba(255,159,28,.10);
+  --disp: "Chakra Petch", "Segoe UI", sans-serif; --mono: "JetBrains Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--disp); }
+body { padding: 16px; }
+a { color: var(--c); }
+
+/* ---------- page chrome around the preview ---------- */
+.page-head { max-width: 1400px; margin: 0 auto 14px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.page-head h1 { margin: 0; font-size: 18px; letter-spacing: .12em; color: var(--y); font-weight: 700; }
+.page-head h1 span { color: var(--m); }
+.page-head p { margin: 0; color: var(--t2); font-size: 13px; flex-basis: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--line2); }
+.seg button { background: none; border: 0; color: var(--t2); font: 500 11.5px var(--mono); padding: 6px 12px; cursor: pointer; letter-spacing: .06em; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button.on { background: var(--ctint); color: var(--c); }
+.seg-label { font: 11px var(--mono); color: var(--t3); margin-right: 6px; letter-spacing: .08em; }
+
+.stage { max-width: 1400px; margin: 0 auto; }
+.fit { position: relative; overflow: hidden; border: 1px solid var(--line2); }
+.win { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: var(--bg); overflow: hidden; }
+
+/* ---------- the main window behind the overlay (dimmed, only for scale) ---------- */
+.win::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 44px 44px; opacity: .5; }
+.mw { position: absolute; inset: 0; display: grid; grid-template-rows: 70px 1fr; padding: 18px 22px; gap: 16px; }
+.mw .top { display: flex; align-items: center; gap: 18px; }
+.mw .logo { font: 700 40px var(--disp); letter-spacing: 5px; color: var(--y); }
+.mw .cols { display: grid; grid-template-columns: 260px 210px 1fr 380px; gap: 14px; }
+.mw .col { background: var(--bg2); border: 1px solid var(--line2); padding: 14px; }
+.mw .col b { font: 700 15px var(--disp); color: var(--y); letter-spacing: .1em; }
+.mw .row { height: 34px; border-bottom: 1px solid var(--line); }
+.scrim { position: absolute; inset: 0; background: rgba(5,5,8,.82); }
+
+/* ---------- the overlay ---------- */
+.ov { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  background: var(--bg2); border: 1px solid var(--line2); padding: 22px 26px;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px); }
+.ov::before { content: ""; position: absolute; left: 10px; right: 10px; top: 0; height: 2px; background: var(--y); }
+.ov-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.ov-title { font: 700 16px var(--disp); letter-spacing: .14em; color: var(--y); }
+.quiet { font: 12.5px var(--disp); color: var(--t2); cursor: pointer; background: none; border: 0; padding: 0; }
+.quiet:hover { color: var(--t); text-decoration: underline; }
+
+.body { display: grid; grid-template-columns: 214px 660px; gap: 22px; height: 520px; }
+
+/* tabs on the left */
+.rail { display: flex; flex-direction: column; border-right: 1px solid var(--line); padding-right: 14px; }
+.tab { position: relative; display: grid; grid-template-columns: 26px 1fr auto; align-items: center; column-gap: 6px;
+  padding: 9px 10px 9px 12px; cursor: pointer; border: 0; background: none; text-align: left; color: var(--t); }
+.tab + .tab { margin-top: 2px; }
+.tab:hover { background: var(--ctint); }
+.tab .n { font: 11px var(--mono); color: var(--t3); }
+.tab .l { font: 600 13px var(--disp); letter-spacing: .08em; text-transform: uppercase; }
+.tab .s { grid-column: 2 / 4; font: 11px var(--disp); color: var(--t2); margin-top: 1px; }
+.tab .b { font: 700 10px var(--mono); color: var(--t2); }
+.tab.on { background: var(--bg3); }
+.tab.on::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--acc); }
+.tab.on .l, .tab.on .n { color: var(--acc); }
+.tab.locked .l, .tab.locked .s { color: var(--t3); }
+.led { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--g); box-shadow: 0 0 6px var(--g); }
+.lock { font: 11px var(--mono); color: var(--t3); }
+.rail .spacer { flex: 1; }
+.rail .bottom { border-top: 1px solid var(--line); padding: 12px 0 0 12px; }
+.rail .bottom .quiet { font-size: 12px; }
+.rail .bottom .quiet:hover { color: var(--m); }
+.rail .ver { font: 10.5px var(--mono); color: var(--t3); margin-top: 8px; }
+
+/* content of the selected tab */
+.pane { overflow-y: auto; padding-right: 10px; scrollbar-color: var(--line2) transparent; scrollbar-width: thin; }
+.page { display: none; }
+.page.on { display: block; }
+.ph { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.ph h2 { margin: 0; font: 700 15px var(--disp); letter-spacing: .12em; color: var(--acc); text-transform: uppercase; }
+.ph h2::before { content: "// "; color: var(--m); }
+.ph .tier { margin-left: auto; font: 700 11px var(--mono); border: 1px solid var(--g); color: var(--g); padding: 1px 7px; }
+.lead { font-size: 12.5px; color: var(--t2); margin: 0 0 14px; line-height: 1.45; }
+.grp { border-top: 1px solid var(--line); padding: 12px 0 14px; }
+.grp > .gl { font: 11px var(--mono); color: var(--t2); letter-spacing: .1em; margin-bottom: 8px; }
+.path { font: 12.5px var(--mono); color: var(--t); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { font-size: 12px; color: var(--t2); line-height: 1.45; margin: 4px 0 0; }
+.line { display: flex; align-items: center; gap: 14px; }
+.line .grow { flex: 1; min-width: 0; }
+.link { font: 12.5px var(--disp); color: var(--c); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+.link:hover { text-decoration: underline; }
+.links { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.btn { font: 700 12px var(--disp); letter-spacing: .1em; padding: 7px 14px; cursor: pointer; border: 1px solid; background: none;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px); white-space: nowrap; }
+.btn.acc { color: var(--y); border-color: var(--y); background: rgba(252,238,10,.08); }
+.btn.pri { color: var(--bg); background: var(--c); border-color: var(--c); }
+.btn.dan { color: var(--m); border-color: var(--m); background: var(--mtint); }
+.btn[disabled] { opacity: .4; cursor: default; }
+.chk { display: grid; grid-template-columns: 22px 1fr; gap: 0 6px; align-items: start; font-size: 13px; line-height: 1.35; cursor: pointer; margin-top: 8px; }
+.chk input { appearance: none; width: 15px; height: 15px; margin: 2px 0 0; border: 1px solid var(--t3); background: var(--bg); position: relative; cursor: pointer; }
+.chk input:checked { border-color: var(--c); background: var(--ctint-h); }
+.chk input:checked::after { content: ""; position: absolute; left: 3px; top: 3px; width: 7px; height: 7px; background: var(--c); }
+.chk .meta { grid-column: 2; margin-top: 2px; }
+.chk.dis { opacity: .45; cursor: default; }
+.input { flex: 1; background: var(--bg); border: 1px solid var(--line2); color: var(--t2); font: 12.5px var(--mono); padding: 7px 10px; }
+.num { width: 48px; background: var(--bg); border: 1px solid var(--line2); color: var(--t); font: 12.5px var(--mono); padding: 4px 6px; text-align: center; }
+.status { font-size: 12.5px; color: var(--g); margin-top: 8px; }
+.warn { font: 12px var(--mono); color: var(--o); margin-top: 2px; }
+.lockbox { border: 1px solid var(--line2); background: var(--otint); padding: 10px 12px; font-size: 12.5px; line-height: 1.45; color: var(--t); margin-bottom: 12px; }
+.lockbox b { font: 700 11.5px var(--mono); color: var(--o); letter-spacing: .06em; }
+table.kept { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.kept td { height: 30px; border-bottom: 1px solid var(--line); }
+table.kept td.sz { font: 11.5px var(--mono); color: var(--t); width: 120px; }
+table.kept td.act { width: 130px; text-align: right; white-space: nowrap; }
+table.kept td.act .link { margin-right: 16px; }
+.about { border: 1px solid var(--line2); border-left: 3px solid var(--o); background: var(--bg3); padding: 10px 12px; margin: 6px 0 4px; font-size: 12.5px; line-height: 1.45; }
+.about b { font: 700 11px var(--mono); color: var(--o); letter-spacing: .08em; }
+table.kept tr.total td { border-bottom: 0; color: var(--t2); }
+.danger-zone { margin-top: 18px; }
+
+/* ---------- where every option went ---------- */
+.notes { max-width: 1400px; margin: 22px auto 0; display: grid; grid-template-columns: minmax(0,3fr) minmax(0,2fr); gap: 24px; }
+.notes h3 { font: 700 13px var(--disp); letter-spacing: .12em; color: var(--y); margin: 0 0 8px; }
+.notes h3::before { content: "> "; color: var(--m); }
+table.map { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.map th { text-align: left; font: 500 11px var(--mono); color: var(--t2); letter-spacing: .08em; border-bottom: 1px solid var(--line2); padding: 6px 8px 6px 0; }
+table.map td { border-bottom: 1px solid var(--line); padding: 6px 8px 6px 0; vertical-align: top; line-height: 1.4; }
+table.map td:first-child { color: var(--t); }
+table.map td:nth-child(2) { font: 11.5px var(--mono); color: var(--t3); white-space: nowrap; }
+table.map td:nth-child(3) { font: 11.5px var(--mono); color: var(--c); white-space: nowrap; }
+.why { margin: 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.5; color: var(--t); }
+.why li { padding: 7px 0; border-bottom: 1px solid var(--line); }
+.why b { color: var(--y); font-weight: 600; }
+@media (max-width: 900px) { .notes { grid-template-columns: 1fr; } table.map td:nth-child(2) { white-space: normal; } }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1><span>//</span> AFTERLIFE · SETTINGS WITH TABS</h1>
+  <div><span class="seg-label">WINDOW</span><span class="seg" id="sizes"><button class="on" data-w="1612" data-h="910">1612 × 910</button><button data-w="2560" data-h="1440">2560 × 1440</button></span></div>
+  <div><span class="seg-label">EDITION</span><span class="seg" id="editions"><button class="on" data-ed="full">FULL</button><button data-ed="offline">OFFLINE</button></span></div>
+  <p>Static preview, no code behind it. Click the tabs on the left. The dialog keeps one size, so it does not jump when you switch tabs; on a large window it stays the same size in the middle.</p>
+</div>
+
+<div class="stage"><div class="fit" id="fit"><div class="win" id="win">
+  <div class="mw">
+    <div class="top"><div class="logo">AFTERLIFE</div></div>
+    <div class="cols">
+      <div class="col"><b>PROFILES</b></div>
+      <div class="col"><b>FILTERS</b></div>
+      <div class="col"><b>MOD LIBRARY</b><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div></div>
+      <div class="col"><b>MOD DETAILS</b></div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+
+  <div class="ov">
+    <div class="ov-head"><div class="ov-title">SETTINGS</div><button class="quiet">Close</button></div>
+    <div class="body">
+
+      <nav class="rail" id="rail">
+        <button class="tab on" data-p="game" style="--acc: var(--y)"><span class="n">01</span><span class="l">Game &amp; library</span><span class="b"></span><span class="s">Game folder, library folder</span></button>
+        <button class="tab" data-p="nexus" style="--acc: var(--m)"><span class="n">02</span><span class="l">Nexus Mods</span><span class="b only-full"><i class="led"></i></span><span class="s">Account, linking, nxm:// links</span></button>
+        <button class="tab" data-p="updates" style="--acc: var(--c)"><span class="n">03</span><span class="l">Updates</span><span class="b"><span class="lock only-offline">🔒</span></span><span class="s">When and what to check</span></button>
+        <button class="tab" data-p="display" style="--acc: var(--t)"><span class="n">04</span><span class="l">Display</span><span class="b"></span><span class="s">Animations, mod list</span></button>
+        <button class="tab" data-p="storage" style="--acc: var(--m)"><span class="n">05</span><span class="l">Kept files</span><span class="b">1.8 GB</span><span class="s">Undo copies, archives, temp</span></button>
+        <button class="tab" data-p="diag" style="--acc: var(--o)"><span class="n">06</span><span class="l">Diagnostics</span><span class="b"></span><span class="s">Activity log, bug report</span></button>
+        <button class="tab" data-p="fixer" style="--acc: var(--t)"><span class="n">07</span><span class="l">FIXER</span><span class="b"></span><span class="s">Quests from the quest editor</span></button>
+        <div class="spacer"></div>
+        <div class="bottom">
+          <button class="quiet">Remove AFTERLIFE from this PC…</button>
+          <div class="ver">AFTERLIFE 1.0.0-alpha.10</div>
+        </div>
+      </nav>
+
+      <div class="pane">
+
+        <!-- 01 GAME & LIBRARY -->
+        <section class="page on" id="p-game" style="--acc: var(--y)">
+          <div class="ph"><h2>Game &amp; library</h2></div>
+          <p class="lead">Where the game is and where AFTERLIFE keeps your mods.</p>
+          <div class="grp">
+            <div class="gl">GAME</div>
+            <div class="line">
+              <div class="grow"><div class="path">D:\Games\Steam\steamapps\common\Cyberpunk 2077</div><div class="meta">Cyberpunk 2077 2.31 · Steam</div></div>
+              <button class="link">Open in Explorer</button>
+              <button class="btn acc">CHANGE…</button>
+            </div>
+            <p class="meta">To use another install: switch to Mods off and apply first. If you only moved the same install (new drive letter, new disk), AFTERLIFE recognizes its files and keeps them.</p>
+          </div>
+          <div class="grp">
+            <div class="gl">LIBRARY</div>
+            <div class="line">
+              <div class="grow"><div class="path">D:\AFTERLIFE\library</div></div>
+              <button class="link">Open in Explorer</button>
+              <button class="link">Removed mods…</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 02 NEXUS MODS -->
+        <section class="page" id="p-nexus" style="--acc: var(--m)">
+          <div class="ph"><h2>Nexus Mods</h2><span class="tier only-full">PREMIUM</span></div>
+          <div class="only-offline">
+            <p class="warn">OFFLINE EDITION · NO API KEY · NO CONNECTION TO NEXUS MODS</p>
+            <p class="meta">This is AFTERLIFE Offline: it does not connect to Nexus Mods and needs no API key. Downloads, updates and collections from Nexus Mods come once Nexus Mods registers AFTERLIFE. Until then download mods on nexusmods.com with Manual download and drop them into the window.</p>
+          </div>
+          <div class="only-full">
+            <div class="grp" style="border-top:0;padding-top:4px">
+              <div class="gl">ACCOUNT</div>
+              <p class="meta" style="margin:0 0 8px">Your personal API key from your Nexus Mods account (Settings → API Keys). It is stored encrypted for your Windows user and only sent to api.nexusmods.com.</p>
+              <button class="btn pri">LOG IN WITH NEXUS MODS</button>
+              <div class="line" style="margin-top:8px"><input class="input" value="Key saved · paste a new one to replace it" readonly><button class="btn pri">SAVE KEY</button></div>
+              <div class="status">Key works · logged in as V · Premium</div>
+              <div class="links"><button class="link">Get my API key on nexusmods.com ↗</button><button class="link">Check again</button><button class="quiet">Remove key</button></div>
+            </div>
+            <div class="grp">
+              <div class="gl">LINK MODS</div>
+              <div class="line"><div class="grow meta" style="margin:0">Mods added from files get their Nexus page once Nexus confirms them; one list, one question.</div><button class="link">Link all unlinked mods…</button></div>
+            </div>
+            <div class="grp">
+              <div class="gl">DOWNLOAD LINKS</div>
+              <label class="chk"><input type="checkbox" checked><span>Open Mod Manager Download links in AFTERLIFE (nxm://)</span><span class="meta">Mod Manager Download on nexusmods.com then sends the mod straight into the AFTERLIFE library.</span></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- 03 UPDATES -->
+        <section class="page" id="p-updates" style="--acc: var(--c)">
+          <div class="ph"><h2>Updates</h2></div>
+          <div class="lockbox only-offline"><b>🔒 NEEDS NEXUS MODS</b><br>Comes with the full edition, once Nexus Mods registers AFTERLIFE.</div>
+          <div class="upd">
+            <p class="lead">AFTERLIFE asks Nexus Mods for newer versions of the mods that are linked to their page.</p>
+            <div class="grp">
+              <div class="gl">ON ITS OWN</div>
+              <label class="chk"><input type="checkbox" id="u-start" checked><span>Look for newer versions of your mods when AFTERLIFE starts</span></label>
+              <label class="chk"><input type="checkbox" id="u-hour" checked><span>Look for newer versions of your mods every hour while AFTERLIFE is open</span><span class="meta">Core mods are checked either way.</span></label>
+              <label class="chk" id="u-only-row"><input type="checkbox" id="u-only"><span>On its own, check only the mods switched on in the selected profile</span></label>
+            </div>
+            <div class="grp">
+              <div class="gl">FULL READ</div>
+              <div class="line" style="gap:8px;font-size:13px">Read every mod in full once in <input class="num" id="u-days" value="7" maxlength="3"> days <span class="meta" style="margin:0">(0 = never)</span></div>
+              <p class="meta">Between full reads AFTERLIFE asks Nexus Mods only which mods changed: one request for the whole library. The full read is a safety net; the mods take turns, so about the same number is read every day.</p>
+              <div class="links"><button class="link" title="Reads the file list of every linked mod: 640 requests, more than Nexus Mods allows in one hour (500). It will pause at the limit and finish by itself over the next hours.">Check every mod now…</button></div>
+            </div>
+            <div class="grp">
+              <div class="gl">REQUESTS TO NEXUS MODS</div>
+              <p class="meta" id="u-load" style="margin:0"></p>
+              <div class="lockbox" id="u-warn" style="display:none;margin:8px 0 0;color:var(--o);border-color:var(--o)"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 04 DISPLAY -->
+        <section class="page" id="p-display" style="--acc: var(--t)">
+          <div class="ph"><h2>Display</h2></div>
+          <div class="grp" style="border-top:0">
+            <div class="gl">ANIMATIONS</div>
+            <label class="chk"><input type="checkbox"><span>Reduce motion</span><span class="meta">Stops the background, glitches, scans and the breach animation.</span></label>
+          </div>
+          <div class="grp">
+            <div class="gl">MOD LIST</div>
+            <label class="chk"><input type="checkbox"><span>Draw only the visible rows (experimental)</span><span class="meta">Faster with hundreds of mods. Switch it off again if the list jumps while scrolling or dragging.</span></label>
+          </div>
+        </section>
+
+        <!-- 05 KEPT FILES -->
+        <section class="page" id="p-storage" style="--acc: var(--m)">
+          <div class="ph"><h2>Kept files</h2></div>
+          <p class="lead">Copies AFTERLIFE keeps so you can undo. Deleting them frees space; the game, the mods in the library and the profiles stay. Show opens the folder in Explorer, so you can look before you delete.</p>
+          <table class="kept">
+            <tr><td>Removed files (undo)</td><td class="sz">1.2 GB</td><td class="act"><button class="link">Show</button><button class="quiet">Delete</button></td></tr>
+            <tr><td>Downloaded archives</td><td class="sz">540 MB</td><td class="act"><button class="link">Show</button><button class="quiet">Delete</button></td></tr>
+            <tr><td>Temporary files</td><td class="sz">38 MB</td><td class="act"><button class="link">Show</button><button class="quiet">Delete</button></td></tr>
+            <tr class="total"><td>Together</td><td class="sz">1.8 GB</td><td></td></tr>
+          </table>
+          <div class="danger-zone"><button class="btn dan">DELETE ALL KEPT FILES</button></div>
+        </section>
+
+        <!-- 06 DIAGNOSTICS -->
+        <section class="page" id="p-diag" style="--acc: var(--o)">
+          <div class="ph"><h2>Diagnostics</h2></div>
+          <p class="lead">For finding problems and for a bug report.</p>
+          <div class="grp">
+            <div class="gl">ACTIVITY LOG</div>
+            <label class="chk"><input type="checkbox"><span>Log what AFTERLIFE does</span><span class="meta">Switches, imports, every planned file change with its reason, results. One file per day in the log folder. Switch it on when something looks wrong, then send the file with your report.</span></label>
+            <div class="links"><button class="link">Open log folder</button></div>
+          </div>
+          <div class="grp">
+            <div class="gl">BUG REPORT</div>
+            <div class="line"><div class="grow meta" style="margin:0">Mod list, versions and the last errors, without your key or paths.</div><button class="link">Copy diagnostics</button></div>
+          </div>
+        </section>
+
+        <!-- 07 FIXER -->
+        <section class="page" id="p-fixer" style="--acc: var(--t)">
+          <div class="ph"><h2>FIXER</h2></div>
+          <div class="about"><b>IN DEVELOPMENT · NOT RELEASED YET</b><br>FIXER is a quest editor for Cyberpunk 2077: you build a quest on a map of scenes, calls and journal entries, and it comes out as a mod. It is made by the author of AFTERLIFE and is still being worked on; until it is out, this switch has nothing to receive.</div>
+          <div class="grp" style="border-top:0">
+            <label class="chk" style="margin-top:0"><input type="checkbox"><span>Take quests from FIXER (drop box in the library)</span><span class="meta">While this is on, AFTERLIFE takes the quests FIXER leaves in the fixer\inbox folder of the library: they arrive in the category FIXER, switched on in the selected profile, and go into the game with APPLY CHANGES like any other mod. Off: the folder is not read.</span></label>
+            <p class="meta" style="margin-left:28px">Drop box: <span class="path" style="display:inline;font-size:11.5px">D:\AFTERLIFE\library\fixer\inbox</span></p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<div class="notes">
+  <div>
+    <h3>WHERE EVERY OPTION WENT</h3>
+    <table class="map">
+      <tr><th>Option today</th><th>Was in</th><th>Now in</th></tr>
+      <tr><td>Game folder, version, Open in Explorer, CHANGE…, hint</td><td>01 · GAME</td><td>01 Game &amp; library</td></tr>
+      <tr><td>Library folder, Open in Explorer, Removed mods…</td><td>02 · LIBRARY</td><td>01 Game &amp; library</td></tr>
+      <tr><td>Account tier badge (PREMIUM / FREE)</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods, title + green dot on the tab</td></tr>
+      <tr><td>Log in with Nexus Mods, API key, SAVE KEY, status, key links</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods · Account</td></tr>
+      <tr><td>Link all unlinked mods…</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods · Link mods</td></tr>
+      <tr><td>nxm:// links checkbox and hint</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods · Download links</td></tr>
+      <tr><td>Offline edition note</td><td>03 · NEXUS MODS</td><td>02 Nexus Mods (Offline only)</td></tr>
+      <tr><td>Check at start; check every hour (two switches); only switched-on mods</td><td>UPDATES</td><td>03 Updates · On its own</td></tr>
+      <tr><td>Full read every N days, hint, Check every mod now… with its limit note</td><td>UPDATES</td><td>03 Updates · Full read</td></tr>
+      <tr><td>Requests a day for your mods, warning when the days are too few</td><td>UPDATES</td><td>03 Updates · Requests to Nexus Mods</td></tr>
+      <tr><td>Reduce motion</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>04 Display</td></tr>
+      <tr><td>Draw only the visible rows</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>04 Display</td></tr>
+      <tr><td>Removed files, archives, temp files, DELETE ALL</td><td>04 · KEPT FILES</td><td>05 Kept files, total on the tab</td></tr>
+      <tr><td><i>New:</i> Show for each kind of kept file (opens its folder)</td><td>—</td><td>05 Kept files</td></tr>
+      <tr><td>Activity log, Open log folder</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>06 Diagnostics</td></tr>
+      <tr><td>Copy diagnostics</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>06 Diagnostics</td></tr>
+      <tr><td>Take quests from FIXER, hint</td><td>06 · FIXER</td><td>07 FIXER, drop box path shown</td></tr>
+      <tr><td><i>New:</i> what FIXER is, made by the author, not released yet</td><td>—</td><td>07 FIXER, box above the switch</td></tr>
+      <tr><td>Remove AFTERLIFE from this PC…</td><td>05 · DISPLAY · DIAGNOSTICS</td><td>Bottom of the tab list, apart</td></tr>
+      <tr><td>Message line (saved, error)</td><td>top of the column</td><td>top of the selected tab</td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>WHY</h3>
+    <ul class="why">
+      <li><b>Tabs on the left.</b> About twenty options no longer sit in one long column; each tab fits without scrolling at 1612 × 910 (Updates in Offline is the longest).</li>
+      <li><b>One size for the dialog.</b> Switching tabs does not move anything. On a large screen the dialog stays the same size, because no tab is long enough to need more.</li>
+      <li><b>Game and library together.</b> Both are only a folder with two links; on their own they would be two nearly empty tabs.</li>
+      <li><b>Updates is its own tab.</b> It has five choices and the request count; in Offline it stays visible with a lock, like the other Nexus features.</li>
+      <li><b>Display and diagnostics apart.</b> Today's section 05 mixed appearance, logs and uninstall; each now has one purpose.</li>
+      <li><b>Uninstall at the bottom, apart.</b> It is not a setting and should not sit next to a checkbox you click often.</li>
+      <li><b>Requests in plain sight.</b> Updates shows what your settings cost a day against the Nexus Mods limit; the orange warning appears only when full reads would take more than a tenth of the daily limit (about 2,000 mods read every day). Change the days in the preview to see the line follow.</li>
+      <li><b>Short facts on the tabs.</b> Kept files shows the total size, Nexus Mods a green dot when the key works, so you see the state without opening the tab.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const win = document.getElementById('win'), fit = document.getElementById('fit');
+let W = 1612, H = 910;
+function layout() {
+  const s = Math.min(1, fit.parentElement.clientWidth / W);
+  win.style.width = W + 'px'; win.style.height = H + 'px'; win.style.transform = `scale(${s})`;
+  fit.style.height = (H * s) + 'px';
+}
+document.querySelectorAll('#sizes button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#sizes button').forEach(x => x.classList.toggle('on', x === b));
+  W = +b.dataset.w; H = +b.dataset.h; layout();
+});
+function edition(ed) {
+  document.querySelectorAll('.only-full').forEach(e => e.style.display = ed === 'full' ? '' : 'none');
+  document.querySelectorAll('.only-offline').forEach(e => e.style.display = ed === 'offline' ? '' : 'none');
+  document.querySelector('[data-p="updates"]').classList.toggle('locked', ed === 'offline');
+  document.querySelectorAll('.upd input').forEach(i => i.disabled = ed === 'offline');
+  document.querySelectorAll('.upd .chk').forEach(c => c.classList.toggle('dis', ed === 'offline'));
+  document.querySelectorAll('.upd .link').forEach(l => l.disabled = ed === 'offline');
+}
+document.querySelectorAll('#editions button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#editions button').forEach(x => x.classList.toggle('on', x === b));
+  edition(b.dataset.ed);
+});
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p));
+});
+const q = new URLSearchParams(location.search);
+if (q.get('tab')) document.querySelector(`.tab[data-p="${q.get('tab')}"]`)?.click();
+if (q.get('ed') === 'offline') document.querySelector('#editions [data-ed="offline"]').click(); else edition('full');
+if (q.get('size') === 'big') document.querySelector('#sizes [data-w="2560"]').click();
+window.addEventListener('resize', layout); layout();
+function updLoad() {
+  const mods = 640, days = Math.max(0, Math.min(365, parseInt(document.getElementById('u-days').value) || 0));
+  const hourly = document.getElementById('u-hour').checked;
+  const perDay = (hourly ? 24 : 0) + (days <= 0 ? 0 : Math.ceil(mods / days));
+  document.getElementById('u-load').textContent = `With your ${mods} linked mods this costs about ${perDay.toLocaleString('en')} requests a day. Nexus Mods allows 20,000 a day and 500 an hour per key; when it is reached AFTERLIFE waits and goes on later.`;
+  const w = document.getElementById('u-warn');
+  if (perDay > 2000) { w.style.display = ''; w.textContent = `That is about ${perDay.toLocaleString('en')} requests a day for ${mods} mods, a large part of what Nexus Mods allows (20,000 a day for your key, for every program together). Use ${Math.max(1, Math.ceil(mods / 1976))} days or more.`; }
+  else w.style.display = 'none';
+  const any = document.getElementById('u-start').checked || hourly;
+  const ed = document.querySelector('#editions .on').dataset.ed;
+  document.getElementById('u-only').disabled = !any || ed === 'offline';
+  document.getElementById('u-only-row').classList.toggle('dis', !any || ed === 'offline');
+}
+['u-days','u-hour','u-start'].forEach(id => document.getElementById(id).addEventListener('input', updLoad));
+document.getElementById('u-hour').addEventListener('change', updLoad); document.getElementById('u-start').addEventListener('change', updLoad);
+document.querySelectorAll('#editions button').forEach(b => b.addEventListener('click', updLoad));
+updLoad();
+</script>
+</body>
+</html>

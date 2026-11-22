@@ -1,10 +1,10 @@
 # AFTERLIFE: fronta pro modely (1. dávka)
 
-Živá verze fronty. **Nejnovější stav dávky: větev `claude/kind-hopper-az2rax`** (O1, O2, O4, O6, F1, F2). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
+Živá verze fronty. **Nejnovější stav dávky: větev `claude/modest-edison-qznx06`** (O1–O7, F1–F3). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md).
 Úkoly pro uživatele: [`UKOLY.md`](UKOLY.md) v této větvi.
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík O7.“
-Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkout claude/kind-hopper-az2rax`, pak stejná věta.
+Spouštěcí věta (až bude B3 schválené): „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/modest-edison-qznx06) a udělej balík O8.“
+Doma na počítači: `git fetch origin claude/modest-edison-qznx06` a `git checkout claude/modest-edison-qznx06`, pak stejná věta.
 
 ## Pravidla dávky
 
@@ -26,7 +26,7 @@ Doma na počítači: `git fetch origin claude/kind-hopper-az2rax` a `git checkou
 | O6 | Opus | Tlačítko hromadného propojení i v nastavení Nexusu | nic | hotovo `a75ded6`, zkontrolováno |
 | F2 | Fable | Řazení seznamu a virtualizace při 300+ modech | nic | hotovo (bez kontroly, psal Fable) |
 | F3 | Fable | Kontrola aktualizací při 600+ modech | nic | hotovo (bez kontroly, psal Fable) |
-| O7 | Opus | Nové nastavení se záložkami vlevo (návrh, bez kódu) | nic | může začít |
+| O7 | Opus | Nové nastavení se záložkami vlevo (návrh, bez kódu) | nic | hotovo, náhled čeká na B3 |
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
 | F-kontrola | Fable | Kontrola O1, O2, O4, O6 | nic | hotovo, bez nálezu; uzavření dávky čeká na C3 a C4 |
 
@@ -66,7 +66,7 @@ Opus. Může začít hned. Uživatel 21. 11. rozhodl nastavení přestavět: vzn
 
 ## O8. Přestavba nastavení v kódu
 
-Opus. Čeká na B3 (schválený náhled z O7). Soubory: `Views/Panels.xaml` (šablona nastavení do vlastního souboru ve `Views/`), `ViewModels/Overlays/SettingsVm.cs`. Logika voleb se nemění, jen se přesunou. Do alpha.11, pokud uživatel neřekne jinak.
+Opus. Čeká na B3 (schválený náhled z O7). Soubory: `Views/Panels.xaml` (šablona nastavení do vlastního souboru ve `Views/`), `ViewModels/Overlays/SettingsVm.cs`. Logika voleb se nemění, jen se přesunou. Dvě nové drobnosti z náhledu: u každého druhu uložených souborů odkaz „Show“, který otevře jeho složku v Průzkumníku; u FIXERu rámeček „In development · not released yet“ s popisem, co FIXER je. Do alpha.11, pokud uživatel neřekne jinak.
 
 ## F-kontrola
 
@@ -115,3 +115,11 @@ Fable. Projít commity O1, O2, O4, O6 proti zadání a předávkám, nejvíc „
 - Ověřeno: 313 testů, překlad obou edic. Neověřeno: názvy hlaviček `x-rl-hourly-remaining` a `x-rl-daily-remaining` mám z cizího klienta, ne z dokumentace; když je Nexus nepošle, funguje jen zastavení při odpovědi 429. Limity jsem četl z výsledku hledání, stránku nápovědy jsem neotevřel.
 - Poznámka uživatele k verzi (21. 11.): tuhle dávku považuje za velkou aktualizaci a chce posunout číslování verzí. Číslo vybere v C7; do té doby se verze v `Directory.Build.props` nemění a nadpis v `CHANGELOG.md` zůstává pracovní.
 
+**O7** (21. 11., Opus)
+- Stav: hotovo. Náhled `docs/previews/settings-tabs.html` (jeden soubor, bez kódu aplikace): klikací záložky, přepínač okna 1612 × 910 / 2560 × 1440 a edice FULL / OFFLINE, pod náhledem tabulka „kam se která volba přesunula“ a důvody.
+- Záložky: 01 Game & library · 02 Nexus Mods (Account, Link mods, Download links) · 03 Updates · 04 Display · 05 Kept files · 06 Diagnostics · 07 FIXER; „Remove AFTERLIFE from this PC…“ dole pod seznamem záložek, oddělené.
+- Rozhodl jsem sám: dialog má pevnou velikost 214 + 660 × 520 px a při větším okně neroste (nejdelší je Updates v Offline, 486 px); Game a Library v jedné záložce; v Offline je záložka Updates vidět se zámkem a zašedlými volbami (dnes je oddíl schovaný); na záložkách krátké údaje (součet Kept files, zelená tečka u funkčního klíče Nexusu); dole pod záložkami verze aplikace.
+- Ověřeno: náhled v Chromiu, všechny záložky v obou edicích bez rolování.
+- Pro O8: šablona do `Views/SettingsView.xaml`, výběr záložky v `SettingsVm` (zapamatovat poslední), texty beze změny kromě rozdělení dlouhých popisků na řádek + šedou poznámku.
+- Doplněno 22. 11. podle zadání po F3: v Updates dva samostatné spínače (při startu, každou hodinu), „only switched-on“ zašedlé, když jsou oba vypnuté, a oddíl REQUESTS TO NEXUS MODS (dotazy denně a oranžové varování, v náhledu počítané stejným vzorcem jako `NexusLimits`). Upozornění u „Check every mod now…“ je jako v aplikaci jen v tooltipu.
+- Pro uživatele: B3 v UKOLY.md.
