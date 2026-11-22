@@ -366,6 +366,16 @@ public partial class MainWindow : Window
         await _vm.ImportFilesAsync(files);
     }
 
+    /// <summary>Ctrl+Up / Down / Home / End move the selected mods in the load order.</summary>
+    private static MoveStep? MoveStepOf(Key key) => key switch
+    {
+        Key.Up => MoveStep.Up,
+        Key.Down => MoveStep.Down,
+        Key.Home => MoveStep.ToStart,
+        Key.End => MoveStep.ToEnd,
+        _ => null,
+    };
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Escape && _vm.Overlay?.CloseCommand is { } close && close.CanExecute(null))
@@ -381,6 +391,12 @@ public partial class MainWindow : Window
         else if (e.Key == Key.A && Keyboard.Modifiers == ModifierKeys.Control && _vm.Overlay is null && Keyboard.FocusedElement is not TextBox)
         {
             _vm.SetAllChecked(!_vm.AllChecked);
+            e.Handled = true;
+        }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && MoveStepOf(e.Key) is { } step && _vm.Overlay is null
+                 && Keyboard.FocusedElement is not TextBox && _vm.CanMoveByKey)
+        {
+            _ = _vm.MoveSelectionAsync(step);
             e.Handled = true;
         }
     }

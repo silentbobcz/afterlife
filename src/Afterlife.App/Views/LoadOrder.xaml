@@ -17,6 +17,10 @@
             <DataTrigger Binding="{Binding OrderText}" Value="{x:Null}">
                 <Setter Property="Visibility" Value="Hidden" />
             </DataTrigger>
+            <!-- no .archive in archive/pc/mod: the order does not affect this mod -->
+            <DataTrigger Binding="{Binding OrderMatters}" Value="False">
+                <Setter Property="Foreground" Value="{StaticResource TagLine}" />
+            </DataTrigger>
             <!-- sorted for viewing (⇅): the shown order is not the load order -->
             <DataTrigger Binding="{Binding SortLocked}" Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />

@@ -1,5 +1,8 @@
 namespace Afterlife.Core;
 
+/// <summary>How a keyboard move shifts mods inside their section: one row up or down, or to its start or end.</summary>
+public enum MoveStep { Up, Down, ToStart, ToEnd }
+
 /// <summary>
 /// The free load order inside MODS and its categories. The order lives in the profile (its entries, see
 /// <see cref="BlockLayout.Compose"/> for the sections); these helpers move mods inside it, sort one section by name
@@ -27,6 +30,67 @@ public static class LoadOrder
         else if (after) i++;
         rest.InsertRange(i, group);
         return rest;
+    }
+
+    /// <summary>
+    /// Moves the given items inside their own section (<paramref name="sectionOf"/>) by one place or to its start or
+    /// end; the section keeps the places it holds in <paramref name="order"/>, so no item crosses a section boundary.
+    /// Moved items keep their order among themselves, a block of them at the edge stays put. Items of several
+    /// sections each move inside theirs; unknown items are ignored. Returns the new order (equal to the old one when
+    /// nothing moves).
+    /// </summary>
+    public static List<string> MoveInSection(IReadOnlyList<string> order, IEnumerable<string> moved, Func<string, string> sectionOf, MoveStep step)
+    {
+        var set = moved.ToHashSet(StringComparer.Ordinal);
+        var result = order.ToList();
+        foreach (var section in order.Where(set.Contains).Select(sectionOf).Distinct(StringComparer.Ordinal).ToList())
+        {
+            var slots = new List<int>();
+            for (var i = 0; i < order.Count; i++)
+                if (sectionOf(order[i]) == section) slots.Add(i);
+            var ids = slots.Select(i => order[i]).ToList();
+            var flags = ids.Select(id => set.Contains(id)).ToList();
+            switch (step)
+            {
+                case MoveStep.Up:
+                    for (var i = 1; i < ids.Count; i++)
+                        if (flags[i] && !flags[i - 1])
+                        {
+                            (ids[i], ids[i - 1]) = (ids[i - 1], ids[i]);
+                            (flags[i], flags[i - 1]) = (flags[i - 1], flags[i]);
+                        }
+                    break;
+                case MoveStep.Down:
+                    for (var i = ids.Count - 2; i >= 0; i--)
+                        if (flags[i] && !flags[i + 1])
+                        {
+                            (ids[i], ids[i + 1]) = (ids[i + 1], ids[i]);
+                            (flags[i], flags[i + 1]) = (flags[i + 1], flags[i]);
+                        }
+                    break;
+                case MoveStep.ToStart:
+                    ids = ids.Where(id => set.Contains(id)).Concat(ids.Where(id => !set.Contains(id))).ToList();
+                    break;
+                default:
+                    ids = ids.Where(id => !set.Contains(id)).Concat(ids.Where(id => set.Contains(id))).ToList();
+                    break;
+            }
+            for (var k = 0; k < slots.Count; k++) result[slots[k]] = ids[k];
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// A file the load order decides: an <c>.archive</c> directly in <c>archive/pc/mod</c> (a package file's target,
+    /// a game path with forward slashes).
+    /// </summary>
+    public static bool IsOrderedArchive(string target)
+    {
+        const string folder = "archive/pc/mod/";
+        var t = target.Replace('\\', '/');
+        return t.StartsWith(folder, StringComparison.OrdinalIgnoreCase)
+            && t.EndsWith(".archive", StringComparison.OrdinalIgnoreCase)
+            && t.IndexOf('/', folder.Length) < 0;
     }
 
     /// <summary>

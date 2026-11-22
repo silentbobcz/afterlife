@@ -184,6 +184,7 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 
 - **USE THIS MOD** makes the selected mod win one file.
 - **USE THIS MOD FOR ALL n FILES** makes it win every conflict it has, in one click.
+- **LOAD BEFORE ‹mod›** appears next to a conflicting `.archive` file (in `archive/pc/mod`) that another mod wins, when both mods are in MODS or a category. It moves the selected mod to just before that mod in the load order, so it wins the file; if the other mod is in another category, the mod moves into it, as with a drag onto that row.
 
 ### Load order
 
@@ -197,11 +198,14 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 4. inside MODS and inside every category the mods load in the order you give them; inside a collection they keep the curator's order.
 
 The number at the start of a row (**#1**, **#2** …) is its place in that order, counted after CORE MODS; it is shown only while the list is in load order (not while it is sorted with **⇅**).
+A number shown dimmer belongs to a mod without any `.archive` file in `archive/pc/mod`: the load order does not affect it (its tooltip says so).
 
 **To load one mod before another** (for example a texture fix that must win over a bigger texture pack):
 
 1. Drag the mod by its **⋮⋮** handle above the other one, inside MODS, inside a category or from one into another. A line shows where it lands. Several checked mods move together and keep their order.
 2. **APPLY CHANGES**. The preview shows the new order before anything is written.
+
+From the keyboard (only in the load order view, not while sorted with **⇅**): **Ctrl+Up** / **Ctrl+Down** move the checked mods (or the selected row) by one row inside their section (MODS, one category or an unlocked collection), **Ctrl+Home** / **Ctrl+End** to its start or end. They never cross into another section.
 
 A mod's local edits (**└ name**) always stay right below the mod and move with it. Categories still group mods, and a whole category moves by its handle or the small arrows. **A→Z** in the header of MODS or a category sorts that section by name once, after a question; nothing changes in the game before you apply. New mods go to the end of MODS, without a category; an updated mod keeps the place of the old version. The order belongs to the profile: another profile can order the same mods differently (categories are shared by all profiles).
 
@@ -375,4 +379,6 @@ More in the [FAQ](FAQ.md).
 | Esc | Clear the search |
 | Double-click a mod, profile or category name | Rename |
 | Shift+click, Ctrl+click | Select several mods |
+| Ctrl+Up, Ctrl+Down | Move the checked mods (or the selected row) one row up or down in the load order, inside their section |
+| Ctrl+Home, Ctrl+End | Move them to the start or end of their section |
 | Drag ⋮⋮ | Move a mod up or down inside MODS, a category or an unlocked collection, or into another category; move a block or category (load order) |

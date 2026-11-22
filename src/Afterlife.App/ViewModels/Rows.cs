@@ -94,7 +94,11 @@ public sealed partial class ModRowVm : ObservableObject
     private string? _orderText;
     public string OrderTip { get => _orderTip; private set => SetProperty(ref _orderTip, value); }
     private string _orderTip = "";
-    public void SetOrder(string? text, string tip) { OrderTip = tip; OrderText = text; }
+    /// <summary>False for a mod without an .archive in archive/pc/mod: the load order does not affect it (its number is dimmed).</summary>
+    public bool OrderMatters { get => _orderMatters; private set => SetProperty(ref _orderMatters, value); }
+    private bool _orderMatters = true;
+    public bool HasOrderedArchive => Overview.Package.Files.Any(f => LoadOrder.IsOrderedArchive(f.Target));
+    public void SetOrder(string? text, string tip, bool matters) { OrderTip = tip; OrderText = text; OrderMatters = matters; }
 
     public string Name => Overview.Package.LayerOfModId is null ? Overview.Package.ModName : "└ " + Overview.Package.ModName;
     /// <summary>Another version of this mod is on in the profile too.</summary>
@@ -184,7 +188,7 @@ public sealed record RequirementVm(string Name, string Status, Tone Tone, bool S
     public string NameTip => Url is null ? "Copy the name to the clipboard" : "Open its page on Nexus Mods";
 }
 
-public sealed record ConflictVm(string Path, string Detail, bool ThisModWins, ICommand? UseThis);
+public sealed record ConflictVm(string Path, string Detail, bool ThisModWins, ICommand? UseThis, ICommand? LoadBefore = null, string? LoadBeforeLabel = null);
 
 public sealed partial class DetailsVm : ObservableObject
 {
@@ -248,7 +252,11 @@ public sealed partial class DetailsVm : ObservableObject
             c.ThisModWins ? $"this mod wins · also in {string.Join(", ", c.Providers.Where(n => n != p.ModName))}"
                           : $"now from {c.WinnerName ?? "nobody (held back)"} · provided by {string.Join(", ", c.Providers)}",
             c.ThisModWins,
-            c.ThisModWins ? null : new AsyncRelayCommand(() => main.SetWinnerAsync(c.Path, p.PackageId)))).ToList();
+            c.ThisModWins ? null : new AsyncRelayCommand(() => main.SetWinnerAsync(c.Path, p.PackageId)),
+            // only .archive files of archive/pc/mod follow the load order; the winner must be a mod that can sit next to this one
+            c.ThisModWins || !LoadOrder.IsOrderedArchive(c.Path) || main.LoadBeforeTarget(p.PackageId, c.WinnerName) is null ? null
+                : new AsyncRelayCommand(() => main.LoadBeforeAsync(p.PackageId, main.LoadBeforeTarget(p.PackageId, c.WinnerName)?.PackageId ?? "")),
+            c.WinnerName is null ? null : "LOAD BEFORE " + c.WinnerName)).ToList();
 
         var losing = o.Conflicts.Where(c => !c.ThisModWins).Select(c => c.Path).ToList();
         UseThisForAllCommand = losing.Count > 1 ? new AsyncRelayCommand(() => main.SetWinnersAsync(losing, p.PackageId, p.ModName)) : null;

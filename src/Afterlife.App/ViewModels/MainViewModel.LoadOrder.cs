@@ -89,7 +89,9 @@ public sealed partial class MainViewModel
         foreach (var r in loadOrdered)
         {
             var counted = !IsModsOff && !r.IsCore && r.Overview.Package.LayerOfModId is null;
-            r.SetOrder(counted ? $"#{++n}" : null, tip);
+            // a mod without an .archive in archive/pc/mod is not touched by the order: the number stays, dimmed
+            var matters = r.HasOrderedArchive;
+            r.SetOrder(counted ? $"#{++n}" : null, matters ? tip : "Load order does not affect this mod", matters);
         }
     }
 

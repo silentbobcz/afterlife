@@ -1178,8 +1178,13 @@
                                                 <StackPanel>
                                                     <TextBlock Style="{StaticResource Mono}" Text="{Binding Path}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Path}" />
                                                     <TextBlock Margin="0,2,0,0" Style="{StaticResource Meta}" Text="{Binding Detail}" />
-                                                    <Button Margin="0,6,0,0" HorizontalAlignment="Left" Style="{StaticResource AccentButton}" Command="{Binding UseThis}" Content="USE THIS MOD"
-                                                            Visibility="{Binding UseThis, Converter={StaticResource NullToVis}}" />
+                                                    <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                                                        <Button Style="{StaticResource AccentButton}" Command="{Binding UseThis}" Content="USE THIS MOD"
+                                                                Visibility="{Binding UseThis, Converter={StaticResource NullToVis}}" />
+                                                        <Button Margin="8,0,0,0" MaxWidth="360" Style="{StaticResource AccentButton}" Command="{Binding LoadBefore}" Content="{Binding LoadBeforeLabel}"
+                                                                ToolTip="Moves this mod just before the mod that wins this file in the load order (into its category if it has another one)"
+                                                                Visibility="{Binding LoadBefore, Converter={StaticResource NullToVis}}" />
+                                                    </StackPanel>
                                                 </StackPanel>
                                             </Border>
                                         </DataTemplate>

@@ -101,4 +101,66 @@ public class FreeLoadOrderTests
         Assert.True(LoadOrder.PendingTakeOver(LoadOrder.FormatTakeOver(["p2", "p3"]), ["p1", "p2"]).SetEquals(["p2", "p3"]));
         Assert.Empty(LoadOrder.PendingTakeOver(LoadOrder.FormatTakeOver([]), ["p1", "p2"]));
     }
+
+    private static readonly Dictionary<string, string> KeySections = new()
+    {
+        ["c1"] = "collection:x", ["m1"] = "mods", ["m2"] = "mods", ["m3"] = "mods", ["m4"] = "mods",
+        ["a1"] = "category:a", ["a2"] = "category:a",
+    };
+    private static readonly string[] KeyOrder = ["c1", "m1", "m2", "m3", "m4", "a1", "a2"];
+
+    private static List<string> Key(string[] moved, MoveStep step, string[]? order = null) =>
+        LoadOrder.MoveInSection(order ?? KeyOrder, moved, id => KeySections[id], step);
+
+    [Fact]
+    public void Ctrl_up_and_down_move_a_mod_by_one_row_inside_its_section()
+    {
+        Assert.Equal(["c1", "m2", "m1", "m3", "m4", "a1", "a2"], Key(["m2"], MoveStep.Up));
+        Assert.Equal(["c1", "m1", "m3", "m2", "m4", "a1", "a2"], Key(["m2"], MoveStep.Down));
+    }
+
+    [Fact]
+    public void A_key_move_never_crosses_a_section_boundary()
+    {
+        Assert.Equal(KeyOrder, Key(["m1"], MoveStep.Up));
+        Assert.Equal(KeyOrder, Key(["m4"], MoveStep.Down));
+        Assert.Equal(KeyOrder, Key(["a1"], MoveStep.Up));
+        Assert.Equal(KeyOrder, Key(["a2"], MoveStep.Down));
+    }
+
+    [Fact]
+    public void Several_mods_step_together_and_a_block_at_the_edge_stays()
+    {
+        Assert.Equal(["c1", "m2", "m1", "m4", "m3", "a1", "a2"], Key(["m1", "m3"], MoveStep.Down));
+        Assert.Equal(["c1", "m1", "m3", "m2", "m4", "a1", "a2"], Key(["m1", "m3"], MoveStep.Up, ["c1", "m2", "m1", "m3", "m4", "a1", "a2"]));
+        // the top mod cannot go further up, the other one still does
+        Assert.Equal(["c1", "m1", "m3", "m2", "m4", "a1", "a2"], Key(["m1", "m3"], MoveStep.Up));
+    }
+
+    [Fact]
+    public void Ctrl_home_and_end_go_to_the_start_or_end_of_the_section()
+    {
+        Assert.Equal(["c1", "m3", "m1", "m2", "m4", "a1", "a2"], Key(["m3"], MoveStep.ToStart));
+        Assert.Equal(["c1", "m1", "m3", "m4", "m2", "a1", "a2"], Key(["m2"], MoveStep.ToEnd));
+        // two mods of different sections each go to the end of their own
+        Assert.Equal(["c1", "m1", "m3", "m4", "m2", "a2", "a1"], Key(["m2", "a1"], MoveStep.ToEnd));
+    }
+
+    [Fact]
+    public void A_key_move_with_nothing_to_move_changes_nothing()
+    {
+        Assert.Equal(KeyOrder, Key([], MoveStep.Up));
+        Assert.Equal(KeyOrder, Key(["unknown"], MoveStep.ToStart));
+    }
+
+    [Fact]
+    public void Only_archives_directly_in_archive_pc_mod_follow_the_load_order()
+    {
+        Assert.True(LoadOrder.IsOrderedArchive("archive/pc/mod/Texture.archive"));
+        Assert.True(LoadOrder.IsOrderedArchive("Archive/PC/Mod/Texture.ARCHIVE"));
+        Assert.False(LoadOrder.IsOrderedArchive("archive/pc/mod/sub/Texture.archive"));
+        Assert.False(LoadOrder.IsOrderedArchive("archive/pc/mod/readme.txt"));
+        Assert.False(LoadOrder.IsOrderedArchive("bin/x64/plugins/x.archive"));
+        Assert.False(LoadOrder.IsOrderedArchive("r6/scripts/mod.reds"));
+    }
 }
