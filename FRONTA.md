@@ -1,8 +1,8 @@
 # AFTERLIFE: fronta pro modely (2. dávka)
 
-Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`** (sloučeno 22. 11. včetně nastavení v záložkách, bez instalátoru). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
+Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `free-load-order`** (`main` + volné pořadí O11 a O12; do `main` slučuje uživatelův pokyn). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O10.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev free-load-order) a udělej balík O10.“
 
 ## Pravidla dávky
 
@@ -18,11 +18,11 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | nic | hotovo, zkontrolováno |
 | F-kontrola | Fable | Kontrola O8 | nic | hotovo, bez nálezu; dávka čeká na vyzkoušení (A10) |
-| O10 | Sonnet | Náhled volného pořadí v MODS a kategoriích | nic | čeká |
-| O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | B4 | čeká |
-| O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | O11 | čeká |
-| F-pořadí | Fable | Kontrola O11 a O12 | O12 | čeká |
-| O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | nic | čeká |
+| O10 | Sonnet | Náhled volného pořadí v MODS a kategoriích | nic | hotovo, zkontrolováno; čeká na B4 |
+| O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | nic | hotovo, zkontrolováno (větev `free-load-order`) |
+| O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | nic | hotovo, zkontrolováno (větev `free-load-order`) |
+| F-pořadí | Fable | Kontrola O11 a O12 | nic | hotovo; čeká na vyzkoušení (A13) |
+| O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | B5 | návrh hotový, do kódu po schválení |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -96,3 +96,23 @@ Sonnet. Uživatel 22. 11. dialog vyzkoušel: funguje, ale logice nerozumí. Soub
 
 **F-kontrola O8** (22. 11., Fable): prošel jsem commit `90f6cc1` proti náhledu a předávce. Chybu jsem nenašel, nic jsem neopravoval. Ověřil jsem, že každá vazba v `Views/SettingsView.xaml` má protějšek v `SettingsVm`, že záložky předávají hodnotu výčtu (ne text) a že v nastavení zůstaly všechny volby včetně dvou přepínačů kontroly aktualizací a varování o dotazech. Sloučeno s větví bez instalátoru; testy a překlad obou edic viz stav níže. Neověřeno zůstává vše, co je vidět jen v okně (A10).
 
+
+**O10** (22. 11., Sonnet jako podřízený agent; kontrola Fable)
+- Stav: hotovo. `docs/previews/free-load-order.html`: čísla pořadí, čára při tažení, A→Z s potvrzením, vrstva s rodičem, přepínač LOAD ORDER / ⇅ NAME.
+- Kontrola opravila větu v nápovědě čísla (vyhrává mod výš, ne níž). Viděna horní část náhledu; čára při tažení a dialog A→Z okem neprojity.
+- Pro uživatele: B4.
+
+**O11** (22. 11., Opus jako podřízený agent; kontrola Fable)
+- Stav: hotovo na větvi `free-load-order`, psáno bez čekání na B4. Jádro `Afterlife.Core/LoadOrder.cs` (`MoveGroup`, `SortSection`, `Arrange`, převzetí starých profilů), okno `MainViewModel.LoadOrder.cs`, styly `Views/LoadOrder.xaml`, testy `FreeLoadOrderTests.cs`.
+- Rozhodnuto při výrobě: profil bez vlastního pořadí se dál ukazuje podle názvu a nic se nezapisuje, vlastním se stane prvním tažením (do té doby nový mod padá podle abecedy); každý profil staré knihovny se jednou ukáže podle názvu (klíč `order.takeover`); vrstva sedí vždy v sekci svého modu; A→Z jen u profilu, který jde upravit.
+- Kontrola: kolize názvu testovací třídy opravena; logika přesunu, řazení sekce a převzetí bez nálezu. Vědomě ponecháno: když dřívější aktualizace přejmenovala archivy, první start srovná pořadí archivů v profilu a APPLY ukáže změnu `modlist.txt` bez zásahu uživatele.
+- Ověřeno: sestavení obou edic a testy na GitHubu. Neověřeno: vše v okně (A13).
+
+**O12** (22. 11., Sonnet jako podřízený agent; kontrola Fable)
+- Stav: hotovo na větvi `free-load-order`. `LoadOrder.MoveInSection` a `IsOrderedArchive`, `MainViewModel.OrderKeys.cs`, tlačítko LOAD BEFORE v záložce Conflicts, tlumené číslo u modů bez archivů.
+- Rozhodnuto při výrobě: klávesy berou zaškrtnuté mody, jinak vybraný řádek; přeskakují i řádky skryté hledáním; vítěz konfliktu se hledá podle přesného jména modu (u dvou verzí téhož jména první); tlumená barva je `TagLine`.
+- Kontrola: odstraněna zbloudilá vsuvka v `MainWindow.xaml.cs`, která by nešla přeložit. Ověřeno: sestavení a 335 testů. Neověřeno: vše v okně (A13), hlavně fokus kláves v seznamu a čitelnost tlumeného čísla.
+
+**O13** (22. 11., Sonnet jako podřízený agent; kontrola Fable)
+- Stav: návrh textů v `docs/previews/switch-off-dialog-texts.md`, v kódu nic. Čeká na B5.
+- Kontrola potvrdila dvě věci v logice, které návrh textů neřeší a patří k zapracování: (1) části „only it needed“ a „stays on“ se počítají jen z vypínaného modu, bez závislých modů, které se zaškrtnutou volbou vypnou zároveň (`OverviewBuilder.UnneededRequirements`, `KeptRequirements` dostávají jen `ids`); (2) u kolekce jdou dva dialogy po sobě a Cancel ve druhém zruší celé vypnutí (`MainViewModel.Collections.cs`). Zapracování textů potřebuje malé místo pro větu pod nadpisem části (`ConfirmVm`, `Dialogs.xaml`).

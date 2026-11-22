@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `main`. Čeká volné pořadí načítání: začni balíkem O10 (náhled), O11 čeká na B4.
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je na větvi `free-load-order` (volné pořadí modů, O11 a O12); do `main` se sloučí na tvůj pokyn. Pro modely teď čeká jen zapracování textů dialogu po B5.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `34f6b02` (`AFTERLIFE-test-34f6b02-win-x64.zip`, u tebe ve složce `zkusebni`). Obsahuje vše z `main` včetně nastavení v záložkách; položky A2 až A11 se zkouší na něm. Starší zip (`6e633d0`) smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
 
@@ -14,6 +14,7 @@ Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `3
 | A7 | Řazení seznamu pro zobrazení (F2) | Zkušební sestavení `34f6b02`; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | Tohle tlačítko mění jen pohled (NAME, NEWEST, STATE, SIZE), pořadí načítání nemění. Ruční pořadí uvnitř MODS a kategorií, které jsi čekal, je samostatná práce: balíky O10 až O12, čekají na B4. Tady jen potvrď: 1. řazení funguje uvnitř bloků a core mody zůstávají; 2. „Back to load order“ a APPLY neukážou žádnou změnu pořadí. | ☐ čeká na tebe |
 | A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na tebe |
 | A12 | Web s návodem a opravená dokumentace | Náhled webu: ve složce `site` spusť `npm ci` a `npm run build`, pak otevři `site/dist/index.html`. Texty: `docs/USER-GUIDE.md`, `docs/FAQ.md`, `README.md`. V aplikaci tlačítko GUIDE nad seznamem (až v dalším zkušebním sestavení). | 1. Projdi úvodní stránku, hlavně oddíl o Nexus Premium: sedí tón? 2. V návodu si přečti oddíly 1 (dvě edice), 3 (filtry, řazení), 11 (aktualizace, limit, Premium) a 17 (nastavení). 3. Napiš, co chybí nebo je špatně. Neověřeno: dva nové řádky v rychlé nápovědě v okně (FILTERS, ⇅ SORT) nikdo neviděl běžet. | ☐ čeká na tebe |
+| A13 | Volné pořadí modů (O11, O12) | Další zkušební sestavení z větve `free-load-order`; seznam modů | 1. Přetáhni mod za úchyt ⋮⋮ nahoru a dolů uvnitř MODS a uvnitř kategorie, pak víc zaškrtnutých najednou: čísla #1, #2 … se přepočítají a APPLY ukáže změnu pořadí. 2. Zkus A→Z v hlavičce MODS a kategorie, Ctrl+↑/↓ a Ctrl+Home/End na vybraném modu a tlačítko LOAD BEFORE v záložce Conflicts u souboru `.archive`, který prohrává. 3. Po prvním spuštění zkontroluj, že se seznam nepřeházel a APPLY nehlásí změnu, kterou jsi neudělal; přepni profil a zpět. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
 
 ## B. Schválit
 
@@ -41,6 +42,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | Výroba jedním vláknem: O10 (náhled), O11 (volné pořadí v kódu), O12 (klávesy, LOAD BEFORE) a návrh textů O13 hotové a zkontrolované; sestavení a 335 testů na větvi `free-load-order`. Kontrola opravila tři věci (text v náhledu, kolizi názvu testů, nepřeložitelnou vsuvku). |
 | 22. 11. | C9: nové mody při volném pořadí padají na konec MODS (bez kategorie). Aktualizace drží místo staré verze. |
 | 22. 11. | Vyzkoušeno na sestavení `34f6b02`: A4, A5, A6, A9, A10 a A11 v pořádku. A3 v pořádku, ale logika dialogu při vypnutí modu není srozumitelná: texty se přepíšou (balík O13). A2: historie stahování v pořádku, Scan manual mods je krátké (zůstává otevřené). A7: čekal jsi ruční pořadí uvnitř MODS a kategorií; to je O10 až O12. |
 | 22. 11. | B3 schváleno, O8 hotové a zkontrolované (bez nálezu): nastavení se záložkami vlevo je v kódu, zkouší se v A10. Instalátor (O9) je zrušený a jeho zkušební výroba vrácená. |
