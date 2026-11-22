@@ -62,7 +62,7 @@ AFTERLIFE LOAD LIST 1
 # Profile: Main · exported 2026-11-22 18:40 · AFTERLIFE 1.0.0-beta.2 (full)
 # Higher in the list loads first and wins conflicts.
 # + switched on, - switched off. Lines starting with # are notes.
-# You can move lines, change + and -, add @category lines. Load it back with LOAD ORDER.
+# You can move lines, change + and -, add @category lines. Load it back with IMPORT ORDER.
 
 @core
 + Cyber Engine Tweaks | 1.35.0 | nexus=107/91234
@@ -132,7 +132,9 @@ When the library holds several versions of one mod (an update kept the old one),
 | 12 | Category name longer than 32 characters | Cut to 32; the preview shows the new name. |
 | 13 | Line that cannot be read (no `+`/`-`, `└` with no mod above, unknown `@` word) | Nothing is imported. Message with the line number: "Line 14: a mod line starts with + or -." |
 | 14 | First line missing or format newer than the app knows | Nothing is imported: "This is not an AFTERLIFE load list." / "This list was made by a newer AFTERLIFE (format 2). Update AFTERLIFE to load it." |
-| 15 | Selected profile is "Mods off" | LOAD ORDER is greyed out, as other order changes are. |
+| 15 | Selected profile is "Mods off" | IMPORT ORDER is greyed out, as other order changes are. |
+| 16 | Sections in an order the list cannot show (a category above `@mods`, a collection between two categories) | The window always has the mods without a category first and the categories after them, all inside the one MODS block. Categories keep the order they have in the file; MODS stands where the first `@mods` or `@category` line is. The preview says "Categories always load after the mods without a category". |
+| 17 | Profile still in the game's default order (never reordered, no `modlist.txt`) | Export writes the order the window shows (by name) and a comment line: "This profile uses the game's default order (by archive file name); the list below is by mod name." An import into such a profile gives it its own order, like the first drag does, and the preview says so. |
 
 ### Decide
 
@@ -169,6 +171,11 @@ When the library holds several versions of one mod (an update kept the old one),
 - **A (recommended): yes, automatic.** Before an import, AFTERLIFE saves the current order of the profile as a load list into the library (`exports/before-import-<date>.txt`, the newest 10 kept) and the result message says where.
 - **B: no**; the user exports first if they want.
 
+**D7. Layers (`└`, a mod's local edits) in the file** (added by the review)
+
+- **A (recommended): written as a comment line** (`#   └ Appearance Menu Mod (local edits)`), never read back. A layer exists only in the library it was made in and always sits right below its mod, so the file cannot move it anyway; a `└` nobody can type in Notepad is then not part of the syntax, and case 8 falls away.
+- **B: as proposed above**, an indented `└` line that is matched on the same PC and skipped elsewhere.
+
 ## 5. What the import changes, and the preview
 
 An import changes only the **selected profile** (order of its mods, on/off when D5 = A) and the **library's categories and block order** (case 1, 9). It never touches the game: as after a drag in the list, the game changes only with APPLY.
@@ -176,7 +183,7 @@ An import changes only the **selected profile** (order of its mods, on/off when 
 Before anything changes, a preview dialog (the same overlay style as EXPORT LIST):
 
 ```
-LOAD ORDER FROM A LIST
+IMPORT ORDER FROM A LIST
 afterlife-order-Main-2026-11-22.txt · 16 mods · made by AFTERLIFE 1.0.0-beta.2
 
 Into profile: Main
@@ -194,7 +201,7 @@ Into profile: Main
 
 Categories are shared by all profiles. Nothing changes in the game until you press APPLY.
 
-[ LOAD ]   Cancel
+[ IMPORT ]   Cancel
 ```
 
 Every line with a number opens the names (the full list of moved mods can be long at 500 mods, so it is folded).
@@ -205,12 +212,12 @@ Two new buttons next to EXPORT LIST, in the same style (`SmallButton`):
 
 | Button | Tooltip |
 |---|---|
-| SAVE ORDER | Save the load order of this profile to a text file: a backup, for another PC, or to edit by hand |
-| LOAD ORDER | Load an order saved with SAVE ORDER into this profile; you see what changes first |
+| EXPORT ORDER | Save the load order of this profile to a text file: a backup, for another PC, or to edit by hand |
+| IMPORT ORDER | Load an order saved with EXPORT ORDER into this profile; you see what changes first |
 
 EXPORT LIST keeps its name and gets the tooltip "Active mods with versions, for a bug report or a forum post (not loadable)", so the two exports are not mixed up. RESET ORDER stays where it is.
 
-**SAVE ORDER** opens the Windows save dialog straight away, with no overlay and no options. Every mod of the profile is written, on and off. Result: "Load order saved: afterlife-order-Main-2026-11-22.txt."
+**EXPORT ORDER** opens the Windows save dialog straight away, with no overlay and no options. Every mod of the profile is written, on and off. Result: "Load order saved: afterlife-order-Main-2026-11-22.txt."
 
 Messages:
 
@@ -231,3 +238,10 @@ Messages:
 - Matching (section 3) and the plan of changes (what the preview shows) as pure logic too, so the preview and the import use the same result.
 - Writing: categories through `BlockLayout.WithCategories` / `Assign` / `WithBlocks`, order through the existing `ApplyLayoutAsync` (it composes sections and calls `Reorder`), on/off through the profile entries.
 - Guide: new part under section 10 (load order) and a line in section 16 (export) saying what the difference is; FAQ "How do I move my load order to another PC?".
+
+## 8. Review notes
+
+- **Button names.** The proposal had SAVE ORDER and LOAD ORDER. The sort button next to FILTERS already reads LOAD ORDER (the name of the view), so a second LOAD ORDER a few centimetres away would mean something else. The buttons are EXPORT ORDER and IMPORT ORDER here, next to EXPORT LIST.
+- **Cases 16 and 17** were missing: what the list cannot show, and a profile that still has the game's default order.
+- **Name-only match (section 3, step 5)** is the weakest link: two different mods can share a name. The preview must list every name-only match on its own line ("matched by name only"), not folded into a count, so a wrong match is seen before IMPORT.
+- **Shared categories (case 9)** are the biggest side effect of an import: it changes how every profile is grouped. Worth one sentence in the guide and the FAQ, not only in the preview.

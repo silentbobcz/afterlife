@@ -152,6 +152,7 @@ Sonnet. Může začít hned. Uživatel 22. 11.: tlačítka FILTERS a ⇅ splýva
 **O14** (22. 11., Opus)
 - Stav: hotovo. Návrh `docs/previews/load-list-format.md` (větev `o14-load-list-format`), bez kódu: formát `AFTERLIFE LOAD LIST 1`, sekce `@core`/`@collection`/`@mods`/`@category`, řádky `+`/`-` s volitelnými poli `verze | nexus= | file= | md5=`, příklad na 16 modech.
 - Zjištěno v kódu: kategorie a pořadí bloků (`BlockLayout`, `ui.layout`) jsou jedny pro celou knihovnu, ne pro profil; import do jednoho profilu tedy mění zatřídění ve všech. Návrh to říká v náhledu (případ 9).
-- Rozhodl jsem sám: čitelnost pro jiné správce ne (důvod v oddíle 2); `modlist.txt` a vítězové jednotlivých souborů do souboru nejdou; řádek s chybou zastaví celý import; členství v kolekci soubor nikdy nemění; tlačítka SAVE ORDER a LOAD ORDER vedle EXPORT LIST.
+- Rozhodl jsem sám: čitelnost pro jiné správce ne (důvod v oddíle 2); `modlist.txt` a vítězové jednotlivých souborů do souboru nejdou; řádek s chybou zastaví celý import; členství v kolekci soubor nikdy nemění; tlačítka vedle EXPORT LIST (kontrola je přejmenovala na EXPORT ORDER a IMPORT ORDER).
 - Sporné body D1 až D6 s doporučením v oddíle 4; podklad pro O15 v oddíle 7.
 - Ověřeno: jen dokument, testy netřeba. Pro uživatele: B6.
+- Kontrola (Fable): návrh dává smysl a odpovídá zadání. Doplněno: případy 16 (pořadí sekcí, které okno neumí) a 17 (profil ve výchozím pořadí hry), bod D7 (vrstvy jen jako komentář), přejmenování tlačítek, poznámky v oddíle 8 (shoda jen podle jména musí být v náhledu vidět jednotlivě).
