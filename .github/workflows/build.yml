@@ -54,12 +54,34 @@ jobs:
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
           "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
           Write-Host "$((Get-ChildItem $dir -Recurse -File).Count) files in $zip"
+          "AFTERLIFE_VERSION=$v" | Out-File -Encoding utf8 -Append $env:GITHUB_ENV
+
+      # a classic per-user installer built from the same folder as the zip; a second download on GitHub only
+      - name: Installer
+        # a release must not go out without it; an ordinary build still passes when the installer tool is unavailable
+        continue-on-error: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        shell: pwsh
+        run: |
+          # Inno Setup 6 is preinstalled on GitHub's Windows runners; install it only when it is missing
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; if ($LASTEXITCODE -ne 0) { throw "Inno Setup could not be installed" } }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found at $iscc" }
+          $v = $env:AFTERLIFE_VERSION
+          $name = "AFTERLIFE-Offline-$v-win-x64-Setup"
+          & $iscc /Q "/DAppVersion=$v" "/DDistDir=$((Resolve-Path dist/AFTERLIFE).Path)" "/O$((Resolve-Path dist).Path)" "/F$name" installer/AFTERLIFE.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          $setup = "dist/$name.exe"
+          if (-not (Test-Path $setup)) { throw "$setup missing" }
+          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.exe" | Out-File -Encoding ascii "$setup.sha256"
+          Write-Host "$setup $((Get-Item $setup).Length) bytes"
 
       - uses: actions/upload-artifact@v4
         with:
           name: AFTERLIFE-win-x64
           path: |
             dist/*.zip
+            dist/*.exe
             dist/*.sha256
 
       - uses: actions/upload-artifact@v4
@@ -69,7 +91,7 @@ jobs:
           path: tests/Afterlife.Tests/TestResults
 
   release:
-    # a pushed tag vX.Y.Z[-suffix] publishes the next GitHub release with the zip, its SHA-256
+    # a pushed tag vX.Y.Z[-suffix] publishes the next GitHub release with the zip, the installer, their SHA-256
     # and the matching section of CHANGELOG.md; a suffix (alpha, beta, rc) makes it a pre-release
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
@@ -96,6 +118,7 @@ jobs:
             echo
             echo "---"
             echo "**Download:** \`AFTERLIFE-Offline-$v-win-x64.zip\` below, unzip anywhere outside the game folder and run \`AFTERLIFE.exe\` in the folder AFTERLIFE (Windows 10/11 64-bit, .NET included). Keep the whole folder together."
+            echo "Or the installer \`AFTERLIFE-Offline-$v-win-x64-Setup.exe\`: installs for your Windows user only (no admin rights) with a Start menu shortcut and an uninstaller. It never deletes your library or settings."
             echo "This is AFTERLIFE Offline, the edition published on Nexus Mods: no API key and no connection to Nexus Mods until Nexus Mods registers AFTERLIFE."
             echo "Not code-signed yet: on the SmartScreen warning click *More info* → *Run anyway*. Check the download with the \`.sha256\` file."
           } >> notes.md
@@ -111,4 +134,5 @@ jobs:
           make_latest: true
           files: |
             dist/*.zip
+            dist/*.exe
             dist/*.sha256

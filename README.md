@@ -44,13 +44,14 @@ The executable is not code-signed yet, so Windows SmartScreen shows a warning th
 
 Get the latest release from **[Releases](https://github.com/silentbobcz/afterlife/releases)** (also on Nexus Mods once the page is approved):
 
-- `AFTERLIFE-<version>-win-x64.zip` · the app, a single `AFTERLIFE.exe`, .NET included, no installer.
+- `AFTERLIFE-Offline-<version>-win-x64.zip` · the main download: a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries, .NET included. Unzip it anywhere, no installer.
+- `AFTERLIFE-Offline-<version>-win-x64-Setup.exe` · the same app as an installer, on GitHub Releases only: installs for your Windows user, adds a Start menu shortcut and an uninstaller. Neither the installer nor the uninstaller touches your library or settings.
 
 Requirements: Windows 10 or 11 (64-bit), Cyberpunk 2077 2.x (Steam, GOG or Epic). No admin rights needed.
 
 ## Quick start
 
-1. Unzip `AFTERLIFE.exe` anywhere you like (not inside the game folder) and run it.
+1. Unzip the folder `AFTERLIFE` anywhere you like (not inside the game folder) and run `AFTERLIFE.exe` in it, or run the installer and start AFTERLIFE from the Start menu.
 2. Pick the game folder (the one with `bin\x64\Cyberpunk2077.exe`) and a library folder.
 3. Optional: in **Settings**, paste your Nexus Mods personal API key and turn on *Open Mod Manager Download links in AFTERLIFE*.
 4. Drop archives into the window, use **+ ADD MOD**, or click *Mod Manager Download* on a Nexus mod page.

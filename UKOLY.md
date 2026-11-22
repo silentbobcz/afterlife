@@ -18,6 +18,7 @@ Zkušební sestavení plné edice 1.0.0-beta.1 jsi dostal 22. 11. jako zip (náz
 | A7 | Řazení seznamu (F2) | Nové sestavení; tlačítko „⇅ LOAD ORDER“ vedle FILTERS | 1. Proklikej NAME, NEWEST, STATE, SIZE: řadí se uvnitř bloků, core mody zůstávají. 2. Při řazení nejde mod přetáhnout a nad seznamem je vysvětlení. 3. Klikni „Back to load order“, dej APPLY: v plánu nesmí být žádná změna pořadí. | ☐ čeká na tebe |
 | A8 | Rychlejší seznam při stovkách modů (F2) | Nové sestavení; Settings → 05 · DISPLAY, „Draw only the visible rows…“ | 1. Změř čas od spuštění po zobrazení seznamu a zkus rolovat, vypnuto a zapnuto. 2. Se zapnutým zkus přetáhnout mod, sbalit blok a vyhledat mod. 3. Napiš, jestli seznam někde poskakuje. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na tebe |
 | A9 | Kontrola aktualizací a oddíl UPDATES v nastavení (F3) | Další sestavení (po `e0a53b4`); Settings → UPDATES, tlačítko CHECK UPDATES | 1. Klikni CHECK UPDATES: má doběhnout rychle a říct, kolik modů má novější verzi. 2. V nastavení vypni a zapni automatickou kontrolu, změň počet dní; po zavření a otevření nastavení má hodnota zůstat. 3. „Check every mod now…“ přečte všechny mody: sleduj průběh v dolní liště a napiš, jak dlouho to trvalo a kolik modů máš. 4. Nastav počet dní na 1: řádek pod ním má ukázat počet dotazů denně; u velmi velké knihovny oranžové varování. Neověřeno: nic z toho jsem neviděl běžet; limity Nexusu znám jen z odpovědí serveru. | ☐ čeká na tebe |
+| A10 | Instalátor (O9) | Po tagu u vydání na GitHubu: `AFTERLIFE-Offline-1.0.0-beta.1-win-x64-Setup.exe`. Dřív ho najdeš v artefaktu sestavení v GitHub Actions, pokud krok „Installer“ prošel. | 1. Podívej se v Actions, jestli krok „Installer“ u posledního sestavení prošel (skript ještě nikdy neběžel). 2. Nainstaluj, spusť z nabídky Start; při prvním spuštění má navrhnout knihovnu mimo složku programu. 3. Odinstaluj přes Nastavení → Aplikace: knihovna a nastavení musí zůstat. Napiš i, co ukázal SmartScreen. | ☐ čeká na tebe |
 
 ## B. Promyslet a rozhodnout
 
@@ -43,6 +44,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | O9: instalátor je hotový (vyrobil Opus jako podřízený agent, zkontroloval Fable, dvě opravy). Přiloží se k vydání na GitHubu. Vyzkoušení je A10. |
 | 22. 11. | Balení: zůstává složka v zipu, k jednomu samorozbalovacímu exe se nevracíme. Samostatný instalátor přibude jako druhé stažení jen na GitHubu (balík O9); na Nexus se nenahrává, takže na jeho schválení nečeká. |
 | 22. 11. | C3 a C7: vše sloučeno do `main`, verze 1.0.0-beta.1. První dávka fronty je uzavřená a v archivu. Vydání čeká na tvůj tag (C8). |
 | 22. 11. | Kontrola náhledu nastavení (O7): odpovídá aplikaci, všechny volby mají místo, texty sedí s tím, co je v kódu. Rozhodnutí je dál tvoje (B3). |
