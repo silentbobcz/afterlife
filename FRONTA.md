@@ -17,8 +17,8 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | Balík | Model | Co | Čeká na | Stav |
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | B3 | čeká na B3 |
-| O9 | sub-Opus | Samostatný instalátor (Inno Setup), jen na GitHubu | nic | hotovo, zkontrolováno |
-| F-kontrola | Fable | Kontrola O8, uzavření dávky (O9 zkontrolováno) | O8 | čeká |
+| O9 | Opus | Samostatný instalátor (Inno Setup), jen na GitHubu | nic | může začít |
+| F-kontrola | Fable | Kontrola O8 a O9, uzavření dávky | O8, O9 | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -53,12 +53,3 @@ Fable. Projít commity O8 a O9; O8 proti náhledu `docs/previews/settings-tabs.h
 - Přestavba celého okna (návrhy W1 až W3) a styl MUTED: odložené alternativy.
 
 ## Předávky
-
-**O9** (22. 11., sub-Opus pod výrobním vláknem, kontrola Fable)
-- Stav: hotovo. Nové `installer/AFTERLIFE.iss`; krok „Installer“ v `.github/workflows/build.yml`; `README.md`, `docs/USER-GUIDE.md`, `docs/BUILDING.md`, `CHANGELOG.md`.
-- Instalátor: jen pro aktuálního uživatele, bez práv správce, do `%LOCALAPPDATA%\Programs\AFTERLIFE`, zástupce v nabídce Start (na plochu na vyžádání), odinstalace. Nemá žádné mazání navíc: knihovny ani nastavení se nedotkne.
-- Workflow ho sestaví ze stejné složky jako zip, přidá SHA-256 a přiloží k vydání. Verzi bere z `Directory.Build.props`.
-- Kontrola (Fable) našla a opravila dvě věci: 1) aplikace po instalaci navrhovala knihovnu modů ve složce, kterou vlastní instalátor; teď instalovaná kopie (pozná se podle odinstalátoru vedle exe) navrhne výchozí místo `%LOCALAPPDATA%\AFTERLIFE\Library` (`AppSettings.SuggestLibrary`, test). 2) krok s instalátorem při běžném sestavení nezastaví build, když nástroj na stroji chybí; u tagu (vydání) selhat musí.
-- Ověřeno: 322 testů, překlad, platný YAML. Neověřeno: skript nikdy neprošel překladačem Inno Setup (na Linuxu neběží) a krok workflow neběžel na GitHubu; instalace, aktualizace přes starší verzi a odinstalace ve Windows (A10).
-- Rozhodnutí agenta, ponechána: pevné AppId (nesmí se nikdy změnit), název aplikace „AFTERLIFE“ bez „Offline“, instalátor se sestavuje i při běžném pushi, po instalaci nabídne spuštění.
-- Věta do popisu na Nexusu: „Prefer a classic installer? The same release is also on GitHub as AFTERLIFE-Offline-<version>-win-x64-Setup.exe (per-user, no admin rights, with an uninstaller) at https://github.com/silentbobcz/afterlife/releases.“ Před zveřejněním ověřit pravidla Nexusu.

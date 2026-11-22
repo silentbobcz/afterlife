@@ -209,11 +209,6 @@ public class LibrarySuggestionTests
         var game = Path.Combine(Path.GetTempPath(), "afl-x", "Cyberpunk 2077");
         Assert.NotNull(AppSettings.SuggestLibrary(game, Path.Combine(game, "tools"), _ => true).FallbackReason);
         Assert.NotNull(AppSettings.SuggestLibrary(null, "/opt/afl", _ => false).FallbackReason);
-        // installed with the installer: the library goes to the default place, never into the folder the uninstaller owns
-        var installed = AppSettings.SuggestLibrary(null, "/opt/afl", _ => true, _ => true);
-        Assert.Equal(AppSettings.DefaultLibraryRoot, installed.Path);
-        Assert.Contains("installer", installed.FallbackReason);
-        Assert.Null(AppSettings.SuggestLibrary(null, "/opt/afl", _ => true, _ => false).FallbackReason);
     }
 }
 

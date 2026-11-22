@@ -68,16 +68,12 @@ public sealed record AppSettings(string? LibraryRoot)
     /// Library suggested on first run: a folder next to AFTERLIFE.exe when that place is usable,
     /// Otherwise %LOCALAPPDATA%. Returns the reason when the exe folder is not used.
     /// </summary>
-    public static (string Path, string? FallbackReason) SuggestLibrary(string? gameRoot, string? exeDirectory = null, Func<string, bool>? canWrite = null,
-        Func<string, bool>? isInstalled = null)
+    public static (string Path, string? FallbackReason) SuggestLibrary(string? gameRoot, string? exeDirectory = null, Func<string, bool>? canWrite = null)
     {
         var exeDir = Path.GetFullPath(exeDirectory ?? AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar);
         var candidate = Path.Combine(exeDir, PortableLibraryFolderName);
         canWrite ??= CanWrite;
-        isInstalled ??= HasUninstaller;
         string? reason = null;
-        // a copy put there by the installer is replaced and removed by it: the library must not live in that folder
-        if (isInstalled(exeDir)) reason = "AFTERLIFE was installed with the installer, which owns its folder";
         if (!string.IsNullOrWhiteSpace(gameRoot))
         {
             var game = Path.GetFullPath(gameRoot).TrimEnd(Path.DirectorySeparatorChar);
@@ -92,13 +88,6 @@ public sealed record AppSettings(string? LibraryRoot)
         if (reason is null && exeDir.Contains(Path.DirectorySeparatorChar + "Temp", StringComparison.OrdinalIgnoreCase)) reason = "AFTERLIFE.exe runs from a temporary folder (unpacked zip?)";
         if (reason is null && !canWrite(exeDir)) reason = "the folder of AFTERLIFE.exe is not writable";
         return reason is null ? (candidate, null) : (DefaultLibraryRoot, reason);
-    }
-
-    /// <summary>The installer leaves its uninstaller (unins000.exe) next to AFTERLIFE.exe.</summary>
-    private static bool HasUninstaller(string dir)
-    {
-        try { return Directory.Exists(dir) && Directory.EnumerateFiles(dir, "unins*.exe").Any(); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return false; }
     }
 
     private static bool CanWrite(string dir)

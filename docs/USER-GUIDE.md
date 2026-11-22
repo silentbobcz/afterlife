@@ -36,9 +36,7 @@ This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run 
 
 ## 2. First run
 
-1. Install AFTERLIFE in one of two ways. Do not put it inside the game folder.
-   - **Zip** (the main download, also on Nexus Mods): unzip the folder `AFTERLIFE` to any place you like, for example `C:\Tools\AFTERLIFE`, and keep the whole folder together.
-   - **Installer** (`…-Setup.exe`, on [GitHub Releases](https://github.com/silentbobcz/afterlife/releases) only): installs for your Windows user into `%LOCALAPPDATA%\Programs\AFTERLIFE` without admin rights, with a Start menu shortcut (a desktop shortcut if you tick it) and an entry in *Installed apps* to uninstall it. Running a newer installer updates the app in place.
+1. Unzip `AFTERLIFE.exe` to any folder you like, for example `C:\Tools\AFTERLIFE`. Do not put it inside the game folder.
 2. Start it. Windows may show *Windows protected your PC* because the file is not code-signed yet: click **More info → Run anyway**.
 3. **Game folder**: AFTERLIFE suggests the usual Steam, GOG and Epic locations. If yours is elsewhere, **BROWSE** to the folder that contains `bin\x64\Cyberpunk2077.exe`.
 4. **Library folder**: where AFTERLIFE keeps its copy of every mod. Pick a drive with free space; the library holds every version you ever imported, so it grows. It must not be inside the game folder.
@@ -311,7 +309,7 @@ More in the [FAQ](FAQ.md).
 
 1. Apply **Mods off** if you want the game without AFTERLIFE's mods.
 2. **Settings → Remove AFTERLIFE from this PC…**: gives `nxm://` links back to the previous app, deletes the saved key and the settings, and the library too if you tick it.
-3. Delete the folder `AFTERLIFE` with `AFTERLIFE.exe`, or, if you used the installer, uninstall AFTERLIFE in Windows *Settings → Apps → Installed apps*. The uninstaller removes only the app's own files; the library and the settings stay until step 2 removes them. An installed AFTERLIFE keeps its library in `%LOCALAPPDATA%\AFTERLIFE\Library` by default, never inside the app folder.
+3. Delete `AFTERLIFE.exe`.
 
 ## 22. Keyboard and mouse
 

@@ -41,7 +41,7 @@ The version lives in `Directory.Build.props` (`<Version>`). It is shown in About
 
 ## Continuous integration
 
-`.github/workflows/build.yml` builds, tests and publishes on every push and pull request. Pushing a tag `v*` (for example `v1.0.0-alpha.2`) also publishes a GitHub release with the zip, the installer built from the same folder by Inno Setup (`installer/AFTERLIFE.iss`, version passed as `/DAppVersion=`), their SHA-256 and the matching `## <version>` section of `CHANGELOG.md` as notes; a suffix (alpha, beta, rc) makes it a pre-release. The tag must match the version in `Directory.Build.props`.
+`.github/workflows/build.yml` builds, tests and publishes on every push and pull request. Pushing a tag `v*` (for example `v1.0.0-alpha.2`) also publishes a GitHub release with the zip, its SHA-256 and the matching `## <version>` section of `CHANGELOG.md` as notes; a suffix (alpha, beta, rc) makes it a pre-release. The tag must match the version in `Directory.Build.props`.
 
 ## Project layout
 
@@ -53,6 +53,5 @@ The version lives in `Directory.Build.props` (`<Version>`). It is shown in About
 | `tests/Afterlife.Tests` | xUnit tests with a fake game install and crash injection |
 | `branding` | Logo and promo image generator (`gen_branding.py`, needs Python, cairosvg and the fonts) and the generated images |
 | `docs` | User guide, FAQ, internals |
-| `installer` | Inno Setup script of the per-user installer that the workflow builds for GitHub releases |
 
 More about the internals: [HOW-IT-WORKS.md](HOW-IT-WORKS.md).
