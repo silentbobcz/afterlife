@@ -4,6 +4,7 @@
 - [What is AFTERLIFE Offline and why do some buttons have a lock?](#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock)
 - [Why is the download a folder and not one exe?](#why-is-the-download-a-folder-and-not-one-exe)
 - [How do I load one mod before another?](#how-do-i-load-one-mod-before-another)
+- [How do I move my load order to another PC?](#how-do-i-move-my-load-order-to-another-pc)
 - [AFTERLIFE says the request limit of Nexus Mods is reached](#afterlife-says-the-request-limit-of-nexus-mods-is-reached)
 - [Is it free? What do I need Nexus Premium for?](#is-it-free-what-do-i-need-nexus-premium-for)
 - [Can I use it together with Vortex or Mod Organizer 2?](#can-i-use-it-together-with-vortex-or-mod-organizer-2)
@@ -39,6 +40,10 @@ Until 1.0.0-alpha.8 AFTERLIFE shipped as one executable with the whole app packe
 ## How do I load one mod before another?
 
 Only archive mods (`.archive`) have a load order; the top of the list loads first and wins. Drag the mod by its **⋮⋮** handle above the other one (inside MODS, inside a category or from one into another), then **APPLY CHANGES**. The number at the start of a row (#1, #2 …) is its place in the load order. Categories stay a way to group mods; **A→Z** in a header sorts that section by name once. The steps are in the [user guide, section 10](USER-GUIDE.md#load-order).
+
+## How do I move my load order to another PC?
+
+**EXPORT ORDER** (above the list) saves the load order of the selected profile to a text file. On the other PC, with the mods in its library, select a profile and press **IMPORT ORDER**: a preview shows what changes before anything is written, including mods the other library does not have and mods found only by their name. Categories are shared by all profiles, so categories the list creates appear in every profile there. Nothing changes in the game until **APPLY CHANGES**. The file is plain text you can also edit in Notepad; the format is in the [user guide, section 10](USER-GUIDE.md#save-and-load-the-order-export-order-import-order). EXPORT LIST is a report for bug reports and cannot be loaded back.
 
 ## AFTERLIFE says the request limit of Nexus Mods is reached
 

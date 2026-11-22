@@ -211,6 +211,27 @@ A mod's local edits (**└ name**) always stay right below the mod and move with
 
 Inside an unlocked collection you can drag rows the same way ([section 12](#12-collections)). Moving a mod, a block or a category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. Until you change the order of a profile, the game uses its default (alphabetical by archive name) and the list shows the mods of MODS by name. **Reset order** returns to that default. Sorting the list (**SORT**) changes only the view, never the order.
 
+### Save and load the order (EXPORT ORDER, IMPORT ORDER)
+
+**EXPORT ORDER** (above the list, next to EXPORT LIST) saves the load order of the selected profile to a text file, `afterlife-order-<profile>-<date>.txt`: a backup, a way to move the order to another PC, to share it, or to edit it in Notepad. Every mod of the list is written, switched on or off, with CORE MODS, every collection, MODS and every category in load order. A mod's local edits are written as notes only: they exist just in the library they were made in.
+
+The file is plain text. The first line is `AFTERLIFE LOAD LIST 1`; lines starting with `#` are notes. `@core`, `@collection <name>`, `@mods` and `@category <name>` start a section, `+ <name>` is a mod switched on and `- <name>` one switched off. After the name a line can have the version and fields separated by ` | ` (`nexus=`, `file=`, `md5=`); a hand-written `+ Better Lighting` is enough. Top loads first and wins, as in the window. You can move lines, change `+` and `-` and add `@category` lines.
+
+**IMPORT ORDER** loads such a file into the selected profile. First a preview shows what changes: mods that change place, switched on and off, new categories, other versions, mods missing in the library, and every mod found only by its name on its own line (two different mods can share a name, so check those). A mod is found by its Nexus file, then the checksum or name of its archive, then its name and version, then its name alone. Options in the preview:
+
+- **Also switch mods on and off as in the list** (on by default; untick it to take only the order and the categories),
+- **Switch off mods that are not in the list** (off by default; tick it to restore a backup exactly). Without it those mods stay at the end of their section, on or off as they were,
+- **Unlock collections and use the order from the list** (only when the list has a locked collection; otherwise the curator's order stays).
+
+Good to know:
+
+- **Categories are shared by all profiles.** A category the list creates, or a mod it moves into another category, changes how every profile is grouped; the order inside each profile stays its own. An import never deletes a category.
+- Mods missing in the library are listed; with Nexus Mods Premium **Get from Nexus** downloads those with a Nexus file and loads the list again, other accounts get a link to each page. Loading the same list twice gives the same result. AFTERLIFE Offline only lists them.
+- A collection your library does not have becomes a category named "<name> (collection)" with the mods that are found; **Add collection from Nexus…** adds the real one (not in AFTERLIFE Offline). Which mods belong to a collection always comes from Nexus, never from the file.
+- Core mods always load first; the list only switches them on or off.
+- Before an import AFTERLIFE saves the current order into the library (`exports/before-import-<date>.txt`, the newest 10 are kept).
+- Nothing changes in the game until you press **APPLY CHANGES**. IMPORT ORDER is greyed out in Mods off.
+
 ## 11. Nexus Mods: key, downloads, updates
 
 ### Your key
@@ -321,6 +342,8 @@ Files a core mod rewrites by design every time the game runs (Input Loader's `r6
 
 Attach it to bug reports, or use it to find the mod that breaks something (switch half of them off, test, repeat).
 
+EXPORT LIST is a report and cannot be loaded back. To save the load order and load it again (a backup, another PC), use **EXPORT ORDER** and **IMPORT ORDER** ([section 10](#save-and-load-the-order-export-order-import-order)).
+
 ## 17. Settings
 
 The settings have tabs on the left and the chosen tab on the right. They open on the tab you used last. Under the tabs are the version and **Remove AFTERLIFE from this PC…** ([section 21](#21-removing-afterlife)).
@@ -359,7 +382,7 @@ More in the [FAQ](FAQ.md).
 |---|---|
 | Settings | `%APPDATA%\AFTERLIFE` |
 | Library (default) | `%LOCALAPPDATA%\AFTERLIFE\Library`, or the folder you chose. A folder named `AFTERLIFE Library` next to `AFTERLIFE.exe` is used automatically (portable use). |
-| Inside the library | `afterlife.db` (database), `packages` (mods), `downloads`, `removed`, `staging`, `backups`, `locks`, `cache/images`, and `fixer` once the FIXER drop box was switched on |
+| Inside the library | `afterlife.db` (database), `packages` (mods), `downloads`, `removed`, `staging`, `backups`, `locks`, `cache/images`, `exports` (the order saved before each IMPORT ORDER), and `fixer` once the FIXER drop box was switched on |
 | Logs | `%LOCALAPPDATA%\AFTERLIFE\logs` |
 | Nexus key | encrypted with Windows DPAPI for your user, in the settings folder |
 

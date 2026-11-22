@@ -28,6 +28,7 @@
                 <ResourceDictionary Source="Views/SettingsView.xaml" />
                 <ResourceDictionary Source="Views/FilterPanel.xaml" />
                 <ResourceDictionary Source="Views/LoadOrder.xaml" />
+                <ResourceDictionary Source="Views/LoadList.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type vm:CollectionChapterVm}">
@@ -979,7 +980,8 @@
                                 <Button Style="{StaticResource SmallAccentButton}" Command="{Binding UpdateAllCommand}" Content="{Binding UpdateAllLabel}"
                                         Visibility="{Binding CanUpdateAll, Converter={StaticResource BoolToVis}}" ToolTip="Put every newer version in the profile instead of the old one: Premium downloads directly, other accounts get the download pages one after another" />
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding ExportListCommand}" Content="EXPORT LIST"
-                                        ToolTip="Active mods with versions, for finding a problem mod" />
+                                        ToolTip="Active mods with versions, for a bug report or a forum post (not loadable)" />
+                                <ContentControl Template="{StaticResource LoadListButtons}" Focusable="False" IsTabStop="False" />
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding ResetOrderCommand}" Content="RESET ORDER"
                                         Visibility="{Binding OrderIsCustom, Converter={StaticResource BoolToVis}}" ToolTip="Back to the game's alphabetical order" />
                                 </WrapPanel>
