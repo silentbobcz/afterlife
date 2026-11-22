@@ -2,7 +2,9 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## 1.0.0-alpha.10
+## 1.0.0-beta.1
+
+The first beta: the features are together and from here on they are mostly tuned. Everything below is new since alpha.9.
 
 - **Nothing personal in the logs**: the activity log and the error log are filtered before a line is written. The Windows user name, the computer name, the folders of the game, the library and your profile, network shares, e-mail addresses and the secrets of a download link are replaced by marks such as `<user>` and `<game>`. The logs hold what AFTERLIFE did, so they are safe to attach to a report.
 - **Update checks for large libraries**: a check now reads every mod that is due instead of 60 per hour, core mods and the mods in the profile first, and stops only when Nexus Mods says its request limit is reached. **CHECK UPDATES** asks Nexus which mods changed and reads only those, instead of every mod. As a safety net each mod is read in full once in a while, the mods taking turns so about the same number is read every day.
