@@ -22,7 +22,7 @@ Update checks run at start and then once an hour: one request for all mods, then
 - **Nexus API key**: encrypted with Windows DPAPI for your Windows user, in `%APPDATA%\AFTERLIFE`. Only your Windows account can decrypt it. **Remove key** in Settings deletes it. You can also revoke it on nexusmods.com at any time.
 - **Settings**: `%APPDATA%\AFTERLIFE`.
 - **Library** (mods, profiles, history, downloads, cached pictures): the folder you chose.
-- **Logs**: `%LOCALAPPDATA%\AFTERLIFE\logs`. They contain paths and mod names, never your key.
+- **Logs**: `%LOCALAPPDATA%\AFTERLIFE\logs` (errors always, the activity log only when you switch it on). They hold what AFTERLIFE did: mod and profile names, file paths inside the game, results. Before a line is written, your Windows user name, the computer name, the folders of the game, the library and your user profile, network shares, e-mail addresses and the key and expiry of a download link are replaced by marks such as `<user>` and `<game>`. Never your Nexus key. Logs stay on your PC until you send one yourself.
 - **Copy diagnostics** puts a text on your clipboard; nothing is sent. Check it before you paste it anywhere public: it contains folder paths, which may include your Windows user name.
 
 ## Links

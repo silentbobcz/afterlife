@@ -55,7 +55,7 @@ public partial class App : Application
         {
             Directory.CreateDirectory(LogDirectory);
             var path = Path.Combine(LogDirectory, $"error-{DateTime.Now:yyyyMMdd}.log");
-            File.AppendAllText(path, $"[{DateTime.Now:O}] {ex}\n\n");
+            File.AppendAllText(path, $"[{DateTime.Now:O}] {Afterlife.Infrastructure.LogPrivacy.Scrub(ex.ToString())}\n\n");
             return path;
         }
         catch { return null; }

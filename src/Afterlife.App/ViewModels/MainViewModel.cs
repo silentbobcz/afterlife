@@ -209,6 +209,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Controls.Fx.SetReduceMotion(AppSettings.Load().ReduceMotion);
         VirtualizeList = AppSettings.Load().VirtualizeList;
         ActivityLog.Directory = App.LogDirectory;
+        LogPrivacy.LibraryRoot = AppSettings.ResolveLibrary(null);
         ActivityLog.Enabled = AppSettings.Load().ActivityLog;
         ActivityLog.Write("app", $"start · AFTERLIFE {AppVersion}");
         var lib = AppSettings.ResolveLibrary(null);
@@ -426,6 +427,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             var st = o.Status;
             GameFolder = st.GameRoot;
+            LogPrivacy.GameRoot = st.GameRoot;
             GameBuild = st.Fingerprint?.FileVersion ?? "not found";
             GameVersion = st.Fingerprint?.GameVersion;
             BuildChanged = st.BuildChanged;

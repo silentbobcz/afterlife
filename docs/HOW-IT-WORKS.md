@@ -55,6 +55,10 @@ FIXER (a quest editor) hands its quests to AFTERLIFE through a folder in the lib
 
 The window keeps the mod rows twice (`MainViewModel.Sorting.cs`): `_loadOrdered` in load order, which every reordering, block move and `SyncSortedOrderAsync` reads through `CurrentOrder()`, and `Mods` as shown. Sorting for viewing (`ModSort`, pure) only changes the second, inside each block, so a sort can never reach the profile or `modlist.txt`; rows cannot be dragged while it is on. The filter panel (`ModFilter`, `FilterPanelVm`) and the search are conditions of the view and do not touch the order either. The grouped list draws every row unless `AppSettings.VirtualizeList` is on (bound to `VirtualizingPanel.IsVirtualizingWhenGrouping`).
 
+## Logs
+
+`ActivityLog` (optional, Settings) and the error log of the window both pass every line through `LogPrivacy.Scrub` before it is written: user name, computer name, the folders of the game, the library and the profile, network shares, e-mail addresses and link secrets become marks. New log output goes through the same two writers, never straight to a file.
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.

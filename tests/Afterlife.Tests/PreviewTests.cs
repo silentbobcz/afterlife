@@ -35,6 +35,7 @@ public class PlanGroupingTests
     }
 }
 
+[Collection("activity log")] // both classes switch the one static log
 public class ActivityLogTests
 {
     [Fact]
@@ -63,6 +64,55 @@ public class ActivityLogTests
         finally
         {
             ActivityLog.Enabled = false;
+        }
+    }
+}
+
+[Collection("activity log")]
+public class LogPrivacyTests
+{
+    private static string Scrub(string text) => LogPrivacy.Scrub(text, @"D:\Games\Cyberpunk 2077", @"C:\Users\Jan Novak\AppData\Local\AFTERLIFE\Library",
+        "Jan Novak", "NOVAK-PC", @"C:\Users\Jan Novak");
+
+    [Theory]
+    [InlineData(@"Access to the path 'D:\Games\Cyberpunk 2077\archive\pc\mod\a.archive' is denied.", @"Access to the path '<game>\archive\pc\mod\a.archive' is denied.")]
+    [InlineData(@"could not read C:\Users\Jan Novak\AppData\Local\AFTERLIFE\Library\packages\pkg-1\x", @"could not read <library>\packages\pkg-1\x")]
+    [InlineData(@"C:/Users/Jan Novak/Downloads/Mod-107-1-0-1700000000.zip", @"<home>/Downloads/Mod-107-1-0-1700000000.zip")]
+    [InlineData(@"E:\Users\Petra\Desktop\mod.zip not found", @"E:\Users\<user>\Desktop\mod.zip not found")]
+    [InlineData(@"\\NAS-DOMA\mods\a.zip", @"\\<server>\mods\a.zip")]
+    [InlineData("nxm://cyberpunk2077/mods/107/files/5?key=AbC123&expires=1700000000&user_id=42", "nxm://cyberpunk2077/mods/107/files/5?key=<hidden>&expires=<hidden>&user_id=<hidden>")]
+    [InlineData("owner Jan Novak on NOVAK-PC, mail jan.novak@example.com", "owner <user> on <pc>, mail <mail>")]
+    public void Personal_details_never_reach_a_log(string line, string expected) => Assert.Equal(expected, Scrub(line));
+
+    [Fact]
+    public void What_AFTERLIFE_did_stays_readable()
+    {
+        const string line = "on  Appearance Menu Mod [pkg-0a1b2c3d4e5f] in 'Street' · archive/pc/mod/amm.archive · v2.3";
+        Assert.Equal(line, Scrub(line));
+        // a short user name must not eat ordinary words
+        Assert.Equal("an archive", LogPrivacy.Scrub("an archive", null, null, "an", "pc", null));
+    }
+
+    [Fact]
+    public void The_activity_log_is_scrubbed_on_the_way_to_the_file()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "afterlife-log-" + Guid.NewGuid().ToString("N"));
+        var (oldDir, oldOn, oldGame) = (ActivityLog.Directory, ActivityLog.Enabled, LogPrivacy.GameRoot);
+        try
+        {
+            ActivityLog.Directory = dir;
+            ActivityLog.Enabled = true;
+            LogPrivacy.GameRoot = @"D:\Games\Cyberpunk 2077";
+            ActivityLog.Write("error", @"Access to the path 'D:\Games\Cyberpunk 2077\r6\scripts\x.reds' is denied. link nxm://x?key=SECRET");
+            var text = File.ReadAllText(ActivityLog.CurrentFile);
+            Assert.Contains(@"'<game>\r6\scripts\x.reds'", text);
+            Assert.DoesNotContain("D:\\Games", text);
+            Assert.DoesNotContain("SECRET", text);
+        }
+        finally
+        {
+            (ActivityLog.Directory, ActivityLog.Enabled, LogPrivacy.GameRoot) = (oldDir, oldOn, oldGame);
+            try { Directory.Delete(dir, true); } catch (IOException) { }
         }
     }
 }

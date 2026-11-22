@@ -31,7 +31,8 @@ public static class ActivityLog
         if (!Enabled) return;
         try
         {
-            var text = message.Replace("\r\n", "\n").Replace("\n", "\n    ");
+            // nothing personal reaches the file: no user name, no folders of this PC, no secrets of a link
+            var text = LogPrivacy.Scrub(message).Replace("\r\n", "\n").Replace("\n", "\n    ");
             var line = $"{DateTime.Now:HH:mm:ss.fff}  {category,-9} {text}{Environment.NewLine}";
             lock (Gate)
             {
