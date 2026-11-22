@@ -4,3 +4,7 @@ publish/
 TestResults/
 *.user
 .vs/
+
+# the guide website is built by Cloudflare Pages (site/README.md)
+site/dist/
+node_modules/

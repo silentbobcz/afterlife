@@ -1,6 +1,10 @@
 # FAQ
 
 - [Windows says it protected my PC](#windows-says-it-protected-my-pc)
+- [What is AFTERLIFE Offline and why do some buttons have a lock?](#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock)
+- [Why is the download a folder and not one exe?](#why-is-the-download-a-folder-and-not-one-exe)
+- [How do I load one mod before another?](#how-do-i-load-one-mod-before-another)
+- [AFTERLIFE says the request limit of Nexus Mods is reached](#afterlife-says-the-request-limit-of-nexus-mods-is-reached)
 - [Is it free? What do I need Nexus Premium for?](#is-it-free-what-do-i-need-nexus-premium-for)
 - [Can I use it together with Vortex or Mod Organizer 2?](#can-i-use-it-together-with-vortex-or-mod-organizer-2)
 - [I already have mods installed by hand](#i-already-have-mods-installed-by-hand)
@@ -22,11 +26,29 @@
 
 `AFTERLIFE.exe` is not code-signed yet, so Microsoft Defender SmartScreen shows *Windows protected your PC* the first time. Click **More info → Run anyway**. You can check that the file is the one from the release: every release lists the SHA-256 of the zip, and the source code is in this repository, built by GitHub Actions.
 
+## What is AFTERLIFE Offline and why do some buttons have a lock?
+
+AFTERLIFE Offline is the edition published on Nexus Mods and on GitHub right now. It is the same app, but it never reads an API key and never connects to Nexus Mods. A program that uses the Nexus Mods API for the public has to be registered by Nexus Mods first, and that registration is still open; until then the public download is the edition that does not use the API at all.
+
+Everything that works with files on your disk is there. What needs Nexus Mods (Mod Manager Download, pictures and descriptions, updates, collections, download history) stays visible with a lock; a click explains what is waiting and what works, with links to the pages of every core mod. The full edition will be published as soon as the registration is done.
+
+## Why is the download a folder and not one exe?
+
+Until 1.0.0-alpha.8 AFTERLIFE shipped as one executable with the whole app packed inside. Nexus Mods sends self-extracting executables to manual review and held one upload back for it, although no antivirus found anything. Since 1.0.0-alpha.9 the zip holds a plain folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side. Unzip the whole folder, keep the files together and run `AFTERLIFE.exe` from it.
+
+## How do I load one mod before another?
+
+Only archive mods (`.archive`) have a load order; the top of the list loads first and wins. Inside MODS and inside a category the mods are sorted by name, so today you pin a mod with a category: **+ CATEGORY**, put the mod into it, move the category up, **APPLY CHANGES**. The steps are in the [user guide, section 10](USER-GUIDE.md#load-order).
+
+## AFTERLIFE says the request limit of Nexus Mods is reached
+
+Nexus Mods allows every key 20,000 requests a day and 500 an hour, for all programs that use the key together. AFTERLIFE stops a check a little before the limit so that downloads still work, waits until the quota is back and then goes on by itself; you do not have to do anything. If it happens often, raise the number of days between full reads in **Settings → Updates** (the line under it shows what your choice costs), or switch off the check every hour.
+
 ## Is it free? What do I need Nexus Premium for?
 
 AFTERLIFE is free and open source (MIT). Everything works with a free Nexus Mods account. Nexus allows direct downloads through its API only for Premium members, so:
 
-- **Premium**: UPDATE, UPDATE ALL and collections download files directly.
+- **Premium**: UPDATE, UPDATE ALL and collections download files directly, at full speed. Updating a few hundred mods or adding a collection is one click instead of one click per mod. This is where AFTERLIFE works best.
 - **Free**: AFTERLIFE opens the right Nexus download page and you click *Slow download* (or *Mod Manager Download*); the file then goes straight into the library. For UPDATE ALL and collections, AFTERLIFE opens the next page by itself when the previous file has arrived.
 
 Without any Nexus key AFTERLIFE still works with archives you drop into the window, it just cannot show mod pages, requirements from Nexus or updates.
@@ -58,7 +80,7 @@ Start AFTERLIFE again. It reads its journal and offers **FINISH** (complete the 
 
 ## Mod Manager Download opens Vortex instead of AFTERLIFE
 
-Turn on *Open Mod Manager Download links in AFTERLIFE* in **Settings → 03 · NEXUS MODS**. If another manager took the links back later, turn the option off and on again. Turning it off gives the links back to the app that had them before.
+Turn on *Open Mod Manager Download links in AFTERLIFE* in **Settings → Nexus Mods**. If another manager took the links back later, turn the option off and on again. Turning it off gives the links back to the app that had them before.
 
 ## UPDATE only opens a web page
 
@@ -70,7 +92,7 @@ Fixed in 1.0.0-alpha.2. Input Loader ships `r6/cache/inputContexts.xml`, `inputU
 
 ## How do I report a problem?
 
-Turn on **Settings → Log what AFTERLIFE does**, repeat what went wrong, then use **Open log folder** and attach `activity-YYYYMMDD.log` together with **Copy diagnostics** to your report on GitHub or the Nexus Mods page. The log contains paths in the game folder and mod names, nothing else.
+Turn on **Settings → Diagnostics → Log what AFTERLIFE does**, repeat what went wrong, then use **Open log folder** and attach `activity-YYYYMMDD.log` together with **Copy diagnostics** to your report on GitHub or the Nexus Mods page. The log holds what AFTERLIFE did: mod and profile names, files and results. Your Windows user name, the computer name, the folders of the game, the library and your profile, e-mail addresses and the secrets of download links are replaced by marks such as `<user>` and `<game>` before a line is written.
 
 ## A mod says a requirement is missing, but I have it
 
@@ -84,7 +106,7 @@ REDmods need the free **REDmod** DLC of the game (Steam, GOG and Epic all have i
 
 ## The library takes a lot of space
 
-The library keeps every mod version you imported, the downloaded archives and the files it moved out of the game, so you can always go back. **Settings → 04 · KEPT FILES** shows how much each part takes and lets you delete it. Delete old mod versions you do not need with **DELETE EVERYWHERE**.
+The library keeps every mod version you imported, the downloaded archives and the files it moved out of the game, so you can always go back. **Settings → Kept files** shows how much each part takes, opens its folder with **Show** and lets you delete it. Delete old mod versions you do not need with **DELETE EVERYWHERE**.
 
 ## Does it work on Steam Deck, Linux or macOS?
 
@@ -98,7 +120,7 @@ No telemetry, no analytics, no ads, no self-updater. It talks only to Nexus Mods
 
 Open an issue on [GitHub](https://github.com/silentbobcz/afterlife/issues/new/choose) with:
 
-- **Settings → Copy diagnostics** (paste it into the issue),
+- **Settings → Diagnostics → Copy diagnostics** (paste it into the issue),
 - the exported mod list (**Export list**),
 - what you did and what happened,
 - if possible, the latest log from `%LOCALAPPDATA%\AFTERLIFE\logs`.

@@ -1,0 +1,8 @@
+{
+  "name": "afterlife-site",
+  "private": true,
+  "type": "module",
+  "description": "Builds the AFTERLIFE guide website from the Markdown files of the repository.",
+  "scripts": { "build": "node build.mjs" },
+  "dependencies": { "marked": "15.0.12" }
+}

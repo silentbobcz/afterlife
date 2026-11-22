@@ -30,17 +30,26 @@ This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run 
 ## 1. Before you start
 
 - Windows 10 or 11, 64-bit. Cyberpunk 2077 2.x from Steam, GOG or Epic.
-- AFTERLIFE is an alpha of 1.0. It is careful with your files, but it is still new: if you have a heavily modded install you care about, copy your save games first (`%USERPROFILE%\Saved Games\CD Projekt Red\Cyberpunk 2077`).
+- AFTERLIFE is a beta of 1.0. It is careful with your files, but it is still new: if you have a heavily modded install you care about, copy your save games first (`%USERPROFILE%\Saved Games\CD Projekt Red\Cyberpunk 2077`).
 - **Use one mod manager per install.** If Vortex or Mod Organizer 2 already manages the game, either keep using it or remove its mods first (its own *purge* or *disable all*). AFTERLIFE will then find any leftovers in *Scan manual mods*.
 - Close the game before you apply changes. AFTERLIFE refuses to write while the game is running.
 
+### Two editions
+
+AFTERLIFE comes in two editions built from the same code:
+
+- **AFTERLIFE Offline** is the one you download today, on Nexus Mods and on GitHub. It never reads an API key and never connects to Nexus Mods. Everything that works with files on your disk is there: the library, profiles, apply, conflicts, load order, FOMOD, REDmod, scan of manual mods, export.
+- **The full edition** adds what needs Nexus Mods: Mod Manager Download, pictures and descriptions, requirements from the mod page, update checks and collections. It is published once Nexus Mods has registered AFTERLIFE as an application.
+
+In AFTERLIFE Offline the features of the full edition stay visible with a **lock**. A click on one opens *WAITING FOR NEXUS MODS*, which says what is waiting and what works now, with links to the pages of every core mod. In this guide, sections 11 and 12 and everything that mentions a Nexus key describe the full edition.
+
 ## 2. First run
 
-1. Unzip `AFTERLIFE.exe` to any folder you like, for example `C:\Tools\AFTERLIFE`. Do not put it inside the game folder.
-2. Start it. Windows may show *Windows protected your PC* because the file is not code-signed yet: click **More info → Run anyway**.
+1. Unzip the whole folder `AFTERLIFE` from the zip to any place you like, for example `C:\Tools\AFTERLIFE`. Keep its files together and do not put it inside the game folder.
+2. Start `AFTERLIFE.exe` in that folder. Windows may show *Windows protected your PC* because the file is not code-signed yet: click **More info → Run anyway**.
 3. **Game folder**: AFTERLIFE suggests the usual Steam, GOG and Epic locations. If yours is elsewhere, **BROWSE** to the folder that contains `bin\x64\Cyberpunk2077.exe`.
 4. **Library folder**: where AFTERLIFE keeps its copy of every mod. Pick a drive with free space; the library holds every version you ever imported, so it grows. It must not be inside the game folder.
-5. **Nexus Mods key** (optional, you can add it later): see [section 11](#11-nexus-mods-key-downloads-updates).
+5. **Nexus Mods key** (full edition only; optional, you can add it later): see [section 11](#11-nexus-mods-key-downloads-updates).
 6. **START AFTERLIFE**.
 
 If the game already contains mods installed by hand, the *Scan manual mods* card shows how many it found. They keep working; AFTERLIFE does not touch them until you ask (see [section 14](#14-scan-manual-mods)).
@@ -53,6 +62,7 @@ If the game already contains mods installed by hand, the *Scan manual mods* card
 | **Profiles (left)** | Your profiles. The one in the game is marked **DEPLOYED**; if it has changes you have not applied yet it shows **PENDING**. |
 | **Download history, Scan manual mods, Settings (left)** | Cards that open their own windows. |
 | **JACK IN (left, bottom)** | Starts the game. Above it, a line tells you whether the game matches the selected profile. |
+| **Filters (between the profiles and the list)** | Filter the list by state, by what needs attention, by block and by tag. Open, collapsed to a strip, or hidden. |
 | **Mod library (middle)** | Every mod in the library, in blocks: **CORE MODS** (yellow), each **COLLECTION** (cyan) and **MODS** (grey). |
 | **Mod details (right)** | The selected mod: picture and description from Nexus, status, and the tabs Overview, Files, Requirements, Conflicts. |
 | **Footer** | Progress of the current operation (Preparing, Applying, Verifying), contact and support links. |
@@ -76,6 +86,10 @@ Each row has:
 - the **IN PROFILE** switch: whether the mod is on in the selected profile.
 
 The **search** box above the list filters by name and tag; **✕** or Esc clears it. **Select all** (the checkbox above the list, Ctrl+A) selects exactly the mods the search shows, so you can, for example, move all found mods into a category at once.
+
+**Filters.** The panel next to the list filters by state (on, off, not applied yet), by what needs attention (update available, conflict, missing requirement), by block (core mods, collections, your mods) and by tag; each line shows how many mods it matches. One click on a line means *must match*, a second click *must not match*, a third turns it off. **MATCH ALL** shows mods that fit every chosen line, **MATCH ANY** mods that fit at least one. **«** collapses the panel to a strip with the quick filters, **✕** hides it, and **⧩ FILTERS** next to the search brings it back; AFTERLIFE remembers how you left it. Filtering never changes the load order, and *Select all* takes only what the filter shows.
+
+**Sorting for viewing.** The **⇅** button next to FILTERS walks through **LOAD ORDER**, **NAME**, **NEWEST**, **STATE** and **SIZE**. Sorting stays inside each block and core mods keep their place. It changes only what you see: a line above the list says that the load order is unchanged, dragging mods is off while the list is sorted, and **Back to load order** returns.
 
 When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
 
@@ -104,6 +118,8 @@ What you may see after an import:
 - **Duplicate mods in the library** · copies with exactly the same files (made by older AFTERLIFE versions) are found after start; **MERGE** keeps one with its place in profiles, collections, categories and the load order.
 - **Already in the library** · the archive has exactly the same files as a mod you have; no second copy is made, the existing mod is used.
 - **Not accepted** · the archive is damaged, empty, or its layout is unknown. The message says why.
+
+**Mods added from files find their Nexus page** (full edition, needs a key). A mod you add from an archive on disk is linked to its page on Nexus Mods when Nexus confirms it, first by the checksum of the archive, then by its file name. From then on it shows its description, picture, requirements and updates like a mod that came through Mod Manager Download. A mod Nexus does not confirm is left as it is; AFTERLIFE never guesses from the name. **Link all unlinked mods…** in the mod details and in **Settings → Nexus Mods** does the same for every mod already in the library: one list of what Nexus confirmed, one question.
 
 ## 5. Profiles
 
@@ -157,7 +173,7 @@ AFTERLIFE combines two sources:
 
 Each requirement shows its state: **deployed** (green), **in library · not deployed**, **installed by hand**, **not in library**. For a missing one, **Open page ↗** opens its Nexus page (or **Search on Nexus ↗** by name), and **Copy name** copies it for searching. Requirements the author marked as *optional* or *recommended* do not raise warnings.
 
-Switching a mod **on** offers to also switch on what it needs (if it is in the library). Switching a mod **off** offers to also switch off mods that need it. The same questions appear for whole blocks.
+Switching a mod **on** offers to also switch on what it needs (if it is in the library). Switching a mod **off** opens a dialog that shows both directions: the switched-on mods that need it (offered to go off with it), the mods **only it needed** (with their own checkbox, unticked by default) and, to read only, what it needs that stays on because another mod uses it. Core mods are never offered. A mod without such links goes off without a question. The same questions appear for whole blocks.
 
 **Core mods** are the frameworks other mods build on: Cyber Engine Tweaks, RED4ext, redscript, ArchiveXL, TweakXL, Codeware, Input Loader and, optional, Mod Settings, Native Settings UI, RedFileSystem, Audioware and Virtual Atelier. They have their own yellow block and are never changed by collections. Turning all core mods off asks about every mod that depends on them, because most mods will not run without them.
 
@@ -194,7 +210,7 @@ Inside an unlocked collection you can drag rows by the **⋮⋮** handle ([secti
 
 ### Your key
 
-AFTERLIFE uses your personal Nexus Mods API key. Get it on [nexusmods.com → Site preferences → API Keys](https://www.nexusmods.com/settings/api-keys) (*Personal API Key*), paste it in **Settings → 03 · NEXUS MODS** and **SAVE KEY**. AFTERLIFE checks it and shows your account type. The key is stored encrypted for your Windows user; **Remove key** deletes it.
+AFTERLIFE uses your personal Nexus Mods API key. Get it on [nexusmods.com → Site preferences → API Keys](https://www.nexusmods.com/settings/api-keys) (*Personal API Key*), paste it in **Settings → Nexus Mods** and **SAVE KEY**. AFTERLIFE checks it and shows your account type. The key is stored encrypted for your Windows user; **Remove key** deletes it.
 
 *Log in with Nexus Mods* (single sign-on) will replace the copy-paste once Nexus Mods has registered AFTERLIFE as an application.
 
@@ -206,12 +222,31 @@ Turn on *Open Mod Manager Download links in AFTERLIFE* in Settings. AFTERLIFE re
 
 ### Updates
 
-With a key, AFTERLIFE looks for newer versions when it starts and then every hour. It sends one request for all mods ("which mods changed in the last day/week/month") and reads the file list only of the mods that changed, so it stays well inside the Nexus limits. **Check updates** asks right away.
+With a key, AFTERLIFE looks for newer versions when it starts and then every hour. It asks Nexus which mods changed and reads only those, core mods and the mods of the selected profile first. As a safety net every mod is also read in full once in a while (every 7 days by default), the mods taking turns so about the same number is read each day. **CHECK UPDATES** asks right away.
+
+**Settings → Updates** has the switches: the check at start and the check every hour (separately; core mods are always checked), *check only the mods switched on in the selected profile*, the number of days between full reads (0 = never) and **Check every mod now…**.
+
+**The request limit of Nexus Mods.** Nexus allows every key 20,000 requests a day and 500 an hour, for all programs that use the key together. AFTERLIFE knows the limit, stops a check a little before it so downloads still work, rests until the quota is back and then goes on by itself. Settings show what your choice of days costs for your library and warn when it is too often.
 
 A mod with a newer version shows **UPDATE vX** in the list and an UPDATE line in its details.
 
 - **Premium accounts**: **UPDATE** downloads the new file directly. **UPDATE ALL (n)** does it for every mod with an update, after one question.
 - **Free accounts**: Nexus allows downloads only through the website. **UPDATE** opens the mod-manager download page of the new file; click *Slow download* there and the file comes straight into AFTERLIFE (needs *Mod Manager Download* links on, see above; without them the files page opens and you can drop the downloaded file into the window). **UPDATE ALL (n)** opens these pages one after another: the next one opens when the previous file has arrived. The button then shows **UPDATES · n LEFT**; click it to skip one or stop.
+
+### With Nexus Mods Premium
+
+AFTERLIFE works with a free Nexus Mods account, and it is at its best with **Premium**, because Nexus allows direct downloads through its API only for Premium members:
+
+| | Premium | Free account |
+|---|---|---|
+| **UPDATE** | downloads the new file directly | opens the download page; one click on *Slow download* |
+| **UPDATE ALL** | one question, then every update downloads and installs by itself | opens the pages one after another; one click for each mod |
+| **Collections** | the whole collection downloads by itself | one click on *Mod Manager Download* for each mod |
+| **Download speed** | uncapped | capped by Nexus |
+
+With a few hundred mods the difference is one click instead of a few hundred. Premium also supports the mod authors and the site that hosts their work. You can get it on [nexusmods.com](https://www.nexusmods.com/); AFTERLIFE itself stays free either way and locks nothing behind it.
+
+### What an update does
 
 An update replaces the old version completely: the new one takes its place in every profile (same position, on or off as before), in its collections and category and as the winner of its file conflicts. When the profile is the one in the game, AFTERLIFE applies right away, then deletes the old version from the library. UPDATE ALL and REPLACE ALL apply once at the end. If the game cannot be changed at that moment (for example it is running), the old version is kept until you apply.
 
@@ -283,17 +318,17 @@ Attach it to bug reports, or use it to find the mod that breaks something (switc
 
 ## 17. Settings
 
-| Section | |
+The settings have tabs on the left and the chosen tab on the right. They open on the tab you used last. Under the tabs are the version and **Remove AFTERLIFE from this PC…** ([section 21](#21-removing-afterlife)).
+
+| Tab | |
 |---|---|
-| **01 · GAME** | The game folder. **CHANGE…** moves AFTERLIFE to another install (it asks to take the mods out of the old one first). |
-| **02 · LIBRARY** | Where the library is; **Open in Explorer**. |
-| **03 · NEXUS MODS** | Key, account type, `nxm://` links. |
-| **04 · KEPT FILES** | Space used by *Removed* files, downloaded archives and temporary files, each with **Delete**, plus **DELETE ALL KEPT FILES**. Deleted kept files can no longer be restored. |
-| **Copy diagnostics** | Copies versions, paths and the state of the install to the clipboard for a bug report. Nothing is sent anywhere. |
-| **Log what AFTERLIFE does** | Off by default. Writes switches, imports, every planned file change with its reason, blockers and results into `activity-YYYYMMDD.log`, one file per day. Switch it on when something looks wrong and attach the file to your report. |
-| **Open log folder** | Logs are in `%LOCALAPPDATA%\AFTERLIFE\logs`. |
-| **Remove AFTERLIFE from this PC…** | See [section 21](#21-removing-afterlife). |
-| **06 · FIXER** | Off by default. For FIXER, a quest editor for Cyberpunk 2077: while this is on, AFTERLIFE takes the quests FIXER leaves in the `fixer\inbox` folder of the library. They arrive in the category **FIXER**, switched on in the selected profile, and go into the game with **APPLY CHANGES** like any other mod. A new build of a quest takes the place of the previous one; a quest FIXER withdraws is switched off in every profile. |
+| **01 · Game & library** | The game folder: **CHANGE…** moves AFTERLIFE to another install (it asks to take the mods out of the old one first). Where the library is, with **Open in Explorer**. |
+| **02 · Nexus Mods** | *Account*: your key and account type (a green dot on the tab means the key works). *Link mods*: **Link all unlinked mods…** ([section 4](#4-adding-mods)). *Download links*: open `nxm://` links in AFTERLIFE. Locked in AFTERLIFE Offline. |
+| **03 · Updates** | When AFTERLIFE looks for newer versions and what it reads, and the cost in requests to Nexus Mods ([section 11](#11-nexus-mods-key-downloads-updates)). Visible with a lock in AFTERLIFE Offline. |
+| **04 · Display** | **Reduce motion** stops the background, glitches, scans and the breach animation. **Draw only the visible rows** (experimental, off by default) makes a list of hundreds of mods open and scroll faster; switch it off again if the list jumps while scrolling or dragging. |
+| **05 · Kept files** | Copies AFTERLIFE keeps so you can undo: *Removed* files, downloaded archives and temporary files. Each line shows its size and has **Show** (opens the folder, so you can look first) and **Delete**; **DELETE ALL KEPT FILES** clears all three. The tab shows the total. Deleted kept files can no longer be restored; the game, the mods in the library and the profiles stay. |
+| **06 · Diagnostics** | **Log what AFTERLIFE does** (off by default) writes switches, imports, every planned file change with its reason, blockers and results into `activity-YYYYMMDD.log`, one file per day; **Open log folder** shows `%LOCALAPPDATA%\AFTERLIFE\logs`. **Copy diagnostics** copies the mod list, versions and the last errors to the clipboard for a bug report, without your key or paths. Nothing is sent anywhere. |
+| **07 · FIXER** | Off by default. FIXER is not released yet, so for now this switch has nothing to receive. For FIXER, a quest editor for Cyberpunk 2077: while this is on, AFTERLIFE takes the quests FIXER leaves in the `fixer\inbox` folder of the library. They arrive in the category **FIXER**, switched on in the selected profile, and go into the game with **APPLY CHANGES** like any other mod. A new build of a quest takes the place of the previous one; a quest FIXER withdraws is switched off in every profile. |
 
 ## 18. After a game update
 
@@ -309,7 +344,7 @@ When the game version or build changes, AFTERLIFE shows a **game updated** banne
 - **An apply was interrupted** (crash, power cut): start AFTERLIFE; it offers **FINISH** or **RETURN TO PREVIOUS**.
 - **Something looks wrong in the list**: **Refresh** (F5).
 - **The game itself is damaged**: verify the game files in Steam, GOG Galaxy or Epic, then apply again.
-- **Reporting a bug**: [GitHub Issues](https://github.com/silentbobcz/afterlife/issues) with *Copy diagnostics*, the exported list and, if possible, the log from `%LOCALAPPDATA%\AFTERLIFE\logs`.
+- **Reporting a bug**: [GitHub Issues](https://github.com/silentbobcz/afterlife/issues) with *Copy diagnostics*, the exported list and, if possible, the log from `%LOCALAPPDATA%\AFTERLIFE\logs`. The logs are safe to attach: before a line is written, your Windows user name, the computer name, the folders of the game, the library and your profile, e-mail addresses and the secrets of download links are replaced by marks such as `<user>` and `<game>`.
 
 More in the [FAQ](FAQ.md).
 
@@ -327,7 +362,7 @@ More in the [FAQ](FAQ.md).
 
 1. Apply **Mods off** if you want the game without AFTERLIFE's mods.
 2. **Settings → Remove AFTERLIFE from this PC…**: gives `nxm://` links back to the previous app, deletes the saved key and the settings, and the library too if you tick it.
-3. Delete `AFTERLIFE.exe`.
+3. Delete the folder `AFTERLIFE`.
 
 ## 22. Keyboard and mouse
 
@@ -335,6 +370,8 @@ More in the [FAQ](FAQ.md).
 |---|---|
 | Ctrl+O | Add mod |
 | F5 | Refresh |
+| Ctrl+A | Select all mods the search and the filters show |
+| Esc | Clear the search |
 | Double-click a mod, profile or category name | Rename |
 | Shift+click, Ctrl+click | Select several mods |
 | Drag ⋮⋮ | Move a block or category (load order), move mods into a category, reorder inside an unlocked collection |

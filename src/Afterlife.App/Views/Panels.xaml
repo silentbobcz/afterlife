@@ -166,6 +166,26 @@
                 </ContentControl>
                 <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Select mods for bulk actions; the checkbox in a block or category header selects all of it. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
             </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="FILTERS" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="The panel next to the list: one click on a line means must match, a second click must not match, a third turns it off. « collapses it, ✕ hides it, FILTERS next to the search brings it back." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="⇅ SORT" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Shows the list by name, newest, state or size. Only the view changes: the load order stays, and dragging is off until you go back to LOAD ORDER." />
+            </Grid>
             <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="BLOCKS" />
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>

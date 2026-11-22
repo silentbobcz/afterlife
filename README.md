@@ -21,7 +21,7 @@
 
 ## Status
 
-**Alpha (1.0.0-alpha.4).** Feature-complete for 1.0 and being tested on real installs. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
+**Beta (1.0.0-beta.1).** The features for 1.0 are together and are being tuned on real installs with hundreds of mods. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
 The executable is not code-signed yet, so Windows SmartScreen shows a warning the first time (*More info → Run anyway*). See [FAQ](docs/FAQ.md#windows-says-it-protected-my-pc).
 
 ## What it does
@@ -34,26 +34,29 @@ The executable is not code-signed yet, so Windows SmartScreen shows a warning th
 | **Core mods** | CET, RED4ext, redscript, ArchiveXL, TweakXL, Codeware, Input Loader and friends are recognised, shown in their own block and tracked as requirements of the mods that need them. |
 | **Requirements** | Read from the mod files and from the Nexus Mods page. Missing ones are flagged in the list, with *Open page* to get them. Switching a mod on offers to switch on what it needs; switching it off offers to switch off what depends on it. |
 | **Conflicts and load order** | File conflicts are shown per mod; pick the winner for one file or the whole mod. Archive load order by blocks and categories (`modlist.txt`); inside them mods are sorted by name. |
-| **Nexus Mods** | *Mod Manager Download* links go straight into the library. Update checks at start and every hour (one request for all mods). *Update all*: Premium downloads directly, other accounts get the Nexus download pages one after another (one click on *Slow download* each). An update replaces the old version everywhere, applies and deletes the old one. |
-| **Collections** | Add a Nexus collection: AFTERLIFE compares it with your library, downloads what is missing (Premium directly, free accounts page by page), keeps the curator's load order, and lets you switch the whole collection on or off. Core mods are never touched. |
+| **Find and sort** | A filter panel next to the list (state, what needs attention, block, tags) and sorting by name, newest, state or size. Both change only what you see, never the load order. Built for libraries of several hundred mods. |
+| **Nexus Mods** *(full edition)* | *Mod Manager Download* links go straight into the library, and mods added from files are linked to their Nexus page when Nexus confirms them. Update checks at start and every hour that respect the request limit of Nexus Mods. *Update all*: Premium downloads directly, other accounts get the Nexus download pages one after another (one click on *Slow download* each). An update replaces the old version everywhere, applies and deletes the old one. |
+| **Collections** *(full edition)* | Add a Nexus collection: AFTERLIFE compares it with your library, downloads what is missing (Premium directly, free accounts page by page), keeps the curator's load order, and lets you switch the whole collection on or off. Core mods are never touched. |
 | **REDmod and FOMOD** | REDmods are deployed with `redMod.exe` before launch; FOMOD installers get a step-by-step wizard. Installers and scripts inside archives are never run. |
 | **Scan manual mods** | Finds mods you installed by hand, groups them by name and folder, and moves them into the library on request (always reversible). Settings, logs and caches that mods write themselves are not listed. |
 | **Export** | Copy or save the list of active mods with versions (text or CSV), for bug reports and for hunting the mod that breaks things. |
 
 ## Download
 
-Get the latest release from **[Releases](https://github.com/silentbobcz/afterlife/releases)** (also on Nexus Mods once the page is approved):
+Get the latest release from **[Releases](https://github.com/silentbobcz/afterlife/releases)** or from **[Nexus Mods](https://www.nexusmods.com/cyberpunk2077/mods/36204)**:
 
-- `AFTERLIFE-<version>-win-x64.zip` · the app, a single `AFTERLIFE.exe`, .NET included, no installer.
+- `AFTERLIFE-Offline-<version>-win-x64.zip` · a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries, .NET included, no installer.
+
+This is **AFTERLIFE Offline**: the same app without the connection to Nexus Mods. It never reads an API key and never goes online; the features that need Nexus Mods (rows marked *full edition* above) are visible with a lock. The full edition is published once Nexus Mods has registered AFTERLIFE as an application.
 
 Requirements: Windows 10 or 11 (64-bit), Cyberpunk 2077 2.x (Steam, GOG or Epic). No admin rights needed.
 
 ## Quick start
 
-1. Unzip `AFTERLIFE.exe` anywhere you like (not inside the game folder) and run it.
+1. Unzip the folder `AFTERLIFE` anywhere you like (not inside the game folder), keep its files together and run `AFTERLIFE.exe` in it.
 2. Pick the game folder (the one with `bin\x64\Cyberpunk2077.exe`) and a library folder.
-3. Optional: in **Settings**, paste your Nexus Mods personal API key and turn on *Open Mod Manager Download links in AFTERLIFE*.
-4. Drop archives into the window, use **+ ADD MOD**, or click *Mod Manager Download* on a Nexus mod page.
+3. Optional, full edition: in **Settings → Nexus Mods**, paste your Nexus Mods personal API key and turn on *Open Mod Manager Download links in AFTERLIFE*.
+4. Drop archives into the window or use **+ ADD MOD** (in the full edition also *Mod Manager Download* on a Nexus mod page).
 5. Press **APPLY CHANGES**, check the list, **LOAD TO DECK**.
 6. **JACK IN** starts the game.
 
@@ -61,7 +64,7 @@ Full walkthrough: **[User guide](docs/USER-GUIDE.md)**.
 
 ## Privacy in one paragraph
 
-AFTERLIFE has no telemetry, no analytics and no self-updater. It talks only to Nexus Mods, and only when you have saved a Nexus key: mod details, requirements, update checks, collections, the files you download and the pictures of your mods. The key is stored encrypted for your Windows user (DPAPI). Details: **[PRIVACY.md](PRIVACY.md)**.
+AFTERLIFE has no telemetry, no analytics and no self-updater. It talks only to Nexus Mods, and only when you have saved a Nexus key: mod details, requirements, update checks, collections, the files you download and the pictures of your mods. The key is stored encrypted for your Windows user (DPAPI). AFTERLIFE Offline does not connect to anything at all. The logs it writes on your disk are filtered, so they hold no user name, computer name or personal folders. Details: **[PRIVACY.md](PRIVACY.md)**.
 
 ## Building from source
 
@@ -72,7 +75,7 @@ dotnet build Afterlife.sln -c Release
 dotnet test tests/Afterlife.Tests -c Release
 ```
 
-Publishing the single-file executable and the project layout: **[docs/BUILDING.md](docs/BUILDING.md)**. Contributions are welcome, see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+Publishing and the project layout: **[docs/BUILDING.md](docs/BUILDING.md)**. Contributions are welcome, see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ## Support and contact
 
