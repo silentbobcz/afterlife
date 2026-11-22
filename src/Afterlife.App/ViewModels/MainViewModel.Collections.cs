@@ -548,13 +548,13 @@ public sealed partial class MainViewModel
         if (!on)
         {
             // mods outside the collection it needed (not core) that nothing else switched on needs any more
-            var extra = OverviewBuilder.UnneededRequirements(_overview, all);
+            var extra = SwitchOffPlanner.Unneeded(_overview, all);
             if (extra.Count > 0)
             {
-                var ask = new ConfirmVm("ALSO SWITCH OFF WHAT IT NEEDED?",
-                    $"{r.Name} used {extra.Count} mod(s) outside the collection that nothing else switched on needs. Core mods stay on.",
-                    "SWITCH OFF", false, extra.Select(x => $"{x.Name}   · needed by {x.NeededBy}").ToList(),
-                    $"Also switch off the {extra.Count} mod(s)", true, "NEEDED BY THE COLLECTION");
+                var ask = new ConfirmVm("SWITCH OFF UNUSED MODS?",
+                    $"{r.Name} will be switched off. {(extra.Count == 1 ? "This mod outside the collection was needed only by it. Nothing else needs it now." : $"These {extra.Count} mods outside the collection were needed only by it. Nothing else needs them now.")} Core mods always stay on. Cancel leaves the collection on.",
+                    "SWITCH OFF", false, extra.Select(x => $"{x.Name}   · only needed by {x.NeededBy}").ToList(),
+                    extra.Count == 1 ? "Also switch off this mod" : $"Also switch off these {extra.Count} mods", false, "NOT NEEDED ANY MORE");
                 if (!await AskAsync(ask)) { await RefreshAsync(); return; }
                 if (ask.OptionChecked) all = all.Concat(extra.Select(x => x.PackageId)).Distinct().ToList();
             }
