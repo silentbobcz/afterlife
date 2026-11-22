@@ -237,7 +237,7 @@ public static class OverviewBuilder
             var other = stillOn.FirstOrDefault(m => m.Package.PackageId != id
                 && (m.Requirements.Any(r => r.ProviderPackageId == id)
                     || (nexusId is not null && m.RequirementLinks.Any(r => !r.External && r.ModId == nexusId))));
-            var why = other is not null ? $"also needed by {other.Package.ModName}" : "stays on";
+            var why = other is not null ? $"also needed by {other.Package.ModName}" : "another mod still needs it";
             result.Add(new InactiveRequirement(id, c.Package.ModName, by, why));
         }
         return result;

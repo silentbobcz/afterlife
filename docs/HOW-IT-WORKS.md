@@ -57,6 +57,8 @@ The window keeps the mod rows twice (`MainViewModel.Sorting.cs`): `_loadOrdered`
 
 EXPORT ORDER and IMPORT ORDER (`MainViewModel.LoadList.cs`, preview `LoadListPreviewVm`) write and read a load list (`LoadList` in Core, format in `docs/previews/load-list-format.md`). `LoadListPlanner` (pure) finds each line in the library (Nexus file, archive MD5, archive name, name and version, Nexus mod, name only) and builds one `LoadListPlan` that the preview shows and the import writes: on/off through `SetEnabledMany`, categories, blocks and order through `ApplyLayoutAsync`. Before writing, the current order is saved as `exports/before-import-<time>.txt` in the library (newest 10 kept).
 
+Switching mods off (`MainViewModel.Library.cs`, `WithRelatedOffAsync`) asks in one `ConfirmVm` with three parts: `OverviewBuilder.ActiveDependents`, then `SwitchOffPlanner.Parts` (Infrastructure, pure) for NOT NEEDED ANY MORE and STAYS ON, computed from the set that really goes off (with or without the dependents) and recomputed through `ConfirmVm.OptionChanged` when the first box changes.
+
 ## Logs
 
 `ActivityLog` (optional, Settings) and the error log of the window both pass every line through `LogPrivacy.Scrub` before it is written: user name, computer name, the folders of the game, the library and the profile, network shares, e-mail addresses and link secrets become marks. New log output goes through the same two writers, never straight to a file.

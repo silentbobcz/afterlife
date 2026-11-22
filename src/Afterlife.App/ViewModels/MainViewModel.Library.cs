@@ -70,45 +70,81 @@ public sealed partial class MainViewModel
         return vm.OptionChecked ? ids.Concat(related.Select(r => r.PackageId)).Distinct().ToList() : ids;
     }
 
+    /// <summary>
+    /// Three parts: what will stop working (ticked: switch it off too), what is not needed any more (unticked) and
+    /// what stays on. The last two are computed from what really goes off, again whenever the first box changes.
+    /// </summary>
     private async Task<IReadOnlyList<string>?> WithRelatedOffAsync(IReadOnlyList<string> ids, bool offerRequirements)
     {
-        var dependents = OverviewBuilder.ActiveDependents(_overview!, ids);
-        IReadOnlyList<InactiveRequirement> unneeded = [], kept = [];
-        if (offerRequirements)
-        {
-            unneeded = OverviewBuilder.UnneededRequirements(_overview!, ids);
-            kept = OverviewBuilder.KeptRequirements(_overview!, ids, unneeded);
-        }
-        if (dependents.Count == 0 && unneeded.Count == 0 && kept.Count == 0) return ids;
+        var o = _overview!;
+        var dependents = OverviewBuilder.ActiveDependents(o, ids);
+        SwitchOffParts Compute(bool withDependents) => offerRequirements
+            ? SwitchOffPlanner.Parts(o, ids, dependents, withDependents)
+            : new SwitchOffParts([], []);
+        var parts = Compute(true);
+        if (dependents.Count == 0 && parts.Unneeded.Count == 0 && parts.Kept.Count == 0) return ids;
         var subject = SubjectOf(ids);
-        var message = dependents.Count > 0
-            ? $"{dependents.Count} switched-on mod(s) need {subject}. Without it they may not work or show errors in game."
-            : unneeded.Count > 0
-                ? $"{subject} used {unneeded.Count} mod(s) that nothing else switched on needs. Core mods stay on."
-                : $"{subject} goes off. What it needs stays on because other mods use it.";
-        var vm = new ConfirmVm(dependents.Count > 0 ? "ALSO SWITCH OFF WHAT NEEDS IT?" : "SWITCH OFF",
-            message, "SWITCH OFF", false,
+        var many = NamesOf(ids).Count != 1;
+        var n = dependents.Count;
+        var it = many ? "them" : "it";
+        ConfirmVm? vm = null;
+        vm = new ConfirmVm($"SWITCH OFF {TitleSubjectOf(ids)}?", $"{subject} will be switched off in this profile.", "SWITCH OFF", false,
             dependents.Select(r => $"{r.Name}   · needs {r.NeededBy}").ToList(),
-            dependents.Count > 0 ? $"Also switch off the {dependents.Count} mod(s) that need it" : null, true,
-            dependents.Count > 0 ? "NEED IT, NOW ON" : null)
+            n == 0 ? null : n == 1 ? "Switch off this mod too" : $"Switch off these {n} mods too", true,
+            n > 0 ? "WILL STOP WORKING" : null)
         {
-            ExtraLines = unneeded.Select(r => $"{r.Name}   · needed by {r.NeededBy}").ToList(),
-            ExtraTitle = "ONLY IT NEEDED, NOW ON",
-            ExtraOptionLabel = $"Also switch off {unneeded.Count} mod(s) only it needed",
-            InfoLines = kept.Select(r => $"{r.Name}   · {r.What}").ToList(),
-            InfoTitle = "IT NEEDS, STAYS ON",
+            LinesNote = n == 0 ? null
+                : n == 1 ? $"This mod needs {subject}. Without {it}, it may not work or may show errors in game."
+                : $"These {n} mods need {subject}. Without {it}, they may not work or may show errors in game.",
+            ExtraTitle = "NOT NEEDED ANY MORE",
+            InfoTitle = "STAYS ON",
+            OptionChanged = () =>
+            {
+                parts = Compute(vm!.OptionChecked);
+                ShowSwitchOffParts(vm!, parts, subject, many);
+            },
         };
+        ShowSwitchOffParts(vm, parts, subject, many);
         if (!await AskAsync(vm)) return null;
+        parts = Compute(vm.OptionChecked); // exactly what the dialog showed when confirmed
         IEnumerable<string> result = ids;
         if (vm.OptionChecked) result = result.Concat(dependents.Select(r => r.PackageId));
-        if (vm.ExtraOptionChecked) result = result.Concat(unneeded.Select(r => r.PackageId));
+        if (vm.ExtraOptionChecked) result = result.Concat(parts.Unneeded.Select(r => r.PackageId));
         return result.Distinct().ToList();
     }
 
+    /// <summary>Fills the parts NOT NEEDED ANY MORE and STAYS ON of the switch-off dialog.</summary>
+    private static void ShowSwitchOffParts(ConfirmVm vm, SwitchOffParts parts, string subject, bool many)
+    {
+        var u = parts.Unneeded.Count;
+        var k = parts.Kept.Count;
+        vm.ExtraLines = parts.Unneeded.Select(r => $"{r.Name}   · only needed by {r.NeededBy}").ToList();
+        vm.ExtraOptionLabel = u == 1 ? "Also switch off this mod" : $"Also switch off these {u} mods";
+        vm.ExtraNote = (many ? $"{subject} were the only switched-on mods that needed " : $"{subject} was the only switched-on mod that needed ")
+            + (u == 1 ? "this mod. Nothing else needs it now." : $"these {u} mods. Nothing else needs them now.")
+            + " Core mods always stay on.";
+        vm.InfoLines = parts.Kept.Select(r => $"{r.Name}   · {r.What}").ToList();
+        vm.InfoNote = $"{subject} {(many ? "need" : "needs")} "
+            + (k == 1 ? "this mod, but other switched-on mods use it too, so it stays on."
+                      : $"these {k} mods, but other switched-on mods use them too, so they stay on.");
+    }
+
+    private List<string> NamesOf(IReadOnlyList<string> ids) =>
+        _overview!.Mods.Where(m => ids.Contains(m.Package.PackageId)).Select(m => m.Package.ModName).ToList();
+
     private string SubjectOf(IReadOnlyList<string> ids)
     {
-        var names = _overview!.Mods.Where(m => ids.Contains(m.Package.PackageId)).Select(m => m.Package.ModName).ToList();
+        var names = NamesOf(ids);
         return names.Count == 1 ? names[0] : $"{names.Count} mods";
+    }
+
+    /// <summary>The subject for a dialog title: upper case, a long mod name cut to about 30 characters.</summary>
+    private string TitleSubjectOf(IReadOnlyList<string> ids)
+    {
+        var names = NamesOf(ids);
+        if (names.Count != 1) return $"{names.Count} MODS";
+        var name = names[0].Length <= 30 ? names[0] : names[0][..29].TrimEnd() + "…";
+        return name.ToUpperInvariant();
     }
 
     public Task OverrideRequirementsAsync(string packageId, IReadOnlyList<string> capabilities) => RunUiAsync(async () =>
@@ -161,7 +197,7 @@ public sealed partial class MainViewModel
             lines.AddRange(dependents.Select(d => $"{d.Name}   · {(d.InGame ? "deployed" : string.Join(", ", d.Profiles))}"));
         }
         var vm = new ConfirmVm("DELETE EVERYWHERE?", msg, "DELETE EVERYWHERE", danger: true, lines,
-            dependents.Count > 0 ? $"Also switch off the {dependents.Count} mod(s) that need it" : null, true,
+            dependents.Count == 0 ? null : dependents.Count == 1 ? "Switch off this mod too" : $"Switch off these {dependents.Count} mods too", true,
             rows.Count == 1 && dependents.Count == 0 ? null : "WHAT HAPPENS");
         if (!await AskAsync(vm)) return;
         if (dependents.Count > 0 && vm.OptionChecked) await _host.RunAsync(c => c.DeactivateEverywhere(dependents.Select(d => d.PackageId).ToList()));
@@ -279,7 +315,7 @@ public sealed partial class MainViewModel
         var vm = new ConfirmVm("REMOVE FROM GAME?",
             $"{label} ({files.Count} files) will be moved out of the game into the AFTERLIFE library (folder \"removed\"). Nothing is deleted; you can restore it at any time from Scan manual mods.",
             "REMOVE FROM GAME", danger: true, lines,
-            dependents.Count > 0 ? $"Also switch off the {dependents.Count} mod(s) that need it" : null, true, "WHAT HAPPENS");
+            dependents.Count == 0 ? null : dependents.Count == 1 ? "Switch off this mod too" : $"Switch off these {dependents.Count} mods too", true, "WHAT HAPPENS");
         if (!await AskAsync(vm)) return;
         if (dependents.Count > 0 && vm.OptionChecked)
         {

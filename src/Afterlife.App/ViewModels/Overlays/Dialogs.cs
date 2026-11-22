@@ -73,21 +73,30 @@ public sealed partial class ConfirmVm : OverlayVm
     public IReadOnlyList<string> Lines { get; }
     public string? LinesTitle { get; }
     public bool HasLines => Lines.Count > 0;
+    /// <summary>Optional sentence under the title of the first list; hidden when empty.</summary>
+    public string? LinesNote { get; init; }
     /// <summary>Optional checkbox, for example "also switch off the mods that need it".</summary>
     public string? OptionLabel { get; }
     [ObservableProperty] private bool _optionChecked;
     public Task<bool> Result => _tcs.Task;
+    /// <summary>Called when the user ticks or unticks the first checkbox, so the lists below can be recomputed.</summary>
+    public Action? OptionChanged { get; init; }
+    partial void OnOptionCheckedChanged(bool value) => OptionChanged?.Invoke();
 
     /// <summary>Optional second list with its own checkbox, for example the mods only the switched-off mod needed.</summary>
-    public IReadOnlyList<string> ExtraLines { get; init; } = [];
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasExtraLines))] private IReadOnlyList<string> _extraLines = [];
     public string? ExtraTitle { get; init; }
-    public string? ExtraOptionLabel { get; init; }
+    /// <summary>Sentence under the title of the second list; hidden when empty.</summary>
+    [ObservableProperty] private string? _extraNote;
+    [ObservableProperty] private string? _extraOptionLabel;
     public bool HasExtraLines => ExtraLines.Count > 0;
     [ObservableProperty] private bool _extraOptionChecked;
 
     /// <summary>Optional list to read only, no choice (what stays as it is).</summary>
-    public IReadOnlyList<string> InfoLines { get; init; } = [];
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasInfoLines))] private IReadOnlyList<string> _infoLines = [];
     public string? InfoTitle { get; init; }
+    /// <summary>Sentence under the title of the read-only list; hidden when empty.</summary>
+    [ObservableProperty] private string? _infoNote;
     public bool HasInfoLines => InfoLines.Count > 0;
 
     /// <summary>The second button can say what it does ("Keep both", "Not now").</summary>
