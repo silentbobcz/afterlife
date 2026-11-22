@@ -2,7 +2,7 @@
 
 Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `main`** (sloučeno 22. 11. včetně volného pořadí O11 a O12). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O14.“ Balík O16 jde pustit vedle něj (jiné soubory).“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O14.“ Balík O16 jde pustit vedle něj (jiné soubory).
 
 ## Pravidla dávky
 
