@@ -2,16 +2,17 @@
 
 Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Druhá dávka je uzavřená a v archivu; pro modely teď nic nečeká, další balíky vzniknou z toho, co najdeš při zkoušení.
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O18 (web: upozornění na edici Offline, Sonnet). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O18.“
 
-Poslední pracovní verze plné edice je `AFTERLIFE-test-1c1256e-win-x64.zip` ve složce `zkusebni` (22. 11.). Neobsahuje ještě load list (A16) ani nový dialog při vypnutí modu (A15); na ty je potřeba nová pracovní verze, řekni si o ni. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
+Poslední pracovní verze plné edice je `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni` (23. 11.): obsahuje load list (A16) i nový dialog při vypnutí modu (A15), ještě ne odkazy na web v aplikaci (A17). Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
 
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A15 | Nový dialog při vypnutí modu (O17) | Další pracovní verze; seznam modů | 1. Vypni mod, který potřebuje jiný zapnutý mod: nadpis „SWITCH OFF ‹JMÉNO›?“, část WILL STOP WORKING s větou a zaškrtnutým „Switch off this mod too“. 2. Najdi mod A, který potřebuje knihovnu L, a mod B, který potřebuje L i A. Vypni A: L je v části NOT NEEDED ANY MORE; odškrtni vypnutí B a L se má hned přesunout do STAYS ON. 3. Vypni kolekci, která používala mod mimo sebe: druhý dialog „SWITCH OFF UNUSED MODS?“ má prázdné zaškrtnutí a větu, že Cancel nechá kolekci zapnutou. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
-| A16 | Export a import load listu (O15) | Další pracovní verze; tlačítka EXPORT ORDER a IMPORT ORDER vedle EXPORT LIST pod seznamem | 1. EXPORT ORDER: ulož soubor a otevři ho v Poznámkovém bloku, je čitelný? 2. V souboru přehoď dva řádky, jeden mod přepni z `+` na `-`, přidej řádek `@category Zkouska` s jedním modem pod ním a dej IMPORT ORDER: náhled má přesně říct, co se změní; po LOAD se seznam změní a APPLY ukáže změnu pořadí. 3. Naimportuj týž soubor podruhé: má říct, že se nic nemění. V knihovně ve složce `exports` má být záloha původního pořadí. Neověřeno: nic z toho neběželo v okně; stahování chybějících modů u Premium a přidání kolekce z náhledu. | ☐ čeká na sestavení |
+| A15 | Nový dialog při vypnutí modu (O17) | Pracovní verze `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni`; seznam modů | 1. Vypni mod, který potřebuje jiný zapnutý mod: nadpis „SWITCH OFF ‹JMÉNO›?“, část WILL STOP WORKING s větou a zaškrtnutým „Switch off this mod too“. 2. Najdi mod A, který potřebuje knihovnu L, a mod B, který potřebuje L i A. Vypni A: L je v části NOT NEEDED ANY MORE; odškrtni vypnutí B a L se má hned přesunout do STAYS ON. 3. Vypni kolekci, která používala mod mimo sebe: druhý dialog „SWITCH OFF UNUSED MODS?“ má prázdné zaškrtnutí a větu, že Cancel nechá kolekci zapnutou. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
+| A16 | Export a import load listu (O15) | Pracovní verze `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni`; tlačítka EXPORT ORDER a IMPORT ORDER vedle EXPORT LIST pod seznamem | 1. EXPORT ORDER: ulož soubor a otevři ho v Poznámkovém bloku, je čitelný? 2. V souboru přehoď dva řádky, jeden mod přepni z `+` na `-`, přidej řádek `@category Zkouska` s jedním modem pod ním a dej IMPORT ORDER: náhled má přesně říct, co se změní; po LOAD se seznam změní a APPLY ukáže změnu pořadí. 3. Naimportuj týž soubor podruhé: má říct, že se nic nemění. V knihovně ve složce `exports` má být záloha původního pořadí. Neověřeno: nic z toho neběželo v okně; stahování chybějících modů u Premium a přidání kolekce z náhledu. | ☐ čeká na tebe |
+| A17 | Odkazy na web s návodem v aplikaci | Další pracovní verze; okno About a rychlý návod (QUICK GUIDE) | V About klikni na WEBSITE a v rychlém návodu dole na „Full guide on the web ↗“; obojí má otevřít web v prohlížeči. Zkontroluj, že se tlačítka v About vejdou vedle sebe. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -19,7 +20,6 @@ Doporučená možnost je vždy první.
 
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
-| C10 | Zveřejnění webu s návodem na Cloudflare | Web se staví z repozitáře (složka `site`), ale projekt v Cloudflare Pages musíš založit ty ve svém účtu. Postup a hodnoty jsou v `site/README.md`. Potom se sám obnoví po každé změně v `main`. | 1. Založit projekt v Cloudflare Pages podle `site/README.md` a napsat adresu; doplní se do README, na Nexus a do aplikace. 2. Zatím nezveřejňovat, návod číst jen na GitHubu. | ☐ čeká |
 | C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1, od 22. 11. i s nastavením v záložkách (A10). Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A10 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
 
 ## D. Dodat
@@ -32,6 +32,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | C10: web s návodem běží na Cloudflare Pages, <https://afterlife-13h.pages.dev>, a obnovuje se po každé změně v `main`. Adresa je v README, v okně About (tlačítko WEBSITE) a pod vestavěným návodem; na Nexus ji vkládáš ty. Úvodní stránka webu ještě nezdůrazňuje, že ke stažení je edice Offline: oprava je balík O18. |
 | 23. 11. | O15 (export a import load listu) a O17 (nový dialog při vypnutí modu) hotové a zkontrolované, 375 testů; zkouší se v A16 a A15. Druhá dávka fronty je uzavřená a v archivu. |
 | 23. 11. | Vyzkoušeno na pracovní verzi `1c1256e`: A2, A7, A8, A13 (volné pořadí modů) a A14 (fialová tlačítka) v pořádku. A12 (web a dokumentace): bez výhrad teď, úpravy případně později. |
 | 23. 11. | Schváleno: B4 (náhled volného pořadí), B5 (nové texty dialogu při vypnutí modu, do kódu jde jako O17) a B6 (formát load listu; u bodů D1 až D7 platí doporučené možnosti A, tlačítka EXPORT ORDER a IMPORT ORDER; do kódu jde jako O15). |
