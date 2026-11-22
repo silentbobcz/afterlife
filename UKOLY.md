@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/kind-hopper-az2rax`. Pro modely teď nic nečeká; další balíky vzniknou z toho, co najdeš při zkoušení.
+**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `claude/kind-hopper-az2rax`. Čeká volné pořadí načítání: začni balíkem O10 (náhled), O11 čeká na B4 a C9.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 jsi dostal 22. 11. jako zip (název nese hash commitu). Položky A2 až A9 se zkouší na něm. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze.
 
@@ -21,12 +21,19 @@ Zkušební sestavení plné edice 1.0.0-beta.1 jsi dostal 22. 11. jako zip (náz
 | A10 | Nastavení se záložkami (O8) | Další sestavení (po kontrole); tlačítko SETTINGS vlevo | 1. Proklikej záložky vlevo: obsah se mění, okno se nehýbe, vybraná záložka má barevný pruh. 2. V Kept files klikni Show u všech tří řádků: otevře se složka. 3. Zavři a znovu otevři nastavení: otevře se na poslední záložce. Neověřeno: nic z toho jsem neviděl běžet. | ☐ čeká na sestavení |
 | A11 | Schránka FIXER (od alpha.7, v okně zatím nezkoušená) | Zkušební sestavení; Settings → FIXER. Zkušební balík `fixer_zkouska-1.zip` máš u sebe ve složce `fixer-zkouska`. | 1. Zaškrtni „Take quests from FIXER“: v knihovně vznikne složka `fixer` se `status.json` a `inbox`. 2. Zkopíruj zkušební balík do `fixer/inbox`: do pár vteřin (se zavřeným nastavením) se v seznamu objeví kategorie FIXER s modem zapnutým ve vybraném profilu a nahoře zpráva; balík se přesune do `fixer/done`, výsledek je ve `fixer/outbox`. 3. APPLY nedělej, mod smaž. Neověřeno: nic z toho neběželo v okně; jádro kryjí automatické testy. | ☐ čeká na tebe |
 
+## B. Schválit
+
+| # | Co | Kde to najdu | Na co se dívat | Stav |
+|---|---|---|---|---|
+| B4 | Náhled volného pořadí (O10) | `docs/previews/free-load-order.html`, až O10 doběhne | Čísla pořadí na řádcích, čára při tažení, tlačítko A→Z a jeho potvrzení, mod s místními úpravami. Stačí „B4 schváleno“ nebo co změnit. | ☐ čeká na O10 |
+
 ## C. Rozhodnout (stačí odpověď)
 
 Doporučená možnost je vždy první.
 
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
+| C9 | Kam padají nové mody při volném pořadí (O11) | Až půjde mody v MODS libovolně táhnout, musí mít nový mod nějaké výchozí místo. Platí pro import, stažení i aktualizaci na nový mod (aktualizace drží místo starého). | 1. Na konec MODS (bez kategorie): je hned vidět, kam přibyl, a nic jiného se neposune. 2. Abecedně mezi ostatní v MODS. 3. Na začátek MODS. | ☐ čeká |
 | C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1. Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A9 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
 
 ## D. Dodat

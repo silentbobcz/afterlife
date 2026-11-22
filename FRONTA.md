@@ -2,7 +2,7 @@
 
 Sestaveno 22. 11. 2026 po vydání 1.0.0-beta.1. **Nejnovější stav: větev `claude/kind-hopper-az2rax`** (`main` + O8, bez instalátoru). Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). První dávka je v `archiv/FRONTA-1-davka.md` (jen archiv, stav z ní nečti).
 
-Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej další balík.“
+Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev claude/kind-hopper-az2rax) a udělej balík O10.“
 
 ## Pravidla dávky
 
@@ -18,6 +18,10 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 |---|---|---|---|---|
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | nic | hotovo, zkontrolováno |
 | F-kontrola | Fable | Kontrola O8 | nic | hotovo, bez nálezu; dávka čeká na vyzkoušení (A10) |
+| O10 | Sonnet | Náhled volného pořadí v MODS a kategoriích | nic | čeká |
+| O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | B4, C9 | čeká |
+| O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | O11 | čeká |
+| F-pořadí | Fable | Kontrola O11 a O12 | O12 | čeká |
 
 ## O8. Přestavba nastavení v kódu
 
@@ -37,6 +41,34 @@ Podklad z první dávky (předávka O7):
 ## F-kontrola
 
 Fable. Projít commity O8 proti náhledu `docs/previews/settings-tabs.html` a předávce; testy a překlad obou edic; chyby opravit a zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
+
+## Volné pořadí načítání (O10 až O12)
+
+Proč: uživatel z Nexusu se vrátil k jinému správci, protože v AFTERLIFE nejde mod jen přetáhnout nahoru nebo dolů. Uvnitř MODS a každé kategorie se dnes řadí natvrdo podle názvu (`MainViewModel.cs`, řazení v `Apply` s komentářem „MODS and every category alphabetically“) a tažení řádku v rámci téže sekce končí hláškou (`MainViewModel.Blocks.cs`, `MoveModsAsync`). Jediná cesta je kategorie pro jeden mod. Cíl: řádek jde přetáhnout kamkoli uvnitř MODS a kategorií jako dnes v odemčené kolekci; bloky a kategorie fungují dál.
+
+### O10. Náhled
+
+Sonnet. Statický náhled `docs/previews/free-load-order.html` (jeden soubor, bez kódu aplikace, tokeny barev a písma jako v `App.xaml`), dnešní vzhled seznamu. Ukázat: (1) číslo pořadí na řádku (#1, #2 …) jen v pohledu LOAD ORDER, při řazení pro zobrazení (⇅) schované; (2) čáru, kam mod při tažení dopadne; (3) tlačítko „A→Z“ v hlavičce MODS a každé kategorie, které jednou seřadí podle názvu, s potvrzením; (4) jak vypadá mod s místními úpravami („└ …“), který se táhne s rodičem. Rozsah MODS asi 40 řádků se dvěma kategoriemi, ať je vidět čísla přes hranici kategorie. Pod náhledem krátce: co se změní oproti dnešku a texty hlášek. Pro uživatele položka B4 v `UKOLY.md`.
+
+### O11. Volné pořadí v kódu
+
+Opus. Čeká na B4 (schválený náhled) a C9 (kam padají nové mody).
+- Zobrazení: MODS a kategorie v pořadí profilu, ne podle názvu. Řazení v `Apply` nahradit pořadím z profilu; „└“ vrstvy dál hned pod rodičem (táhnou se s ním, samy se netáhnou mimo něj). Kolekce a CORE MODS beze změny.
+- `MoveModsAsync`: zrušit větev s hláškou, drop uvnitř téže sekce mění pořadí přes stávající `ApplyLayoutAsync` (`BlockLayout.Compose` pořadí uvnitř sekce už zachovává). Víc vybraných modů se přesune jako skupina v dnešním pořadí.
+- Číslo pořadí na řádku podle náhledu; počítá se z `CurrentOrder()` po CORE MODS, ať odpovídá `modlist.txt`.
+- „A→Z“ v hlavičce MODS a kategorie: jednorázově seřadí jen tu sekci, zapíše do profilu, nic jiného.
+- Nové mody podle C9. Stávající knihovny: dnešní (abecední) pořadí se převezme beze změny, nikomu se po aktualizaci nic nepřehází. Ověř zvlášť profil s `OrderIsCustom = false` (výchozí pořadí hry je podle názvu archivu, ne modu).
+- Pořadí patří profilu, kategorie jsou společné: přepnutí profilu ukáže jeho pořadí.
+- Testy: přesun uvnitř sekce, přes hranici kategorie, skupina, vrstva s rodičem, A→Z, nový mod. Opravit texty v `docs/USER-GUIDE.md` (oddíly 3, 10 a tabulka v 22: „sorted by name“ pryč, postup s kategorií pro jeden mod nahradit tažením), `README.md` (řádek Conflicts and load order), jeden řádek v `CHANGELOG.md`, 1–3 řádky v `docs/HOW-IT-WORKS.md`.
+- Pro uživatele položka A v `UKOLY.md` (tažení, čísla, A→Z, APPLY ukáže změnu pořadí, přepnutí profilu).
+
+### O12. Pohodlnější řazení
+
+Sonnet. Čeká na O11. Ctrl+↑/↓ posune vybrané mody o řádek, Ctrl+Home/End na začátek a konec sekce (tabulka klávesnice v návodu). V záložce Conflicts u souboru s jiným vítězem tlačítko „LOAD BEFORE ‹mod›“, které mod přesune těsně před soupeře, pokud jsou oba v MODS nebo kategoriích (jinak tlačítko chybí). Mody bez souborů `.archive` mají číslo pořadí šedé a v tooltipu „Load order does not affect this mod“. Návod, CHANGELOG, položka A v `UKOLY.md`.
+
+### F-pořadí
+
+Fable. Projít O11 a O12 proti náhledu a předávkám, hlavně: pořadí v `modlist.txt` po APPLY odpovídá číslům v seznamu; řazení ⇅ ani filtr pořadí nemění; nic se nepřehází při startu se starou knihovnou. Testy, překlad obou edic, opravy zapsat. Pak dávku uzavřít podle skillu `ukoly-a-fronty`.
 
 ## Co do fronty nepatří
 
