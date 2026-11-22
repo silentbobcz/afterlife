@@ -7,7 +7,7 @@ namespace Afterlife.App.ViewModels;
 
 /// <summary>
 /// The free load order inside MODS and its categories: rows in the profile's order, layers ("└ name") right below
-/// Their mod, the position number of every row, A→Z for one section and keeping the profile equal to the list.
+/// their mod, the position number of every row, A→Z for one section and keeping the profile equal to the list.
 /// A profile in the game's default order (no modlist.txt) is shown by name until a mod is dragged.
 /// </summary>
 public sealed partial class MainViewModel
@@ -55,8 +55,8 @@ public sealed partial class MainViewModel
 
     /// <summary>
     /// Rows in load order. CORE MODS and collections keep the order they come in; MODS and categories follow the
-    /// Profile, or go by name while the profile has the game's default order (or is shown for the first time
-    /// Since the order became free, so an existing library looks exactly as before).
+    /// profile, or go by name while the profile has the game's default order (or is shown for the first time
+    /// since the order became free, so an existing library looks exactly as before).
     /// </summary>
     private List<ModRowVm> ArrangeRows(List<ModRowVm> rows, InstallOverview o)
     {
@@ -98,7 +98,7 @@ public sealed partial class MainViewModel
 
     /// <summary>
     /// The place for a drop on a row. A layer is part of its mod, so a drop on it lands right after that mod and its
-    /// Layers; null where nothing can be dropped (core mods, a layer shown apart from its mod).
+    /// layers; null where nothing can be dropped (core mods, a layer shown apart from its mod).
     /// </summary>
     public DropSpot? DropTargetOf(ModRowVm row, bool after)
     {
@@ -118,8 +118,8 @@ public sealed partial class MainViewModel
 
     /// <summary>
     /// With a custom load order (modlist.txt) the profile follows the list: mods new in the library join it where the
-    /// List shows them (the end of MODS), a mod moved between categories in another profile follows its category,
-    /// And the archive order is refreshed when a mod's archives changed (an update). APPLY puts it in the game.
+    /// list shows them (the end of MODS), a mod moved between categories in another profile follows its category,
+    /// and the archive order is refreshed when a mod's archives changed (an update). APPLY puts it in the game.
     /// </summary>
     private async Task SyncSortedOrderAsync(InstallOverview o)
     {

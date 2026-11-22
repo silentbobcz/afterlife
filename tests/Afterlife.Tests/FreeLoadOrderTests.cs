@@ -3,7 +3,7 @@ using Afterlife.Core;
 namespace Afterlife.Tests;
 
 /// <summary>The free load order inside MODS and its categories: moves, groups, layers, A→Z, new mods, old libraries.</summary>
-public class LoadOrderTests
+public class FreeLoadOrderTests
 {
     private const int Mods = 1, CatA = 2;
     private static readonly StringComparer Names = StringComparer.OrdinalIgnoreCase;

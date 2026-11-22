@@ -121,7 +121,7 @@ public sealed class ProfileService
 
     /// <summary>
     /// The archive order (modlist.txt) that <see cref="Reorder"/> stores for a list of mods: their .archive files in
-    /// The order of the mods, by file name inside one mod. Unknown mods are skipped.
+    /// the order of the mods, by file name inside one mod. Unknown mods are skipped.
     /// </summary>
     public static List<string> ArchiveOrderOf(IReadOnlyList<string> orderedPackageIds, IReadOnlyDictionary<string, PackageManifest> packages) =>
         orderedPackageIds.Where(packages.ContainsKey).Distinct()
