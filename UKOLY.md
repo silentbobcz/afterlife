@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 22. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `main`. Čeká volné pořadí načítání: začni balíkem O10 (náhled), O11 čeká na B4 a C9.
+**Fronta modelů:** [FRONTA.md](FRONTA.md), větev `main`. Čeká volné pořadí načítání: začni balíkem O10 (náhled), O11 čeká na B4.
 
 Zkušební sestavení plné edice 1.0.0-beta.1 z 22. 11. večer nese v názvu `34f6b02` (`AFTERLIFE-test-34f6b02-win-x64.zip`, u tebe ve složce `zkusebni`). Obsahuje vše z `main` včetně nastavení v záložkách; položky A2 až A11 se zkouší na něm. Starší zip (`6e633d0`) smaž. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další takové sestavení vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`).
 
@@ -27,7 +27,6 @@ Doporučená možnost je vždy první.
 
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
-| C9 | Kam padají nové mody při volném pořadí (O11) | Až půjde mody v MODS libovolně táhnout, musí mít nový mod nějaké výchozí místo. Platí pro import, stažení i aktualizaci na nový mod (aktualizace drží místo starého). | 1. Na konec MODS (bez kategorie): je hned vidět, kam přibyl, a nic jiného se neposune. 2. Abecedně mezi ostatní v MODS. 3. Na začátek MODS. | ☐ čeká |
 | C10 | Zveřejnění webu s návodem na Cloudflare | Web se staví z repozitáře (složka `site`), ale projekt v Cloudflare Pages musíš založit ty ve svém účtu. Postup a hodnoty jsou v `site/README.md`. Potom se sám obnoví po každé změně v `main`. | 1. Založit projekt v Cloudflare Pages podle `site/README.md` a napsat adresu; doplní se do README, na Nexus a do aplikace. 2. Zatím nezveřejňovat, návod číst jen na GitHubu. | ☐ čeká |
 | C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1, od 22. 11. i s nastavením v záložkách (A10). Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A10 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
 
@@ -41,6 +40,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 22. 11. | C9: nové mody při volném pořadí padají na konec MODS (bez kategorie). Aktualizace drží místo staré verze. |
 | 22. 11. | Vyzkoušeno na sestavení `34f6b02`: A4, A5, A6, A9, A10 a A11 v pořádku. A3 v pořádku, ale logika dialogu při vypnutí modu není srozumitelná: texty se přepíšou (balík O13). A2: historie stahování v pořádku, Scan manual mods je krátké (zůstává otevřené). A7: čekal jsi ruční pořadí uvnitř MODS a kategorií; to je O10 až O12. |
 | 22. 11. | B3 schváleno, O8 hotové a zkontrolované (bez nálezu): nastavení se záložkami vlevo je v kódu, zkouší se v A10. Instalátor (O9) je zrušený a jeho zkušební výroba vrácená. |
 | 22. 11. | Balení: zůstává složka v zipu, k jednomu samorozbalovacímu exe se nevracíme. Samostatný instalátor se dělat nebude (zrušeno 22. 11.). |

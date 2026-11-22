@@ -19,7 +19,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O8 | Opus | Přestavba nastavení v kódu podle schváleného náhledu | nic | hotovo, zkontrolováno |
 | F-kontrola | Fable | Kontrola O8 | nic | hotovo, bez nálezu; dávka čeká na vyzkoušení (A10) |
 | O10 | Sonnet | Náhled volného pořadí v MODS a kategoriích | nic | čeká |
-| O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | B4, C9 | čeká |
+| O11 | Opus | Volné pořadí v kódu: tažení uvnitř MODS a kategorií, čísla pořadí, A→Z | B4 | čeká |
 | O12 | Sonnet | Posun z klávesnice, „Load before…“ v Konfliktech, ztlumení modů bez archivů | O11 | čeká |
 | F-pořadí | Fable | Kontrola O11 a O12 | O12 | čeká |
 | O13 | Sonnet | Srozumitelnější texty dialogu při vypnutí modu | nic | čeká |
@@ -53,12 +53,12 @@ Sonnet. Statický náhled `docs/previews/free-load-order.html` (jeden soubor, be
 
 ### O11. Volné pořadí v kódu
 
-Opus. Čeká na B4 (schválený náhled) a C9 (kam padají nové mody).
+Opus. Čeká na B4 (schválený náhled). Rozhodnuto 22. 11. (C9): nový mod padá na konec MODS, bez kategorie.
 - Zobrazení: MODS a kategorie v pořadí profilu, ne podle názvu. Řazení v `Apply` nahradit pořadím z profilu; „└“ vrstvy dál hned pod rodičem (táhnou se s ním, samy se netáhnou mimo něj). Kolekce a CORE MODS beze změny.
 - `MoveModsAsync`: zrušit větev s hláškou, drop uvnitř téže sekce mění pořadí přes stávající `ApplyLayoutAsync` (`BlockLayout.Compose` pořadí uvnitř sekce už zachovává). Víc vybraných modů se přesune jako skupina v dnešním pořadí.
 - Číslo pořadí na řádku podle náhledu; počítá se z `CurrentOrder()` po CORE MODS, ať odpovídá `modlist.txt`.
 - „A→Z“ v hlavičce MODS a kategorie: jednorázově seřadí jen tu sekci, zapíše do profilu, nic jiného.
-- Nové mody podle C9. Stávající knihovny: dnešní (abecední) pořadí se převezme beze změny, nikomu se po aktualizaci nic nepřehází. Ověř zvlášť profil s `OrderIsCustom = false` (výchozí pořadí hry je podle názvu archivu, ne modu).
+- Nové mody (import, stažení) na konec MODS bez kategorie; aktualizace drží místo staré verze. Stávající knihovny: dnešní (abecední) pořadí se převezme beze změny, nikomu se po aktualizaci nic nepřehází. Ověř zvlášť profil s `OrderIsCustom = false` (výchozí pořadí hry je podle názvu archivu, ne modu).
 - Pořadí patří profilu, kategorie jsou společné: přepnutí profilu ukáže jeho pořadí.
 - Testy: přesun uvnitř sekce, přes hranici kategorie, skupina, vrstva s rodičem, A→Z, nový mod. Opravit texty v `docs/USER-GUIDE.md` (oddíly 3, 10 a tabulka v 22: „sorted by name“ pryč, postup s kategorií pro jeden mod nahradit tažením), `README.md` (řádek Conflicts and load order), jeden řádek v `CHANGELOG.md`, 1–3 řádky v `docs/HOW-IT-WORKS.md`.
 - Pro uživatele položka A v `UKOLY.md` (tažení, čísla, A→Z, APPLY ukáže změnu pořadí, přepnutí profilu).
