@@ -3,7 +3,7 @@
 Založeno 23. 11. 2026 po uzavření 2. dávky, naposledy upraveno 23. 11. Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md), úkoly pro uživatele v [`UKOLY.md`](UKOLY.md). Starší dávky jsou v `archiv/` (jen archiv, stav z nich nečti).
 Další volná čísla: S1 O22 F4
 
-**Stav: všechny balíky dávky jsou hotové a čekají na sloučení do `main`** (C11 v `UKOLY.md`). Nejnovější kód je ve větvi `beta1-with-o21` (vše) a `beta1-release` (totéž bez O21 a nabídky LIST & ORDER). Po sloučení se dávka uzavře a soubor odejde do `archiv/`. Nový balík teď žádný nečeká; další vzniknou z toho, co uživatel najde při zkoušení (A18 až A21).
+**Stav: dávka uzavřena 23. 11. 2026.** Vše je sloučené do `main` a vydané jako 1.0.0-beta.1. Nejnovější kód je ve větvi `beta1-with-o21` (vše) a `beta1-release` (totéž bez O21 a nabídky LIST & ORDER). Po sloučení se dávka uzavře a soubor odejde do `archiv/`. Nový balík teď žádný nečeká; další vzniknou z toho, co uživatel najde při zkoušení (A18 až A21).
 
 ## Stav balíků
 

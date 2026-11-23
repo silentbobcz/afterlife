@@ -5,7 +5,8 @@ Mod manager for Cyberpunk 2077. C# .NET 10, WPF + CommunityToolkit.Mvvm, SQLite,
 
 ## Work queue
 
-The current batch of work is in [`FRONTA.md`](FRONTA.md) (Czech). A session started with "read FRONTA.md and do
+The current batch of work is in `FRONTA.md` (Czech); between batches the file does not exist, the newest state is
+`main` and the next free package numbers are in the header of `UKOLY.md`. A session started with "read FRONTA.md and do
 package O4" does exactly that package: read the header and the package, work without asking, write the handover
 under the package and set its status.
 
