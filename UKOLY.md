@@ -10,7 +10,7 @@ Poslední pracovní verze plné edice je `AFTERLIFE-test-32dfa69-win-x64.zip` ve
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A17 | Odkaz na web s návodem v patičce okna a doplněný rychlý návod | Pracovní verze `AFTERLIFE-test-32dfa69-win-x64.zip` ve složce `zkusebni`; patička dole v hlavním okně, rychlý návod (QUICK GUIDE) | 1. V patičce vedle „© 2026 Silentbobcz …“ klikni na **Guide & website ↗**: otevře web v prohlížeči. Je dost vidět? 2. V About je pořád WEBSITE a v rychlém návodu dole „Full guide on the web ↗“. 3. Rychlý návod má nově řádky EXPORT / IMPORT ORDER a LOAD BEFORE a v KEYS klávesy Ctrl+šipky; vejde se nadpis EXPORT / IMPORT ORDER do levého sloupce? Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
+| A17 | Odkaz na web s návodem v patičce okna a doplněný rychlý návod | Pracovní verze `AFTERLIFE-test-32dfa69-win-x64.zip` ve složce `zkusebni`; patička dole v hlavním okně, rychlý návod (QUICK GUIDE) | 1. V patičce vedle „© 2026 Silentbobcz …“ klikni na **Guide & website ↗**: otevře web v prohlížeči. Je dost vidět? 2. V rychlém návodu je „Full guide on the web ↗“ hned nahoře (dole už není); v About zůstává WEBSITE. 3. Rychlý návod má nově řádky EXPORT / IMPORT ORDER a LOAD BEFORE a v KEYS klávesy Ctrl+šipky; vejde se nadpis EXPORT / IMPORT ORDER do levého sloupce? Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
