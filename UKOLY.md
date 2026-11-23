@@ -4,15 +4,13 @@ Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu
 
 **Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O20 (vydání plné edice s instalátorem, Opus); po něm O18 a O19 (Sonnet). Nezávisle může začít O21 (proč zaškrtnuté mody schovají APPLY a jak se k němu vrátit, Opus). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O20.“
 
-Poslední pracovní verze plné edice je `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni` (23. 11.): obsahuje load list (A16) i nový dialog při vypnutí modu (A15), ještě ne odkazy na web v aplikaci (A17). Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
+Poslední pracovní verze plné edice je `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni` (23. 11.): A15 a A16 jsou vyzkoušené; odkaz v patičce (A17) ještě neobsahuje. Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
 
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A15 | Nový dialog při vypnutí modu (O17) | Pracovní verze `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni`; seznam modů | 1. Vypni mod, který potřebuje jiný zapnutý mod: nadpis „SWITCH OFF ‹JMÉNO›?“, část WILL STOP WORKING s větou a zaškrtnutým „Switch off this mod too“. 2. Najdi mod A, který potřebuje knihovnu L, a mod B, který potřebuje L i A. Vypni A: L je v části NOT NEEDED ANY MORE; odškrtni vypnutí B a L se má hned přesunout do STAYS ON. 3. Vypni kolekci, která používala mod mimo sebe: druhý dialog „SWITCH OFF UNUSED MODS?“ má prázdné zaškrtnutí a větu, že Cancel nechá kolekci zapnutou. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
-| A16 | Export a import load listu (O15) | Pracovní verze `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni`; tlačítka EXPORT ORDER a IMPORT ORDER vedle EXPORT LIST pod seznamem | 1. EXPORT ORDER: ulož soubor a otevři ho v Poznámkovém bloku, je čitelný? 2. V souboru přehoď dva řádky, jeden mod přepni z `+` na `-`, přidej řádek `@category Zkouska` s jedním modem pod ním a dej IMPORT ORDER: náhled má přesně říct, co se změní; po LOAD se seznam změní a APPLY ukáže změnu pořadí. 3. Naimportuj týž soubor podruhé: má říct, že se nic nemění. V knihovně ve složce `exports` má být záloha původního pořadí. Neověřeno: nic z toho neběželo v okně; stahování chybějících modů u Premium a přidání kolekce z náhledu. | ☐ čeká na tebe |
-| A17 | Odkazy na web s návodem v aplikaci | Další pracovní verze; okno About a rychlý návod (QUICK GUIDE) | V About klikni na WEBSITE a v rychlém návodu dole na „Full guide on the web ↗“; obojí má otevřít web v prohlížeči. Zkontroluj, že se tlačítka v About vejdou vedle sebe. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
+| A17 | Odkaz na web s návodem v patičce okna a doplněný rychlý návod | Další pracovní verze (větev `footer-web-link`); patička dole v hlavním okně, rychlý návod (QUICK GUIDE) | 1. V patičce vedle „© 2026 Silentbobcz …“ klikni na **Guide & website ↗**: otevře web v prohlížeči. Je dost vidět? 2. V About je pořád WEBSITE a v rychlém návodu dole „Full guide on the web ↗“. 3. Rychlý návod má nově řádky EXPORT / IMPORT ORDER a LOAD BEFORE a v KEYS klávesy Ctrl+šipky; vejde se nadpis EXPORT / IMPORT ORDER do levého sloupce? Neověřeno: nic z toho neběželo v okně. | ☐ čeká na sestavení |
 
 ## C. Rozhodnout (stačí odpověď)
 
@@ -32,6 +30,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | Vyzkoušeno na `2fab46c`: A15 (dialog při vypnutí modu) a A16 (export a import load listu) v pořádku. A17: odkaz na web v About nikdo nenajde, přesunut do patičky okna; rychlý návod doplněn o load list, LOAD BEFORE a klávesy (větev `footer-web-link`). |
 | 23. 11. | Rozhodnuto: na GitHubu se vydává plná edice (instalátor a zip) a vedle ní Offline zip, který jde na Nexus Mods; na Nexusu zůstává jen Offline. Instalátor jen pro plnou edici. Ruší se „vydání jen Offline“ (od alpha.9) a „instalátor nebude“ (22. 11.). Do kódu jde jako O20, web O18, návod k přechodu na novou verzi O19. |
 | 23. 11. | C10: web s návodem běží na Cloudflare Pages, <https://afterlife-13h.pages.dev>, a obnovuje se po každé změně v `main`. Adresa je v README, v okně About (tlačítko WEBSITE) a pod vestavěným návodem; na Nexus ji vkládáš ty. Úvodní stránka webu ještě nezdůrazňuje, že ke stažení je edice Offline: oprava je balík O18. |
 | 23. 11. | O15 (export a import load listu) a O17 (nový dialog při vypnutí modu) hotové a zkontrolované, 375 testů; zkouší se v A16 a A15. Druhá dávka fronty je uzavřená a v archivu. |
