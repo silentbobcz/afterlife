@@ -75,8 +75,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private OverlayVm? _overlay;
 
-    [ObservableProperty] private bool _isBusy;
-
     [ObservableProperty] private bool _isOperating;
 
     [ObservableProperty] private string? _notice;

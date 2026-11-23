@@ -100,6 +100,8 @@ If the process dies at any point, the next start finds an unfinished operation a
 - A mod added from a file is linked to its Nexus page only when Nexus confirms it (`NexusLinker`, `NexusLinking.cs`): the MD5 of the archive through `md5_search`, otherwise the file list of the mod guessed from the archive name must hold a file with that name or that upload time. The link also stores the file id, so update checks compare the exact file. A package without a match is not asked about again for a day (`nexus:linktry:<package>` in the meta table). The window does this for all unlinked mods on request and for each import from disk (`MainViewModel.Linking.cs`).
 - `nxm://` links are registered per Windows user (`HKCU\Software\Classes\nxm`); the previous handler is saved and restored.
 - Mod pictures are downloaded once into `cache/images`.
+- Every `NexusClient` (cheap, one per action) and the picture cache share the HTTP clients of `NexusHttp`: API 30 s, downloads 30 min, pictures 20 s, created on first use. The API key and application headers go on each request (`NexusHttp.ApiRequest`), never on a client, so CDN downloads never carry the key; AFTERLIFE Offline calls `NexusHttp.Disable()` at start and no client is ever created.
+- The window's `IsBusy` is a `BusyCounter` (Core): every action through `RunUiAsync` holds a `using` scope, and the window is free again only when the last overlapping action ends.
 
 ## REDmod
 
