@@ -202,7 +202,7 @@ public sealed class FixerService
             if (!selected.IsEnabled(p.PackageId)) _ctx.Profiles.SetEnabledMany(selected.Id, [p.PackageId], true);
             message = $"{name} is in the library and switched on in {selected.Name}. Press APPLY CHANGES.";
         }
-        if (unknown.Count > 0) message += $" Unknown requirement(s) ignored: {string.Join(", ", unknown)}.";
+        if (unknown.Count > 0) message += $" Unknown {Plural.Word(unknown.Count, "requirement")} ignored: {string.Join(", ", unknown)}.";
         return Result(f.Name, id, FixerResult.Imported, p.PackageId, message);
     }
 

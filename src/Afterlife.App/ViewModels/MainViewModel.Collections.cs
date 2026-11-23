@@ -196,9 +196,9 @@ public sealed partial class MainViewModel
             progress.Current = null;
             progress.CurrentPercent = 0;
             progress.StatusText = outside == 0 ? "Complete. Apply to put the collection in the game."
-                : $"Everything from Nexus is in. {outside} item(s) outside Nexus need adding by hand.";
+                : $"Everything from Nexus is in. {Plural.Of(outside, "item")} outside Nexus {Plural.Word(outside, "needs", "need")} adding by hand.";
             Say(outside == 0 ? $"Collection {r.Name} is complete in the library. Apply to put it in the game."
-                : $"Collection {r.Name}: everything from Nexus is in. {outside} item(s) outside Nexus need adding by hand (see the collection).", outside == 0 ? Tone.Ok : Tone.Warn);
+                : $"Collection {r.Name}: everything from Nexus is in. {Plural.Of(outside, "item")} outside Nexus {Plural.Word(outside, "needs", "need")} adding by hand (see the collection).", outside == 0 ? Tone.Ok : Tone.Warn);
             _collectionDownloading = null;
             _collectionWaiting = null;
             return;
@@ -251,8 +251,8 @@ public sealed partial class MainViewModel
                 // no endless retry: stop, Resume tries the failed ones again
                 progress.IsRunning = false;
                 progress.Current = null;
-                progress.StatusText = $"{progress.Failed} mod(s) could not be downloaded. Resume tries them again.";
-                Say($"Collection {r.Name}: {progress.Failed} mod(s) could not be downloaded. Open the collection and press Resume to try again.", Tone.Warn);
+                progress.StatusText = $"{Plural.Of(progress.Failed, "mod")} could not be downloaded. Resume tries them again.";
+                Say($"Collection {r.Name}: {Plural.Of(progress.Failed, "mod")} could not be downloaded. Open the collection and press Resume to try again.", Tone.Warn);
                 return;
             }
             await ContinueCollectionAsync(slug);
@@ -465,8 +465,8 @@ public sealed partial class MainViewModel
         if (all is null) { await RefreshAsync(); return; }
         await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, all, on));
         await RefreshAsync();
-        Say(on ? $"{all.Count} mod(s) switched on in the profile. Apply to put them in the game."
-               : $"{all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
+        Say(on ? $"{Plural.Of(all.Count, "mod")} switched on in the profile. Apply to put them in the game."
+               : $"{Plural.Of(all.Count, "mod")} switched off in the profile. Apply to remove them from the game.", Tone.Info);
     });
 
     /// <summary>All mods of one category on or off; asks about requirements and dependents.</summary>
@@ -481,8 +481,8 @@ public sealed partial class MainViewModel
         if (all is null) { await RefreshAsync(); return; }
         await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, all, on));
         await RefreshAsync();
-        Say(on ? $"{all.Count} mod(s) switched on in the profile. Apply to put them in the game."
-               : $"{all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
+        Say(on ? $"{Plural.Of(all.Count, "mod")} switched on in the profile. Apply to put them in the game."
+               : $"{Plural.Of(all.Count, "mod")} switched off in the profile. Apply to remove them from the game.", Tone.Info);
     });
 
     public const string CoreChapter = "CORE MODS";
@@ -509,8 +509,8 @@ public sealed partial class MainViewModel
         if (all is null) { await RefreshAsync(); return; }
         await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, all, on));
         await RefreshAsync();
-        Say(on ? $"{all.Count} mod(s) switched on in the profile. Apply to put them in the game."
-               : $"{all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
+        Say(on ? $"{Plural.Of(all.Count, "mod")} switched on in the profile. Apply to put them in the game."
+               : $"{Plural.Of(all.Count, "mod")} switched off in the profile. Apply to remove them from the game.", Tone.Info);
     });
 
     /// <summary>Packages of the collection that are in the library (required and the optional ones chosen); never core mods.</summary>
@@ -557,8 +557,8 @@ public sealed partial class MainViewModel
         }
         await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, all, on));
         await RefreshAsync();
-        Say(on ? $"{r.Name}: {all.Count} mod(s) switched on in the profile. Apply to put them in the game."
-               : $"{r.Name}: {all.Count} mod(s) switched off in the profile. Apply to remove them from the game.", Tone.Info);
+        Say(on ? $"{r.Name}: {Plural.Of(all.Count, "mod")} switched on in the profile. Apply to put them in the game."
+               : $"{r.Name}: {Plural.Of(all.Count, "mod")} switched off in the profile. Apply to remove them from the game.", Tone.Info);
     });
 
     [RelayCommand]
@@ -585,8 +585,8 @@ public sealed partial class MainViewModel
         var (remove, keep) = CollectionLogic.RemovalPlan(r, all, _overview);
         var lines = remove.Select(x => $"− {x.Name}").Concat(keep.Select(x => $"= {x.Name}   · stays: {x.KeptBecause}")).ToList();
         var vm = new ConfirmVm($"REMOVE COLLECTION {r.Name.ToUpperInvariant()}?",
-            $"{remove.Count} mod(s) only this collection uses leave the game and the library (their downloaded archives stay, so Import again works). "
-            + $"{keep.Count} mod(s) stay because something else needs them."
+            $"{Plural.Of(remove.Count, "mod")} only this collection uses {Plural.Word(remove.Count, "leaves", "leave")} the game and the library (their downloaded archives stay, so Import again works). "
+            + $"{Plural.Of(keep.Count, "mod")} {Plural.Word(keep.Count, "stays", "stay")} because something else needs them."
             + (r.ProfileId is null ? "" : " The profile of the collection stays; you can switch away from it."),
             "REMOVE", danger: true, lines, "Keep all mods, remove only the collection (its chapter and labels)", false, "WHAT HAPPENS");
         if (!await AskAsync(vm)) return;

@@ -54,7 +54,7 @@ public static class ActivityLog
     public static void Plan(string title, Core.Plan plan)
     {
         if (!Enabled) return;
-        var lines = new List<string> { $"{title}: {plan.Steps.Count} step(s), {plan.Blockers.Count} blocker(s), {plan.Warnings.Count} warning(s)" };
+        var lines = new List<string> { $"{title}: {Plural.Of(plan.Steps.Count, "step")}, {Plural.Of(plan.Blockers.Count, "blocker")}, {Plural.Of(plan.Warnings.Count, "warning")}" };
         lines.AddRange(plan.Blockers.Select(b => $"BLOCKED  {b.Kind} {b.Path ?? ""} [{b.PackageId ?? "-"}] {b.Message}"));
         lines.AddRange(plan.Steps.Select(s => $"{s.Kind,-7} {s.Path} [{s.Owner ?? "-"}] {s.Reason}"));
         Write("plan", lines);

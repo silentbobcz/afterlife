@@ -186,7 +186,7 @@ public static class SnapshotBuilder
             if (unmanaged.Count > 0 && !ao.IncludeUnmanagedArchives)
             {
                 issues.Add(new Issue(IssueKind.UnmanagedArchivesInCustomOrder, Severity.Blocking,
-                    $"{unmanaged.Count} .archive file(s) installed outside AFTERLIFE would be reordered by your load order; confirm including them or remove them"));
+                    $"{unmanaged.Count} .archive {Plural.Word(unmanaged.Count, "file")} installed outside AFTERLIFE would be reordered by your load order; confirm including them or remove them"));
             }
             else
             {

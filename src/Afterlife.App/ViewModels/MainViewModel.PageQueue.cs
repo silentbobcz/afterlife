@@ -106,8 +106,8 @@ public sealed partial class MainViewModel
         var rest = q.Total - q.Downloaded;
         p.StatusText = q.Downloaded == 0
             ? "No file came in. Resume opens the skipped pages again."
-            : $"{q.Downloaded} of {q.Total} mod(s) are in the library, switched off. Load the list again to put them in place."
-              + (rest > 0 ? $" Resume opens the {rest} skipped page(s) again." : "");
+            : $"{q.Downloaded} of {Plural.Of(q.Total, "mod")} {Plural.Word(q.Total, "is", "are")} in the library, switched off. Load the list again to put {Plural.Word(q.Total, "it", "them")} in place."
+              + (rest > 0 ? $" Resume opens the {rest} skipped {Plural.Word(rest, "page")} again." : "");
         Say(q.Downloaded == 0 ? "Missing mods: no file came in from Nexus."
             : $"Missing mods: {q.Downloaded} of {q.Total} in the library. Load the list again to put them in place.", q.Downloaded == q.Total ? Tone.Ok : Tone.Warn);
         if (Overlay is null) Overlay = w;
