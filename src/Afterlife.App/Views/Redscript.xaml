@@ -1,0 +1,80 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:Afterlife.App.ViewModels">
+    <!-- REDSCRIPT ERROR: the mods the game's script log names (MainViewModel.Redscript.cs). Cards as in "Files changed
+         outside AFTERLIFE", the text to copy as in EXPORT LIST, the footer as in a confirmation. -->
+
+    <!-- one culprit: name and version, the error lines, a note; "Switch off" for a mod of the library, "Open folder" otherwise -->
+    <DataTemplate x:Key="RedscriptCard" DataType="{x:Type vm:RedscriptCulpritVm}">
+        <Border Margin="0,6,0,0" Padding="12,8" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Body}" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis">
+                        <Run Text="{Binding Name, Mode=OneWay}" /><Run Text="  " /><Run Text="{Binding Version, Mode=OneWay}" FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="Normal" Foreground="{StaticResource T2}" />
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding Lines}" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Margin="0,3,0,0" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource T2}" Text="{Binding}"
+                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="{Binding Note}" Visibility="{Binding Note, Converter={StaticResource NullToVis}}" />
+                </StackPanel>
+                <CheckBox Grid.Column="1" Margin="12,2,0,0" VerticalAlignment="Top" Style="{StaticResource PlainCheck}" Content="Switch off"
+                          IsChecked="{Binding SwitchOff}" IsEnabled="{Binding CanSwitchOff}"
+                          Visibility="{Binding IsLibrary, Converter={StaticResource BoolToVis}}" />
+                <Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Top" Style="{StaticResource LinkButton}" Command="{Binding OpenFolderCommand}" Content="Open folder"
+                        Visibility="{Binding OpenFolderCommand, Converter={StaticResource NullToVis}}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:RedscriptVm}">
+        <StackPanel Width="680">
+            <TextBlock Style="{StaticResource Body}" FontSize="13.5" Text="{Binding Message}" />
+            <TextBlock Margin="0,4,0,0" Style="{StaticResource Meta}" Text="{Binding LogLine}" />
+            <ScrollViewer MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource GrowWithWindow}, ConverterParameter=300}"
+                          VerticalScrollBarVisibility="Auto" Focusable="False">
+                <StackPanel>
+                    <!-- FROM YOUR LIBRARY -->
+                    <StackPanel Visibility="{Binding HasLibrary, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Margin="0,16,0,4" Style="{StaticResource MonoLabel}" Text="FROM YOUR LIBRARY" />
+                        <TextBlock Style="{StaticResource Meta}" Text="{Binding LibraryNote}" />
+                        <ItemsControl ItemsSource="{Binding Library}" ItemTemplate="{StaticResource RedscriptCard}" Focusable="False" />
+                        <TextBlock Margin="0,14,0,0" Style="{StaticResource Meta}" Text="{Binding LibraryClosing}" />
+                    </StackPanel>
+                    <!-- NOT IN YOUR LIBRARY -->
+                    <StackPanel Visibility="{Binding HasForeign, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Margin="0,16,0,4" Style="{StaticResource MonoLabel}" Text="NOT IN YOUR LIBRARY" />
+                        <TextBlock Style="{StaticResource Meta}" Text="{Binding ForeignNote}" />
+                        <ItemsControl ItemsSource="{Binding Foreign}" ItemTemplate="{StaticResource RedscriptCard}" Focusable="False" />
+                        <TextBlock Margin="0,8,0,0" Style="{StaticResource Meta}" Text="{Binding ForeignHint}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+            <!-- ASK AN AI: read only; COPY puts it on the clipboard, nothing is sent -->
+            <TextBlock Margin="0,16,0,4" Style="{StaticResource MonoLabel}" Text="ASK AN AI" />
+            <TextBlock Style="{StaticResource Meta}" Text="{Binding AiNote}" />
+            <TextBox Margin="0,8,0,0" Style="{StaticResource DarkTextBox}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Text="{Binding AiPrompt, Mode=OneWay}"
+                     IsReadOnly="True" Height="160" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" AcceptsReturn="True"
+                     AutomationProperties.Name="Text for an AI chat" />
+            <Button Margin="0,12,0,0" HorizontalAlignment="Right" Style="{StaticResource PrimaryButton}" Command="{Binding CopyCommand}" Content="COPY" />
+            <!-- footer: SWITCH OFF n MODS when the library has culprits, otherwise only CLOSE -->
+            <StackPanel Margin="0,20,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CloseCommand}" Content="Close" Margin="0,0,18,0"
+                        Visibility="{Binding HasLibrary, Converter={StaticResource BoolToVis}}" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding SwitchOffCommand}" Content="{Binding SwitchOffLabel}" MinWidth="150"
+                        ToolTip="{Binding SwitchOffTip}" ToolTipService.ShowOnDisabled="True"
+                        Visibility="{Binding HasLibrary, Converter={StaticResource BoolToVis}}" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding CloseCommand}" Content="CLOSE" MinWidth="150"
+                        Visibility="{Binding HasLibrary, Converter={StaticResource InverseBoolToVis}}" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

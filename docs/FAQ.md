@@ -12,6 +12,7 @@
 - [I already have mods installed by hand](#i-already-have-mods-installed-by-hand)
 - [Does it change my game files?](#does-it-change-my-game-files)
 - [The game crashes after I applied a profile](#the-game-crashes-after-i-applied-a-profile)
+- [Script mods stopped working](#script-mods-stopped-working)
 - [The power went out while it was applying](#the-power-went-out-while-it-was-applying)
 - [Mod Manager Download opens Vortex instead of AFTERLIFE](#mod-manager-download-opens-vortex-instead-of-afterlife)
 - [UPDATE only opens a web page](#update-only-opens-a-web-page)
@@ -83,6 +84,10 @@ Only what you apply, and only inside the mod folders (`archive/pc/mod`, `bin/x64
 2. If it runs, check the core mods table: after a game patch, CET, RED4ext and their plugins often need a new version.
 3. Look for **✕** (missing requirement) and **⚠** (conflict) marks in the list.
 4. Switch half of the mods off, apply, test, repeat. *Export list* helps you keep notes.
+
+## Script mods stopped working
+
+Usually redscript could not compile the scripts, often after a game update: then **no** script mod runs, not just the broken one. AFTERLIFE shows the banner **SCRIPT MODS DID NOT LOAD** when you come back from the game; otherwise open **LIST & ORDER → ANALYZE REDSCRIPT ERROR**. The window names the mods from the game's script log; switch the checked ones off, apply and start the game again. AFTERLIFE only switches them off, nothing is deleted. Not sure which mod to update? **COPY** the text under *Ask an AI* into an AI chat or a forum post (nothing is sent by AFTERLIFE). More in the [user guide](USER-GUIDE.md), section 7.
 
 ## The power went out while it was applying
 

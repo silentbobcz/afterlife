@@ -10,6 +10,7 @@ This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run 
 - [5. Profiles](#5-profiles)
 - [6. Apply changes: load to the deck](#6-apply-changes-load-to-the-deck)
 - [7. Jack in: starting the game](#7-jack-in-starting-the-game)
+  - [Script mods did not load (redscript error)](#script-mods-did-not-load-redscript-error)
 - [8. Mod details](#8-mod-details)
 - [9. Requirements and core mods](#9-requirements-and-core-mods)
 - [10. Conflicts and load order](#10-conflicts-and-load-order)
@@ -176,6 +177,18 @@ When an apply takes a core mod out of the game, the files that mod created itsel
 **JACK IN** starts Cyberpunk 2077 with `--launcher-skip`. If the profile contains REDmods, AFTERLIFE first runs the game's `redMod.exe deploy` (only when the REDmod list changed) and starts the game with `-modded`. If the REDmod DLC is missing, the game starts without the REDmods and AFTERLIFE tells you how to add it.
 
 JACK IN asks you to apply first when the game does not match the selected profile.
+
+### Script mods did not load (redscript error)
+
+When the game cannot compile redscript, **no** script mod runs, and you usually only notice that some other mod misbehaves. The game writes the reason to `r6\logs\redscript_rCURRENT.log`. When you come back to AFTERLIFE after the game (and at start, when the game ran without AFTERLIFE), it reads that log; if the compilation failed, an orange banner **SCRIPT MODS DID NOT LOAD** appears above the list. **Dismiss** hides it until the game writes a new log.
+
+**ANALYZE** on the banner, or **ANALYZE REDSCRIPT ERROR** at any time (first line of the **LIST & ORDER** menu under the list), opens the window **REDSCRIPT ERROR**:
+
+- **From your library**: the mods the log names, with their version and error lines. Mods that are on in the selected profile are checked; **SWITCH OFF n MODS** switches the checked ones off through the normal switch-off (the usual dialog follows when other mods need them). Nothing is deleted and nothing changes in the game until you **APPLY CHANGES**; then launch the game again.
+- **Not in your library**: scripts AFTERLIFE did not install. It does not switch them off; **Open folder** shows where they are, so you can update the mod or move its folder out of `r6\scripts` while the game is closed. *Scan manual mods* can add them to the library.
+- **Ask an AI**: a ready text with the game version, the mods, the errors and your frameworks. **COPY** puts it on the clipboard for an AI chat or a forum post. Nothing is sent anywhere, and your user name is removed from the paths.
+
+When the last compilation was fine, the log is missing or it is older than the last launch, the analysis says so in the notice line instead.
 
 ## 8. Mod details
 
@@ -391,6 +404,7 @@ When the game version or build changes, AFTERLIFE shows a **game updated** banne
 ## 19. If something goes wrong
 
 - **The game crashes after applying**: apply **Mods off** and test. If the game runs, switch half of your mods on, apply, test, and repeat. *Export list* helps you keep track.
+- **Script mods stopped working**: **LIST & ORDER → ANALYZE REDSCRIPT ERROR** names the mods behind a failed script compilation and can switch them off (section 7).
 - **An apply was interrupted** (crash, power cut): start AFTERLIFE; it offers **FINISH** or **RETURN TO PREVIOUS**.
 - **Something looks wrong in the list**: **Refresh** (F5).
 - **The game itself is damaged**: verify the game files in Steam, GOG Galaxy or Epic, then apply again.

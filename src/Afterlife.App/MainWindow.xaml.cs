@@ -33,8 +33,10 @@ public partial class MainWindow : Window
         {
             if (startLink is not null) await _vm.HandleExternalAsync(startLink);
             await _vm.StartAsync();
+            await _vm.CheckRedscriptLogAsync(atStart: true);
         };
-        Activated += async (_, _) => await _vm.OnActivatedAsync();
+        // back from the game: rescan, then look at the script log the game wrote (only when it is new)
+        Activated += async (_, _) => { await _vm.OnActivatedAsync(); await _vm.CheckRedscriptLogAsync(); };
         // the background animation rests while the window is not in front, so it takes nothing from the game
         Activated += (_, _) => FxClock.SetPaused(WindowState == WindowState.Minimized);
         Deactivated += (_, _) => FxClock.SetPaused(true);

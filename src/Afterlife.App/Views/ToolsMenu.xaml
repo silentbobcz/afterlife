@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:c="clr-namespace:Afterlife.App.Controls">
-    <!-- LIST & ORDER: the tools used now and then (EXPORT LIST, EXPORT ORDER, IMPORT ORDER, RESET ORDER) in one menu
+    <!-- LIST & ORDER: the tools used now and then (ANALYZE REDSCRIPT ERROR, EXPORT LIST, EXPORT ORDER, IMPORT ORDER, RESET ORDER) in one menu
          under the mod list, so the row keeps only the daily buttons. The main window hosts it with one ContentControl. -->
 
     <!-- looks like SmallButton; lit while the menu is open -->
@@ -92,6 +92,14 @@
                    IsOpen="{Binding ToolsMenuOpen, Mode=TwoWay}">
                 <Border Width="380" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1" Padding="0,4">
                     <StackPanel>
+                        <!-- reads the game's redscript log and names the mods behind a failed compilation (MainViewModel.Redscript.cs) -->
+                        <Button Style="{StaticResource ToolsMenuItem}" Command="{Binding RunToolCommand}" CommandParameter="{Binding AnalyzeRedscriptLogCommand}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource ToolsMenuName}" Text="ANALYZE REDSCRIPT ERROR" />
+                                <TextBlock Style="{StaticResource Meta}" Text="Script mods not working? Read the game's script log and find the mod behind it" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                        <Border Height="1" Margin="0,4" Background="{StaticResource Line2}" />
                         <Button Style="{StaticResource ToolsMenuItem}" Command="{Binding RunToolCommand}" CommandParameter="{Binding ExportListCommand}">
                             <StackPanel>
                                 <TextBlock Style="{StaticResource ToolsMenuName}" Text="EXPORT LIST" />
