@@ -64,9 +64,11 @@ public sealed class SingleInstance : IDisposable
             if (!File.Exists(file)) return true;
             Thread.Sleep(200);
         }
+        if (!File.Exists(file)) return true;
+        // nobody took it: take the file back, so a window started later does not download it unasked
         try { File.Delete(file); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
-        return !File.Exists(file);
+        return false;
     }
 
     private static bool TrySend(string message, out bool refused)
