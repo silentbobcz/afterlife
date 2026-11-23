@@ -52,6 +52,32 @@ public sealed class CoordinatorHost : IDisposable
 
     public Task RunAsync(Action<InstallCoordinator> work) => RunAsync(c => { work(c); return true; });
 
+    /// <summary>
+    /// Runs <paramref name="check"/> on the open library, closes it, runs <paramref name="move"/> while nothing
+    /// holds its files, and opens the library where it is afterwards (the new folder, or the old one when the move
+    /// failed). Nothing else runs in between.
+    /// </summary>
+    public async Task MoveLibraryAsync(string target, Action<InstallCoordinator> check, Action move)
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            var c = _coordinator ?? throw new InvalidOperationException("no game install is open");
+            var source = c.Library.Root;
+            await Task.Run(() => check(c));
+            c.Dispose();
+            _coordinator = null;
+            try { await Task.Run(move); }
+            finally
+            {
+                var at = AppSettings.ResolveLibrary(null);
+                if (!AppSettings.IsInitialized(at)) at = AppSettings.IsInitialized(source) ? source : target;
+                _coordinator = await Task.Run(() => InstallCoordinator.Open(at));
+            }
+        }
+        finally { _gate.Release(); }
+    }
+
     public void Dispose()
     {
         _coordinator?.Dispose();

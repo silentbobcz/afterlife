@@ -736,8 +736,8 @@
                                 <ColumnDefinition Width="170" />
                                 <ColumnDefinition Width="78" />
                             </Grid.ColumnDefinitions>
-                            <CheckBox x:Name="SelectAllBox" Style="{StaticResource PlainCheck}" VerticalAlignment="Center" Click="OnSelectAllClick" ToolTip="Select all (Ctrl+A)"
-                                      IsChecked="{Binding AllChecked, Mode=OneWay}" AutomationProperties.Name="Select all mods" />
+                            <CheckBox x:Name="SelectAllBox" Style="{StaticResource PlainCheck}" VerticalAlignment="Center" Click="OnSelectAllClick" ToolTip="Check all (Ctrl+A)"
+                                      IsChecked="{Binding AllChecked, Mode=OneWay}" AutomationProperties.Name="Check all mods" />
                             <TextBlock Grid.Column="1" Style="{StaticResource MonoLabel}" Text="MOD · TAGS" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="2" Style="{StaticResource MonoLabel}" Text="VERSION" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="3" Style="{StaticResource MonoLabel}" Text="DEPLOYED" VerticalAlignment="Center" />

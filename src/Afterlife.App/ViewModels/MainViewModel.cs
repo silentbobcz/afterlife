@@ -75,8 +75,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private OverlayVm? _overlay;
 
-    [ObservableProperty] private bool _isBusy;
-
     [ObservableProperty] private bool _isOperating;
 
     [ObservableProperty] private string? _notice;
@@ -212,6 +210,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         LogPrivacy.LibraryRoot = AppSettings.ResolveLibrary(null);
         ActivityLog.Enabled = AppSettings.Load().ActivityLog;
         ActivityLog.Write("app", $"start · AFTERLIFE {AppVersion}");
+        await RecoverLibraryMoveAsync();
+        LogPrivacy.LibraryRoot = AppSettings.ResolveLibrary(null);
         var lib = AppSettings.ResolveLibrary(null);
         if (!AppSettings.IsInitialized(lib))
         {
@@ -367,7 +367,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             }
             _ = AfterOpenAsync();
             Say(DetectedCount > 0
-                ? $"Ready. Found {DetectedCount} mod(s) installed outside AFTERLIFE; they are listed in Scan manual mods and left untouched."
+                ? $"Ready. Found {Plural.Of(DetectedCount, "mod")} installed outside AFTERLIFE; they are listed in Scan manual mods and left untouched."
                 : "Ready. Existing files in the game were scanned and left untouched.", Tone.Ok);
         }
         catch (Exception ex) when (IsExpected(ex))

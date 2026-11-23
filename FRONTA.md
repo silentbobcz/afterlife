@@ -3,7 +3,7 @@
 Sestaveno 23. 11. 2026 z námětů a odložených věcí v [`UKOLY.md`](UKOLY.md) (stav po vydání 1.0.0-beta.1) a z odložených nálezů revize z 19. 11. Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md). Starší dávky jsou v `archiv/` (jen archiv, stav z nich nečti).
 Další volná čísla: S2 O27 F6
 
-Nejnovější kód: větev `main`. Každý balík má vlastní větev a vlastní pracovní složku (`git worktree add <složka> -b <větev> origin/main`); hlavní klon zůstává na `main`. Do `main` se slučuje jen na výslovný pokyn uživatele.
+Nejnovější kód: větev `batch4` (vše z této dávky kromě O24; do `main` nesloučeno, čeká na pokyn uživatele). Balík O24 začni z ní. Každý balík má vlastní větev a vlastní pracovní složku (`git worktree add <složka> -b <větev> origin/main`); hlavní klon zůstává na `main`. Do `main` se slučuje jen na výslovný pokyn uživatele.
 Kontroly: `dotnet test tests/Afterlife.Tests` a `dotnet build src/Afterlife.App -p:EnableWindowsTargeting=true`; na počítači uživatele není .NET 10 SDK, tam `git push` větve a `gh workflow run build.yml --ref <větev>`.
 Skilly: alt, ukoly-a-fronty, kohn, afterlife, u náhledů grafika-cyberpunk (zdroje v `D:/_AI/_skills/<skill>/SKILL.md`, když nejsou nahrané).
 
@@ -22,15 +22,15 @@ Skilly: alt, ukoly-a-fronty, kohn, afterlife, u náhledů grafika-cyberpunk (zdr
 
 | Balík | Kde běží | Co | Stav |
 |---|---|---|---|
-| F4 | Fable | Kategorie NEW pro nové mody: návrh a náhled (bez kódu) | ☐ čeká |
-| F5 | Fable | Přesun knihovny do jiné složky z aplikace | ☐ čeká |
-| O22 | sub-Opus | Chyba redscriptu: čtení logu a nalezení viníka (bez okna) | ☐ čeká |
-| O23 | sub-Opus | Chyba redscriptu: náhled okna a texty (návrh, bez kódu) | ☐ čeká |
-| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ☐ čeká na O22 a B11 |
-| O25 | sub-Opus | Import load listu: fronta stránek pro účty zdarma | ☐ čeká |
-| O26 | sub-Opus | Drobné opravy z revize: počítadlo „pracuji“, jeden klient HTTP | ☐ čeká |
-| S1 | sub-Sonnet | Texty: „mod(s)“ ve hláškách, „selected“ a „checked“ v návodu | ☐ čeká na O24, O25 a O26 |
-| F-kontrola | Fable | Kontrola dávky a její uzavření | ☐ čeká na vše |
+| F4 | Fable | Kategorie NEW pro nové mody: návrh a náhled (bez kódu) | ✅ hotovo, čeká na B10 |
+| F5 | Fable | Přesun knihovny do jiné složky z aplikace | ✅ hotovo (testy a uživatel: A23) |
+| O22 | sub-Opus | Chyba redscriptu: čtení logu a nalezení viníka (bez okna) | ✅ zkontrolováno |
+| O23 | sub-Opus | Chyba redscriptu: náhled okna a texty (návrh, bez kódu) | ✅ hotovo, čeká na B11 |
+| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ☐ čeká na B11 |
+| O25 | sub-Opus | Import load listu: fronta stránek pro účty zdarma | ✅ zkontrolováno (A24) |
+| O26 | sub-Opus | Drobné opravy z revize: počítadlo „pracuji“, jeden klient HTTP | ✅ zkontrolováno |
+| S1 | sub-Sonnet | Texty: „mod(s)“ ve hláškách, „selected“ a „checked“ v návodu | ✅ zkontrolováno (A25) |
+| F-kontrola | Fable | Kontrola dávky a její uzavření | ✅ proběhla po každém agentovi; dávka se uzavře po O24 |
 
 ## F4. Kategorie NEW pro nově nainstalované mody (návrh, bez kódu)
 
@@ -133,6 +133,65 @@ Hotovo, když: v `src` není „mod(s)“, testy projdou a web se z dokumentů s
 
 Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ a „Rozhodl jsem sám“), spustit kontroly na GitHubu, nálezy opravit a zapsat. Při výrobě jedním vláknem ji nahrazuje kontrola po každém agentovi. Na konci dávku uzavřít: přenést, co má žít dál (`docs/HOW-IT-WORKS.md`, `CHANGELOG.md`, položky A v `UKOLY.md`), a soubor přesunout do `archiv/FRONTA-4-davka.md` (v archivu nechat tři poslední dávky).
 
+## Předávky
+
+**Předávka F4** (23. 11., výrobní vlákno)
+- Stav: hotovo, návrh bez kódu. Soubory `docs/previews/new-category.md` a `new-category.html`.
+- Návrh: NEW je samostatný blok vedle kolekcí a MODS (klíč `new` v `BlockLayout.Blocks`), členství je sada id v rozložení, prázdný blok se neukazuje, tlačítko MOVE ALL TO MODS. Instalace nového modu nemění pořadí ostatních modů mezi sebou (`Compose` je stabilní řazení).
+- Do NEW nejdou: aktualizace, mody kolekcí, mody umístěné importem load listu, questy FIXER, převzaté ruční mody.
+- Ověřeno: náhled se otevře a ukáže první stav. Neověřeno: přepínání stavů klikem; nic z aplikace neběželo, tvrzení o dnešním chování jsou z četby kódu.
+- Pro kód (další dávka): seznam souborů je na konci `new-category.md`.
+- Pro uživatele: B10 (tři rozhodnutí).
+
+**Předávka F5** (23. 11., výrobní vlákno)
+- Stav: hotovo. Nové `LibraryMove.cs` (`LibraryMover`, `FolderRules`), `MainViewModel.LibraryMove.cs`, `LibraryMoveTests.cs`; změny v `Coordinator.cs` (S7), `CoordinatorHost.cs`, `SettingsVm.cs`, `SettingsView.xaml`, `MainViewModel.cs` (start), návod, FAQ.
+- Zjištění: hra na umístění knihovny nezávisí (nasazené soubory jsou kopie, databáze drží jen cesty ve hře), přesun je tedy povolen i s nasazenými mody; `Deployment.cs` a `Deploy.cs` beze změny. Blokuje jen nedokončená změna hry.
+- Postup: stejný disk přejmenování; jiný disk kopie pod dočasným jménem, kontrola velikosti a otisku databáze, pak přepnutí nastavení a teprve potom mazání starých souborů (jen těch, které jsou v nové složce). Stav v `%APPDATA%/AFTERLIFE/library-move.json`; po přerušení start nabídne pokračovat, nebo nechat knihovnu na místě.
+- Ověřeno: běh na GitHubu (Windows), 10 nových testů včetně přerušení, návratu, chyby kopie a lomítka na konci cesty.
+- Neověřeno: okno ve Windows, skutečný přesun mezi dvěma disky s desítkami GB, kontrola volného místa na skutečném disku.
+- Rozhodl jsem sám: bez tlačítka Zrušit během přesunu; neprázdná vybraná složka dostane podsložku `AFTERLIFE Library`; s proměnnou `AFTERLIFE_LIBRARY` se přesun odmítne; soubory, které do staré složky dal uživatel, zůstávají; quest FIXER vhozený do staré schránky během kopírování zůstane ve staré složce.
+- Pro uživatele: A23.
+
+**Předávka O22** (23. 11., agent Opus, zkontrolovalo výrobní vlákno)
+- Stav: hotovo. `Afterlife.Core/RedscriptLog.cs` (rozbor textu), `Afterlife.Infrastructure/RedscriptDiagnosis.cs` (přiřazení k modům), `RedscriptPrompt.cs` (dotaz pro AI), `RedscriptLogTests.cs`.
+- Jedno volání pro okno: `coordinator.AnalyzeRedscript(profile?, launchedAt?)` vrací `RedscriptReport` (stav logu, viníci z knihovny se zapnuto/vypnuto, viníci mimo knihovnu, chyby bez souboru, `AiPrompt` už přes `LogPrivacy.Scrub`).
+- Přiřazení: přesná cesta nasazeného souboru, potom složka v `r6/scripts` nebo `mods`, kde AFTERLIFE sám nasadil soubory modu; podle podobnosti názvu nikdy.
+- Ověřeno: běh na GitHubu, testy. Neověřeno: skutečný log (D4 nedodáno), přesné znění řádků úspěchu a seznamu „caused by“ v ostré hře.
+- Rozhodl agent: log je „starý“, když je starší než poslední APPLY nebo předané spuštění hry (čas spuštění se zatím neukládá); i starý log nese viníky. `AnalyzeRedscript` volá `CachedScan()`, bez uloženého skenu projde složku hry: pro automatickou kontrolu po hře to O24 musí vzít v úvahu.
+
+**Předávka O23** (23. 11., agent Opus, zkontrolovalo výrobní vlákno pohledem)
+- Stav: hotovo, návrh bez kódu. `docs/previews/redscript-error.html` (stavy a až d a ostatní výsledky), `redscript-error-texts.md` (všechny texty a pravidla slov).
+- Doporučení: tlačítko jako první řádek nabídky LIST & ORDER; upozornění jako oranžový pruh nad seznamem (stejný jako „game was updated“), ne okno.
+- Pro O24: tabulka na konci náhledu říká, na které hotové prvky se každý stav mapuje (`DecisionsVm` karty, `ConfirmVm` patička, `ToolsMenuItem`, pruh v `MainWindow.xaml`).
+- Pro uživatele: B11.
+
+**Předávka O25** (23. 11., agent Opus, zkontrolovalo výrobní vlákno)
+- Stav: hotovo. Nové `NexusPageQueue.cs` (čistá fronta), `MainViewModel.PageQueue.cs`, `PageQueueTests.cs`; okno `LoadListQueueVm` používá pohled stahování kolekce, vytažený do společné šablony `CollectionProgressVm` v `CollectionViews.xaml`.
+- Chování: účet zdarma dostane v náhledu IMPORT ORDER „Get from Nexus, page by page“; stránky se otevírají jedna po druhé, soubor přijde přes nxm vypnutý, na konci LOAD THE LIST AGAIN. Skip, PAUSE, RESUME; zavření okno jen schová.
+- Ověřeno: běh na GitHubu, testy fronty. Neověřeno: okno ve Windows a průchod se skutečným účtem zdarma; okno kolekce po vytažení šablony (má vypadat stejně).
+- Rozhodl agent: soubor se páruje jen přesným id modu a souboru; nepřidaný soubor se počítá jako přeskočený; když se účet nepodaří ověřit, hláška říká, že Nexus není dostupný.
+- Mimo balík: i ve frontě nahrazuje `ImportDownloadedAsync` starší verzi téhož modu (stejně jako cesta Premium).
+- Pro uživatele: A24.
+
+**Předávka O26** (23. 11., agent Opus, zkontrolovalo výrobní vlákno)
+- Stav: hotovo. `Afterlife.Core/BusyCounter.cs`, `Afterlife.Infrastructure/NexusHttp.cs`, `BusyAndHttpTests.cs`; změny v `MainViewModel.Ui.cs`, `Nexus.cs`, `App.xaml.cs`.
+- `IsBusy` je počítadlo (jediné místo, které ho nastavovalo, byl `RunUiAsync`). Tři sdílení klienti HTTP (API 30 s, stahování 30 min, obrázky 20 s) bez výchozích hlaviček; klíč jde na každý požadavek, na stahování z CDN nikdy.
+- Offline: `NexusHttp.Disable()` při startu, klient se nevytvoří (dřív ho cache obrázků vytvářela i v Offline).
+- Ověřeno: běh na GitHubu, testy. Neověřeno: chování v okně při dvou akcích přes sebe; skutečné stahování z Nexusu po změně klienta.
+
+**Předávka S1** (23. 11., agent Sonnet, zkontrolovalo výrobní vlákno)
+- Stav: hotovo. `Afterlife.Core/Plural.cs` (`Plural.Of`, `Plural.Word`), asi 85 náhrad ve 21 souborech, `PluralTests.cs`.
+- Změněné popisky: „Select all mods“ → „Check all mods“, „REMOVE SELECTED FROM GAME“ → „REMOVE CHECKED FROM GAME“, nápověda „SELECTING AND MOVING“ → „CHECKING AND MOVING“; návod upraven stejně.
+- Nedotčeno: čtyři texty s „(s)“ v `Deploy.cs` a `Deployment.cs` (zakázané soubory; `PreviewTests.cs` jeden z nich porovnává). O24 má pro počty použít `Plural`.
+- Pro uživatele: A25.
+
+**Kontrola dávky** (23. 11., výrobní vlákno)
+- Každá větev balíku s kódem prošla sama během na GitHubu (sestavení obou edic, testy, instalátor); potom vše sloučeno do `batch4` a puštěno znovu.
+- Nález: v F5 chybný `using` (neexistující jmenný prostor) a chybějící `System.IO`, opraveno před sloučením. U agentů četba rozdílu nenašla chybu k opravě.
+- Changelog: nové řádky jsou pod novým oddílem `## Unreleased` (beta.1 je vydaná); při vydání ho přejmenovat na číslo verze.
+- Čísla A23 až A25 jsou vzatá ve větvi `batch4` (počítadlo v `UKOLY.md` tam říká A26), ne rezervací v `main`: při sloučení zkontrolovat proti `main`.
+- Zbývá: O24 (čeká na B11), kód kategorie NEW (čeká na B10), sloučení `batch4` do `main` (na pokyn uživatele). Dávku uzavřít až po O24.
+
 ## Co do fronty nepatří
 
 - Kód kategorie NEW: až po schválení B10, balík v další dávce (podklad dá předávka F4).
@@ -144,6 +203,4 @@ Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ 
 
 ## Jak pustit
 
-- **Výroba jedním vláknem (doporučeno), model Fable:** „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a vyrob vše, co nečeká.“ Vlákno udělá F4 a F5 samo a O22, O23, O25 a O26 pustí jako podřízené agenty vedle sebe.
-- Po schválení B11: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a vyrob O24 a S1.“
-- Ručně po jednom, model Opus: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O22.“ Vedle sebe mohou běžet O22, O23, O25 a O26 (každý ve vlastní pracovní složce); F4 a F5 patří na Fable.
+- Zbývá O24. Po schválení B11, model Fable (výrobní vlákno) nebo Opus: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O24.“ Začíná se z větve `batch4`, dokud není sloučená do `main`.

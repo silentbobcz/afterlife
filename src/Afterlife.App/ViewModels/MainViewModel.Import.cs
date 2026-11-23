@@ -86,11 +86,15 @@ public sealed partial class MainViewModel
     {
         // a file a collection is waiting for goes to that collection
         if (_collectionWaiting is { } waiting && waiting(link, dest, info)) return [];
+        // a file the load list queue waits for comes in switched off, as with Premium
+        var forList = ListQueueWants(link);
+        if (forList) { enable = false; quiet = true; }
         var older = OlderVersionOf(link.ModId, link.FileId);
         var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, info.ModName ?? older?.ModName, info.Version ?? info.ModVersion, older?.ModId),
             presetChoices ?? older?.FomodChoices, enable, quiet);
         if (older is not null && imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet);
-        if (imported.Count > 0) UpdateQueueArrived(link); 
+        if (imported.Count > 0) UpdateQueueArrived(link);
+        if (forList) ListFileArrived(link, imported.Count > 0);
         return imported;
     }
 

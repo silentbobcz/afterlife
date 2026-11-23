@@ -310,7 +310,7 @@ public sealed class PackageLibrary(LibraryPaths paths, AfterlifeStore store)
     public void Delete(string packageId)
     {
         var referencedBy = store.GetProfiles().Where(p => p.Entries.Any(e => e.PackageId == packageId)).Select(p => p.Name).ToList();
-        if (referencedBy.Count > 0) throw new InvalidOperationException($"package is used by profile(s): {string.Join(", ", referencedBy)}");
+        if (referencedBy.Count > 0) throw new InvalidOperationException($"package is used by {Plural.Word(referencedBy.Count, "profile")}: {string.Join(", ", referencedBy)}");
         if (store.GetPackagesInRecentGenerations(1).Contains(packageId)) throw new InvalidOperationException("still in the game; apply first, then delete");
         var unfinished = store.GetUnfinishedOperation();
         if (unfinished is not null && Json.Deserialize<DeploymentSnapshot>(unfinished.TargetSnapshotJson).IncludedPackages.Contains(packageId))

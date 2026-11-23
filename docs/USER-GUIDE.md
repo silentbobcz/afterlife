@@ -69,8 +69,10 @@ A newer version reads the same settings and the same library, so your mods, prof
 
 - **Zip over zip**: close AFTERLIFE and unzip the new zip over the old folder, replacing the files. The app is replaced, `AFTERLIFE Library` stays. You can also unzip the new version to another place: it finds the library in the old folder, which then has to stay.
 - **Installer over installer**: close AFTERLIFE and run the newer installer. It replaces the app in place.
-- **From the zip to the installer**: run the installer. The installed AFTERLIFE keeps using the library where it is, also when that is inside the old zip folder, so keep that folder. AFTERLIFE cannot move a library to another place.
+- **From the zip to the installer**: run the installer. The installed AFTERLIFE keeps using the library where it is, also when that is inside the old zip folder, so keep that folder, or move the library out of it first (see below).
 - **Between AFTERLIFE Offline and the full edition**: nothing to do, both read the same settings and library.
+
+**Moving the library**: **Settings → 01 · Game & library → MOVE…** takes the whole library (mods, profiles, downloads, removed files) to another folder or drive. Choose an empty or new folder; if the folder you choose already holds something, the library goes into `AFTERLIFE Library` inside it. AFTERLIFE shows from where, to where and how much before it starts. The game folder is not touched and the mods in the game keep working. On the same drive the move takes a moment; to another drive every file is copied and checked first and the old folder is emptied only afterwards, so do not close AFTERLIFE meanwhile. If it is closed or the PC goes off half-way, nothing is lost: the next start asks whether to continue the move or keep the library where it was. Files in the old folder that AFTERLIFE did not put there stay.
 
 To be extra safe, save the load order of each profile with **EXPORT ORDER** before you update ([section 10](#10-conflicts-and-load-order)).
 
@@ -91,7 +93,7 @@ To be extra safe, save the load order of each profile with **EXPORT ORDER** befo
 
 Each block header has:
 
-- a **checkbox** that selects every mod of the block or category for the bulk actions below (it shows a dash when only some are selected); while you search, it takes only the mods the search shows,
+- a **checkbox** that checks every mod of the block or category for the bulk actions below (it shows a dash when only some are checked); while you search, it takes only the mods the search shows,
 - an **arrow** to fold the block (the state is remembered; a search unfolds everything),
 - small **marks** when something inside needs you: **▲** updates, **⚠** conflicts, **✕** missing requirements. Click a mark to jump to the first such mod,
 - the number of mods switched on, for example `7 / 7 ON`,
@@ -106,15 +108,15 @@ Each row has:
 - the **DEPLOYED** column: what is really in the game (**DEPLOYED**, **+ PENDING · APPLY**, **− PENDING · APPLY**, **! CONFLICT · DECIDE** and so on),
 - the **IN PROFILE** switch: whether the mod is on in the selected profile.
 
-The **search** box above the list filters by name and tag; **✕** or Esc clears it. **Select all** (the checkbox above the list, Ctrl+A) selects exactly the mods the search shows, so you can, for example, move all found mods into a category at once.
+The **search** box above the list filters by name and tag; **✕** or Esc clears it. **Check all** (the checkbox above the list, Ctrl+A) checks exactly the mods the search shows, so you can, for example, move all found mods into a category at once.
 
 **Filters.** The panel next to the list filters by state (on, off, not applied yet), by what needs attention (update available, conflict, missing requirement), by block (core mods, collections, your mods) and by tag; each line shows how many mods it matches. One click on a line means *must match*, a second click *must not match*, a third turns it off. **MATCH ALL** shows mods that fit every chosen line, **MATCH ANY** mods that fit at least one. **«** collapses the panel to a strip with the quick filters, **✕** hides it, and **⧩ FILTERS** next to the search brings it back; AFTERLIFE remembers how you left it. Filtering never changes the load order, and *Select all* takes only what the filter shows.
 
 **Sorting for viewing.** The **SORT** button next to FILTERS walks through **LOAD ORDER**, **NAME**, **NEWEST**, **STATE** and **SIZE**. Sorting stays inside each block and core mods keep their place. It changes only what you see: a line above the list says that the load order is unchanged, dragging mods is off while the list is sorted, and **Back to load order** returns.
 
-When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them. While any mod is checked, these buttons take the place of the small tools (REFRESH, CHECK UPDATES and the others); the status line, PREVIEW and APPLY CHANGES stay. The row also says how many checked mods the search, a filter or a folded section hides. Press **Esc** or **Clear (Esc)** to uncheck everything.
+When several mods are checked, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them. While any mod is checked, these buttons take the place of the small tools (REFRESH, CHECK UPDATES and the others); the status line, PREVIEW and APPLY CHANGES stay. The row also says how many checked mods the search, a filter or a folded section hides. Press **Esc** or **Clear (Esc)** to uncheck everything.
 
-The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category you set the order yourself: drag a row up or down (local edits stay right below their mod), and **A→Z** in the header sorts that section by name once; collections keep the curator's order. Profiles are sorted by name, with *Mods off* first.
+The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or check them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category you set the order yourself: drag a row up or down (local edits stay right below their mod), and **A→Z** in the header sorts that section by name once; collections keep the curator's order. Profiles are sorted by name, with *Mods off* first.
 
 Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), the **LIST & ORDER** menu with **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **EXPORT ORDER**, **IMPORT ORDER** and **RESET ORDER**, then **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
@@ -194,7 +196,7 @@ AFTERLIFE combines two sources:
 
 Each requirement shows its state: **deployed** (green), **in library · not deployed**, **installed by hand**, **not in library**. For a missing one, **Open page ↗** opens its Nexus page (or **Search on Nexus ↗** by name), and **Copy name** copies it for searching. Requirements the author marked as *optional* or *recommended* do not raise warnings.
 
-Switching a mod **on** offers to also switch on what it needs (if it is in the library). Switching a mod **off** opens the dialog **SWITCH OFF ‹mod›?** (or **SWITCH OFF 5 MODS?**) with up to three parts, each explained by a sentence under its title: **WILL STOP WORKING** lists the switched-on mods that need it (ticked: they go off with it), **NOT NEEDED ANY MORE** lists the mods nothing else switched on needs once it is off (their own checkbox, unticked) and **STAYS ON**, to read only, lists what it needs that another switched-on mod still uses. The last two parts follow the first checkbox: untick it and the mods that need it stay on, so what they use moves from NOT NEEDED ANY MORE to STAYS ON. Core mods are never offered. A mod without such links goes off without a question. The same dialog appears for a selection, a category and whole blocks. Switching a collection off asks next **SWITCH OFF UNUSED MODS?** about the mods outside it that only it needed (unticked); Cancel there leaves the collection on.
+Switching a mod **on** offers to also switch on what it needs (if it is in the library). Switching a mod **off** opens the dialog **SWITCH OFF ‹mod›?** (or **SWITCH OFF 5 MODS?**) with up to three parts, each explained by a sentence under its title: **WILL STOP WORKING** lists the switched-on mods that need it (ticked: they go off with it), **NOT NEEDED ANY MORE** lists the mods nothing else switched on needs once it is off (their own checkbox, unticked) and **STAYS ON**, to read only, lists what it needs that another switched-on mod still uses. The last two parts follow the first checkbox: untick it and the mods that need it stay on, so what they use moves from NOT NEEDED ANY MORE to STAYS ON. Core mods are never offered. A mod without such links goes off without a question. The same dialog appears for checked mods, a category and whole blocks. Switching a collection off asks next **SWITCH OFF UNUSED MODS?** about the mods outside it that only it needed (unticked); Cancel there leaves the collection on.
 
 **Core mods** are the frameworks other mods build on: Cyber Engine Tweaks, RED4ext, redscript, ArchiveXL, TweakXL, Codeware, Input Loader and, optional, Mod Settings, Native Settings UI, RedFileSystem, Audioware and Virtual Atelier. They have their own yellow block and are never changed by collections. Turning all core mods off asks about every mod that depends on them, because most mods will not run without them.
 
@@ -246,7 +248,7 @@ The file is plain text. The first line is `AFTERLIFE LOAD LIST 1`; lines startin
 Good to know:
 
 - **Categories are shared by all profiles.** A category the list creates, or a mod it moves into another category, changes how every profile is grouped; the order inside each profile stays its own. An import never deletes a category.
-- Mods missing in the library are listed; with Nexus Mods Premium **Get from Nexus** downloads those with a Nexus file and loads the list again, other accounts get a link to each page. Loading the same list twice gives the same result. AFTERLIFE Offline only lists them.
+- Mods missing in the library are listed, each with a link to its page. With Nexus Mods Premium **Get from Nexus** downloads those with a Nexus file and loads the list again. Other accounts get **Get from Nexus, page by page** (Mod Manager Download links must be on in Settings): AFTERLIFE opens the file page of each such mod in turn, you click **Mod Manager Download** there and the file comes into the library switched off, then the next page opens. The window shows every mod as waiting, open on Nexus, in library or skipped; **Skip this mod** moves on, **PAUSE** and **RESUME** stop and go on (RESUME at the end opens the skipped pages again), and closing the window lets it run on (IMPORT ORDER shows it again). When the pages are done, **LOAD THE LIST AGAIN** shows the preview of the same list with the new mods, and the import puts them in place. A mod the list names without a Nexus file stays a link. Loading the same list twice gives the same result. AFTERLIFE Offline only lists them.
 - A collection your library does not have becomes a category named "<name> (collection)" with the mods that are found; **Add collection from Nexus…** adds the real one (not in AFTERLIFE Offline). Which mods belong to a collection always comes from Nexus, never from the file.
 - Core mods always load first; the list only switches them on or off.
 - Before an import AFTERLIFE saves the current order into the library (`exports/before-import-<date>.txt`, the newest 10 are kept).
@@ -339,7 +341,7 @@ The card on the left shows how many files in the mod folders AFTERLIFE does not 
 
 - mods installed by hand, grouped by name and folder, core mods marked,
 - **RESCAN** reads the folders again,
-- tick mods and **REMOVE SELECTED FROM GAME** moves their files into the library (into *Removed*), so they can always be restored,
+- check mods and **REMOVE CHECKED FROM GAME** moves their files into the library (into *Removed*), so they can always be restored,
 - **Removed earlier · kept in the library** lists what was moved out before, with **RESTORE**.
 
 Files that mods in the library create on their own (logs, settings, caches, lock files in their own folder, `red4ext/config.ini`) are not reported, also while the mod is switched off, and identical leftovers from an earlier manual install of the same mod are ignored. A core-mod group that holds only such files says so instead of *installed manually*. The **Address Library** database (`bin/x64/plugins/address_library/version-….bin`), which native plugins write when the game starts, belongs to the game: it is never reported and never moved. A mod folder that holds nothing its loader would load (no `init.lua`, `.reds`, `.dll`, tweak, archive or REDmod `info.json`), only files a removed mod left behind (lock files, logs, saved settings), is not a mod and is not listed either.
@@ -370,7 +372,7 @@ The settings have tabs on the left and the chosen tab on the right. They open on
 
 | Tab | |
 |---|---|
-| **01 · Game & library** | The game folder: **CHANGE…** moves AFTERLIFE to another install (it asks to take the mods out of the old one first). Where the library is, with **Open in Explorer**. |
+| **01 · Game & library** | The game folder: **CHANGE…** moves AFTERLIFE to another install (it asks to take the mods out of the old one first). Where the library is, with **Open in Explorer** and **MOVE…** to take it to another folder or drive ([Updating AFTERLIFE](#updating-afterlife)). |
 | **02 · Nexus Mods** | *Account*: your key and account type (a green dot on the tab means the key works). *Link mods*: **Link all unlinked mods…** ([section 4](#4-adding-mods)). *Download links*: open `nxm://` links in AFTERLIFE. Locked in AFTERLIFE Offline. |
 | **03 · Updates** | When AFTERLIFE looks for newer versions and what it reads, and the cost in requests to Nexus Mods ([section 11](#11-nexus-mods-key-downloads-updates)). Visible with a lock in AFTERLIFE Offline. |
 | **04 · Display** | **Reduce motion** stops the background, glitches, scans and the breach animation. **Draw only the visible rows** (experimental, off by default) makes a list of hundreds of mods open and scroll faster; switch it off again if the list jumps while scrolling or dragging. |
@@ -418,10 +420,10 @@ More in the [FAQ](FAQ.md).
 |---|---|
 | Ctrl+O | Add mod |
 | F5 | Refresh |
-| Ctrl+A | Select all mods the search and the filters show |
+| Ctrl+A | Check all mods the search and the filters show |
 | Esc | Clear the search |
 | Double-click a mod, profile or category name | Rename |
-| Shift+click, Ctrl+click | Select several mods |
+| Shift+click, Ctrl+click | Check several mods |
 | Ctrl+Up, Ctrl+Down | Move the checked mods (or the selected row) one row up or down in the load order, inside their section |
 | Ctrl+Home, Ctrl+End | Move them to the start or end of their section |
 | Drag ⋮⋮ | Move a mod up or down inside MODS, a category or an unlocked collection, or into another category; move a block or category (load order) |

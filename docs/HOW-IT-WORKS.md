@@ -37,6 +37,10 @@ The requirements of a package are derived from its scripts once per `FrameworkCa
 
 `dotnet publish -p:Edition=Offline` builds **AFTERLIFE Offline** (`AppEdition.Offline`, compile symbol `OFFLINE`): `NexusKeyStore.Load` always returns nothing, nxm:// is never registered, mod pictures are never downloaded, and every entry point that needs the Nexus Mods API calls `LockedOffline` first, which explains the lock (`OfflineInfoVm`). The workflow builds both editions and fails when the two executables are identical. A release carries three files: the zip and the installer of the full edition (`installer/AFTERLIFE.iss`, per user, GitHub only) and the Offline zip for Nexus Mods. A copy with an uninstaller next to it never suggests a library inside its own folder (`AppSettings.SuggestLibrary`).
 
+## Moving the library
+
+`LibraryMover` (`LibraryMove.cs`) moves the whole library folder while no coordinator has it open (`CoordinatorHost.MoveLibraryAsync` closes it, moves, opens it where it is afterwards). Nothing in the game depends on where the library is (deployed files are copies, the ledger holds game paths), so mods may be deployed during a move. Same drive: one rename. Another drive: copy under a temporary name, size check, hash check of the database, then `settings.json` switches and only then the old files go (exactly those found in the new folder). `%APPDATA%AFTERLIFEibrary-move.json` records the move; at start `RecoverLibraryMoveAsync` (`MainViewModel.LibraryMove.cs`) finishes a move that only missed its last step and asks about a copy cut off half-way (continue or undo). `FolderRules.Overlap` is the one check that the game and the library do not lie in each other.
+
 ## The FIXER drop box
 
 FIXER (a quest editor) hands its quests to AFTERLIFE through a folder in the library instead of copying them into the game. `FixerService` (`Fixer.cs`) owns it; it is off until switched on in Settings (`fixer.enabled` in the meta table) and a library that never used it gets no folder.
@@ -62,6 +66,8 @@ Switching mods off (`MainViewModel.Library.cs`, `WithRelatedOffAsync`) asks in o
 ## Logs
 
 `ActivityLog` (optional, Settings) and the error log of the window both pass every line through `LogPrivacy.Scrub` before it is written: user name, computer name, the folders of the game, the library and the profile, network shares, e-mail addresses and link secrets become marks. New log output goes through the same two writers, never straight to a file.
+
+The redscript log of the game (`r6/logs/redscript_rCURRENT.log`) is read by `RedscriptLog` (Core, pure: verdict, errors with file, line and column, the "caused by" list). `RedscriptDiagnosis.AnalyzeRedscript` (Infrastructure) ties each error to a mod, first by the exact path in the ledger (only read), then by its folder in `r6/scripts`, and calls everything else installed by hand; a log older than the last apply is stale. `RedscriptPrompt` writes the question for an AI chat through `LogPrivacy.Scrub`.
 
 ## Plan
 
@@ -99,7 +105,10 @@ If the process dies at any point, the next start finds an unfinished operation a
 - Update checks use one request to the *updated in the last day/week/month* feed for all mods, then read the file list only of mods that changed. Which mods are read and in which order is decided by `UpdatePlan` (pure): never checked, changed in the feed, older than the feed reaches, or due for the full read every mod gets once in `AppSettings.FullCheckDays` days (each package on its own point of the period, from `nexus:fullread:<package>`); core mods and the mods of the profile first. The automatic check (start, hourly) follows the scope in Settings, CHECK UPDATES covers all mods through the feed, *Check every mod now* reads all. `NexusLimits` reads the remaining quota from the answers of Nexus (`x-rl-hourly-remaining`, `x-rl-daily-remaining`); a check stops at a reserve of 50 or at *rate limit reached*, stores a pause (`nexus:paused-until`, next full hour or midnight GMT) and no check asks anything until it is over. An unfinished *Check every mod now* is remembered (`nexus:fullrun`) and finished by the following checks.
 - A mod added from a file is linked to its Nexus page only when Nexus confirms it (`NexusLinker`, `NexusLinking.cs`): the MD5 of the archive through `md5_search`, otherwise the file list of the mod guessed from the archive name must hold a file with that name or that upload time. The link also stores the file id, so update checks compare the exact file. A package without a match is not asked about again for a day (`nexus:linktry:<package>` in the meta table). The window does this for all unlinked mods on request and for each import from disk (`MainViewModel.Linking.cs`).
 - `nxm://` links are registered per Windows user (`HKCU\Software\Classes\nxm`); the previous handler is saved and restored.
+- Free accounts download only on the website, page by page (`MainViewModel.PageQueue.cs`): AFTERLIFE opens the file page (`NexusPageQueue.FilePage`), the user clicks Mod Manager Download and `ImportDownloadedAsync` hands the arriving file to whoever waits for it (a collection, or the missing mods of IMPORT ORDER). Both show the collection download view (`CollectionProgressVm`); the load list run is kept by `NexusPageQueue` (pure: waiting, page opened, downloaded, skipped), its files come in switched off and the window then offers to load the same list again.
 - Mod pictures are downloaded once into `cache/images`.
+- Every `NexusClient` (cheap, one per action) and the picture cache share the HTTP clients of `NexusHttp`: API 30 s, downloads 30 min, pictures 20 s, created on first use. The API key and application headers go on each request (`NexusHttp.ApiRequest`), never on a client, so CDN downloads never carry the key; AFTERLIFE Offline calls `NexusHttp.Disable()` at start and no client is ever created.
+- The window's `IsBusy` is a `BusyCounter` (Core): every action through `RunUiAsync` holds a `using` scope, and the window is free again only when the last overlapping action ends.
 
 ## REDmod
 

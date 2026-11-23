@@ -1,5 +1,4 @@
 using Afterlife.Core;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Web;
 
@@ -271,18 +270,14 @@ public sealed class NexusClient : IDisposable
     public const string GraphQl = "https://api.nexusmods.com/v2/graphql";
     public const string CyberpunkGameId = "3333";
 
-    private readonly HttpClient _http;
+    private readonly string _apiKey, _appVersion;
+    private readonly HttpClient? _own; // only with an injected handler; otherwise the shared client of NexusHttp
+    private HttpClient Http => _own ?? NexusHttp.Api;
 
     public NexusClient(string apiKey, string appVersion, HttpMessageHandler? handler = null)
     {
-        _http = handler is null ? new HttpClient() : new HttpClient(handler);
-        _http.BaseAddress = new Uri(ApiBase);
-        _http.Timeout = TimeSpan.FromSeconds(30);
-        _http.DefaultRequestHeaders.Add("apikey", apiKey);
-        _http.DefaultRequestHeaders.Add("Application-Name", "AFTERLIFE");
-        _http.DefaultRequestHeaders.Add("Application-Version", appVersion);
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AFTERLIFE", appVersion));
-        _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        (_apiKey, _appVersion) = (apiKey, appVersion);
+        _own = handler is null ? null : NexusHttp.WithHandler(handler);
     }
 
     public async Task<NexusAccount> ValidateAsync(CancellationToken ct = default)
@@ -329,9 +324,9 @@ public sealed class NexusClient : IDisposable
     public async Task<CollectionRevisionInfo> CollectionRevisionAsync(CollectionLink link, CancellationToken ct = default)
     {
         var body = JsonSerializer.Serialize(new { query = CollectionLogic.RevisionQuery, variables = new { slug = link.Slug, revision = link.Revision, domain = link.Game } });
-        using var req = new HttpRequestMessage(HttpMethod.Post, GraphQl) { Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json") };
+        using var req = NexusHttp.ApiRequest(HttpMethod.Post, GraphQl, _apiKey, _appVersion, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
         HttpResponseMessage resp;
-        try { resp = await _http.SendAsync(req, ct); }
+        try { resp = await Http.SendAsync(req, ct); }
         catch (HttpRequestException ex) { throw new NexusException("Nexus Mods is not reachable: " + ex.Message); }
         using (resp)
         {
@@ -461,8 +456,8 @@ public sealed class NexusClient : IDisposable
     {
         const string query = "query($modId: ID!, $gameId: ID!) { mod(modId: $modId, gameId: $gameId) { modRequirements { nexusRequirements { nodes { modId modName url externalRequirement notes } } } } }";
         var body = JsonSerializer.Serialize(new { query, variables = new { modId, gameId = CyberpunkGameId } });
-        using var req = new HttpRequestMessage(HttpMethod.Post, GraphQl) { Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json") };
-        using var resp = await _http.SendAsync(req, ct);
+        using var req = NexusHttp.ApiRequest(HttpMethod.Post, GraphQl, _apiKey, _appVersion, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        using var resp = await Http.SendAsync(req, ct);
         if (!resp.IsSuccessStatusCode) throw new NexusException($"Nexus Mods answered {(int)resp.StatusCode}");
         using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
         return ParseRequirements(doc.RootElement);
@@ -508,10 +503,8 @@ public sealed class NexusClient : IDisposable
 
     public async Task DownloadAsync(Uri uri, string destination, IProgress<(long Done, long? Total)>? progress = null, CancellationToken ct = default)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var plain = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
-        plain.DefaultRequestHeaders.UserAgent.ParseAdd("AFTERLIFE");
-        using var resp = await plain.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+        using var req = NexusHttp.DownloadRequest(uri);
+        using var resp = await NexusHttp.Downloads.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         if (!resp.IsSuccessStatusCode) throw new NexusException($"download failed ({(int)resp.StatusCode})");
         var total = resp.Content.Headers.ContentLength;
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
@@ -534,8 +527,9 @@ public sealed class NexusClient : IDisposable
 
     private async Task<JsonDocument> GetJsonAsync(string path, CancellationToken ct)
     {
+        using var req = NexusHttp.ApiRequest(HttpMethod.Get, path, _apiKey, _appVersion);
         HttpResponseMessage resp;
-        try { resp = await _http.GetAsync(path, ct); }
+        try { resp = await Http.SendAsync(req, ct); }
         catch (HttpRequestException ex) { throw new NexusException("Nexus Mods is not reachable: " + ex.Message); }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new NexusException("Nexus Mods did not answer in time"); }
         using (resp)
@@ -564,7 +558,7 @@ public sealed class NexusClient : IDisposable
         return clean.Length == 0 ? "download.zip" : clean;
     }
 
-    public void Dispose() => _http.Dispose();
+    public void Dispose() => _own?.Dispose(); // the shared client stays for the next action
 }
 
 /// <summary>
@@ -644,7 +638,7 @@ public static class NexusSso
 /// </summary>
 public static class ModImageCache
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static HttpClient Http => NexusHttp.Images;
     public const long MaxBytes = 4 * 1024 * 1024;
 
     public static string PathFor(LibraryPaths lib, string modId, string url)

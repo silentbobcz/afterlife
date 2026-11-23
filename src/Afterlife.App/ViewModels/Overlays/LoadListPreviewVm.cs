@@ -46,11 +46,13 @@ public sealed partial class LoadListPreviewVm : OverlayVm
     private readonly Func<LoadListOptions, LoadListPlan> _plan;
     private readonly bool _online;
 
-    public LoadListPreviewVm(string fileName, LoadListDocument doc, string profile, Func<LoadListOptions, LoadListPlan> plan, bool online, bool canDownload)
+    public LoadListPreviewVm(string fileName, LoadListDocument doc, string profile, Func<LoadListOptions, LoadListPlan> plan, bool online, bool canDownload,
+        bool pageByPage = false)
     {
         _plan = plan;
         _online = online;
         CanDownload = canDownload;
+        PageByPage = pageByPage;
         var count = doc.Mods.Count();
         Subtitle = $"{fileName} · {count} mod{(count == 1 ? "" : "s")}" + (doc.MadeBy is { } v ? $" · made by AFTERLIFE {v}" : "");
         IntoProfile = "Into profile: " + profile;
@@ -107,8 +109,17 @@ public sealed partial class LoadListPreviewVm : OverlayVm
 
     public bool NothingChanges => Plan.IsEmpty;
 
-    /// <summary>The missing mods with a Nexus file can be downloaded (full edition, Premium).</summary>
+    /// <summary>The missing mods with a Nexus file can be fetched (full edition, Nexus key with a known account).</summary>
     public bool CanDownload { get; }
+
+    /// <summary>Not Premium: Nexus allows downloads only on the website, so the pages open one after another.</summary>
+    public bool PageByPage { get; }
+
+    public string DownloadLabel => PageByPage ? "Get from Nexus, page by page" : "Get from Nexus";
+
+    public string DownloadTip => PageByPage
+        ? "Open the Nexus page of each missing mod that names a file, one after another: click Mod Manager Download there and the file comes in switched off. Then load this list again"
+        : "Download the missing mods that name a Nexus file, then load this list again";
 
     /// <summary>The collection to add from Nexus when <see cref="LoadListAction.AddCollection"/> is the result.</summary>
     public LoadListSection? CollectionToAdd { get; private set; }
@@ -184,4 +195,27 @@ public sealed partial class LoadListPreviewVm : OverlayVm
                 + (Options.SwitchOffOthers ? "switched off" : p.NotInList.Count == 1 ? "it stays where it is" : "they stay where they are"), Names(p.NotInList)));
         return groups;
     }
+}
+
+/// <summary>
+/// The missing mods of a load list, page by page on Nexus (free accounts). The progress block is the collection
+/// download view; the window adds skipping the open page and loading the list again.
+/// </summary>
+public sealed partial class LoadListQueueVm : OverlayVm
+{
+    public LoadListQueueVm(string fileName, CollectionProgressVm progress, ICommand skip, ICommand loadAgain)
+    {
+        Subtitle = fileName;
+        Progress = progress;
+        SkipCommand = skip;
+        LoadAgainCommand = loadAgain;
+    }
+
+    public override string Title => "IMPORT ORDER · MISSING MODS";
+    public string Subtitle { get; }
+    public CollectionProgressVm Progress { get; }
+    public ICommand SkipCommand { get; }
+    public ICommand LoadAgainCommand { get; }
+    [ObservableProperty] private bool _canSkip;
+    [ObservableProperty] private bool _canLoadAgain;
 }

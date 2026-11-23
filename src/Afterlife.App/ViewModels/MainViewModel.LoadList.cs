@@ -47,6 +47,8 @@ public sealed partial class MainViewModel
     {
         if (_overview is null) return;
         if (IsModsOff) { Say(ModsOffOrderTip, Tone.Warn); return; }
+        if (ShowListQueue()) return;
+        ClearListQueue();
         var d = new Microsoft.Win32.OpenFileDialog { Title = "Import order", Filter = "Load list (*.txt)|*.txt|All files (*.*)|*.*" };
         if (d.ShowDialog() != true) return;
         await ImportLoadListAsync(d.FileName);
@@ -76,12 +78,13 @@ public sealed partial class MainViewModel
             Say("The profile already has this order. Nothing changed.", Tone.Info);
             return;
         }
-        // Premium downloads the missing Nexus files directly; other accounts get the pages in the list
+        // Premium downloads the missing Nexus files directly; other accounts get them page by page (StartListQueue)
         var downloadable = plan.Missing.Any(m => m.NexusModId is not null && m.NexusFileId is not null);
         if (!AppEdition.Offline && downloadable && _nexusAccount is null && NexusKeyStore.Load() is not null) await CheckNexusAsync(null);
-        var canDownload = !AppEdition.Offline && downloadable && _nexusAccount is { IsPremium: true };
+        var canDownload = !AppEdition.Offline && downloadable && _nexusAccount is not null;
 
-        var vm = new LoadListPreviewVm(Path.GetFileName(path), doc, o.Status.Selected.Name, PlanFor, !AppEdition.Offline, canDownload);
+        var vm = new LoadListPreviewVm(Path.GetFileName(path), doc, o.Status.Selected.Name, PlanFor, !AppEdition.Offline, canDownload,
+            pageByPage: _nexusAccount is { IsPremium: false });
         var action = await AskAsync(vm, v => ((LoadListPreviewVm)v).Result);
         if (action == LoadListAction.GetFromNexus) { await GetMissingFromNexusAsync(vm.Plan.Missing, path); return; }
         if (action == LoadListAction.AddCollection)
@@ -122,7 +125,7 @@ public sealed partial class MainViewModel
 
     /// <summary>
     /// Missing mods with a Nexus file: Premium downloads them into the library (switched off), then the same list
-    /// is loaded again and puts them in place.
+    /// is loaded again and puts them in place. Other accounts get them page by page (<see cref="StartListQueue"/>).
     /// </summary>
     private async Task GetMissingFromNexusAsync(IReadOnlyList<LoadListMod> missing, string path)
     {
@@ -130,11 +133,8 @@ public sealed partial class MainViewModel
         var key = NexusKeyStore.Load();
         if (key is null) { Say("To download from Nexus Mods, paste your personal API key in Settings first.", Tone.Warn); OpenSettings(); return; }
         if (_nexusAccount is null) await CheckNexusAsync(null);
-        if (_nexusAccount is not { IsPremium: true })
-        {
-            Say("Nexus lets free accounts download only on the website: open the pages of the missing mods from IMPORT ORDER, then load the same list again.", Tone.Warn);
-            return;
-        }
+        if (_nexusAccount is null) { Say("Nexus Mods could not be reached to check your account. Try Get from Nexus again in a moment.", Tone.Warn); return; }
+        if (!_nexusAccount.IsPremium) { StartListQueue(missing, path); return; }
         var files = missing.Where(m => m.NexusModId is not null && m.NexusFileId is not null).ToList();
         var failed = new List<string>();
         var i = 0;

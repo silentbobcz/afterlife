@@ -96,12 +96,12 @@ public sealed partial class MainViewModel
             }).ToList();
         if (old.Count == 0) return;
         var ok = await AskAsync(new ConfirmVm("OLD VERSIONS IN THE LIBRARY",
-            $"{old.Count} older version(s) of mods you have in a newer version are in the library, switched off everywhere. Updates now replace the old version; delete these leftovers from the library? The game does not change.",
+            $"{old.Count} older {Plural.Word(old.Count, "version")} of mods you have in a newer version {Plural.Word(old.Count, "is", "are")} in the library, switched off everywhere. Updates now replace the old version; delete these leftovers from the library? The game does not change.",
             "DELETE OLD VERSIONS", false, old.Select(x => $"{x.Old.Package.ModName} {x.Old.Package.Version}   (newer: {x.Newest.Package.Version})").ToList()) { CancelLabel = "Keep them" });
         if (!ok) return;
         var r = await _host.RunAsync(c => c.DeleteFromLibrary(old.Select(x => x.Old.Package.PackageId).ToList()));
         await RefreshAsync();
-        Say($"Deleted {r.Deleted.Count} old version(s) from the library.", Tone.Ok);
+        Say($"Deleted {r.Deleted.Count} old {Plural.Word(r.Deleted.Count, "version")} from the library.", Tone.Ok);
     });
 
     private bool _duplicatesAsked;
@@ -124,7 +124,7 @@ public sealed partial class MainViewModel
         var plan = groups.Select(g => (Keep: Keeper(g), Drop: g.Where(p => p.PackageId != Keeper(g).PackageId).ToList())).ToList();
         var lines = plan.Select(x => $"{x.Keep.ModName} {x.Keep.Version}   × {x.Drop.Count + 1} → 1").ToList();
         var ok = await AskAsync(new ConfirmVm("DUPLICATE MODS IN THE LIBRARY",
-            $"{plan.Count} mod(s) are in the library more than once with exactly the same files. Merge them: one copy stays (with its place in profiles, collections, categories and the load order), the other copies are deleted from the library. Files in the game stay as they are.",
+            $"{Plural.Of(plan.Count, "mod")} {Plural.Word(plan.Count, "is", "are")} in the library more than once with exactly the same files. Merge them: one copy stays (with its place in profiles, collections, categories and the load order), the other copies are deleted from the library. Files in the game stay as they are.",
             "MERGE", false, lines) { CancelLabel = "Not now" });
         if (!ok) return;
         var drop = plan.SelectMany(x => x.Drop.Select(d => d.PackageId)).ToList();
@@ -139,7 +139,7 @@ public sealed partial class MainViewModel
         if (!ReferenceEquals(layout, _layout)) await SaveLayoutAsync(layout);
         var r = await _host.RunAsync(c => c.DeleteEverywhere(drop));
         await RefreshAsync();
-        var report = new List<string> { $"Merged {plan.Count} duplicate mod(s); {r.Deleted.Count} extra cop(ies) deleted." };
+        var report = new List<string> { $"Merged {Plural.Of(plan.Count, "duplicate mod")}; {Plural.Of(r.Deleted.Count, "extra copy", "extra copies")} deleted." };
         if (r.Kept.Count > 0) report.AddRange(r.Kept.Select(k => $"  · not deleted {k.Name}: {k.Reason}"));
         SayLines(report, r.Kept.Count > 0 ? Tone.Warn : Tone.Ok);
     });

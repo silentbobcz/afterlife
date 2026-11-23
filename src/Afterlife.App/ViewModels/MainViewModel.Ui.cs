@@ -176,12 +176,35 @@ public sealed partial class MainViewModel
         if (Seg2 == Tone.Info) Seg2 = Tone.Block; else if (Seg3 == Tone.Info) Seg3 = Tone.Block; else Seg1 = Tone.Block;
     }
 
+    private BusyCounter? _busy;
+
+    /// <summary>True while at least one action started through <see cref="RunUiAsync"/> runs; overlapping actions count.</summary>
+    public bool IsBusy => _busy?.IsBusy == true;
+
+    /// <summary>Marks the window busy until the returned scope is disposed; use with <c>using</c>.</summary>
+    private IDisposable BusyScope()
+    {
+        if (_busy is null)
+        {
+            _busy = new BusyCounter();
+            _busy.Changed += OnBusyChanged;
+        }
+        return _busy.Enter();
+    }
+
+    /// <summary>Raised only when the first action starts or the last one ends; always delivered on the UI thread.</summary>
+    private void OnBusyChanged()
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess()) OnPropertyChanged(nameof(IsBusy));
+        else dispatcher.BeginInvoke(() => OnPropertyChanged(nameof(IsBusy)));
+    }
+
     private async Task RunUiAsync(Func<Task> work)
     {
-        IsBusy = true;
+        using var busy = BusyScope();
         try { await work(); }
         catch (Exception ex) when (IsExpected(ex)) { Say(ex.Message, Tone.Block); }
-        finally { IsBusy = false; }
     }
 
     /// <summary>Footer link to the website with the full guide, kept in plain sight.</summary>

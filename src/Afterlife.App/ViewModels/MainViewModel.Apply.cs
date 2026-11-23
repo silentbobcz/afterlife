@@ -22,15 +22,15 @@ public sealed partial class MainViewModel
         var added = _overview.Mods.Count(m => m.Wanted && !m.InGame);
         var removed = _overview.Mods.Count(m => !m.Wanted && m.InGame);
         var lines = new List<string>();
-        if (added > 0) lines.Add($"+ {added} mod(s) into the game");
-        if (removed > 0) lines.Add($"− {removed} mod(s) out of the game");
+        if (added > 0) lines.Add($"+ {Plural.Of(added, "mod")} into the game");
+        if (removed > 0) lines.Add($"− {Plural.Of(removed, "mod")} out of the game");
         // mods held back because a framework they need is off lose their files too; name the reason
         var heldBack = _overview.Preview.Snapshot.Issues
             .Where(i => i.Kind == IssueKind.MissingRequirement && i.Severity == Severity.Blocking && i.PackageId is not null
                         && _overview.Preview.Plan.Steps.Any(s => s.Kind == StepKind.Remove && s.Owner == i.PackageId))
             .GroupBy(i => i.Capability ?? "?").ToList();
         foreach (var g in heldBack)
-            lines.Add($"− {g.Count()} mod(s) held back: {Capabilities.DisplayName(g.Key)} is off, so their files leave the game too");
+            lines.Add($"− {Plural.Of(g.Count(), "mod")} held back: {Capabilities.DisplayName(g.Key)} is off, so their files leave the game too");
         if (_overview.OrderIsCustom) lines.Add("load order from the list (modlist.txt)");
         lines.AddRange(TwinWarnings()); // two versions of one mod would go into the game
         foreach (var n in LeavingCore().Select(c => c.Name)) lines.Add($"{n}: files it made itself (logs, settings) go to the library, restorable");
@@ -69,7 +69,7 @@ public sealed partial class MainViewModel
             try
             {
                 var r = await _host.RunAsync(c => c.CleanLeftovers(cap));
-                if (r is { Moved: > 0 }) lines.Add($"{Capabilities.DisplayName(cap)}: moved {r.Moved} file(s) it made itself to the library (restore in Scan manual mods).");
+                if (r is { Moved: > 0 }) lines.Add($"{Capabilities.DisplayName(cap)}: moved {Plural.Of(r.Moved, "file")} it made itself to the library (restore in Scan manual mods).");
             }
             catch (Exception ex) when (IsExpected(ex)) { lines.Add($"{Capabilities.DisplayName(cap)}: its own files stayed in the game ({ex.Message})."); }
         }
@@ -91,7 +91,7 @@ public sealed partial class MainViewModel
             if (r.Succeeded)
             {
                 SetPhase(DeployPhase.Done, 0, 0);
-                EndBreach(true, r.Execution is null ? "nothing to write" : $"{r.Execution.StepsApplied} change(s) verified");
+                EndBreach(true, r.Execution is null ? "nothing to write" : $"{Plural.Of(r.Execution.StepsApplied, "change")} verified");
                 var done = new List<string> { r.Message == "already deployed" ? "The game already matches this profile." : "Done. The game matches the profile and every file was verified." };
                 done.AddRange(await CleanLeftoversAsync(leaving));
                 await FixerAfterApplyAsync();
@@ -158,7 +158,7 @@ public sealed partial class MainViewModel
             var (outcome, follow) = await _host.RunAsync(c => c.Recover(choice, progress));
             EndBreach(follow.Succeeded && outcome.UnknownPaths.Count == 0, follow.Succeeded ? "state verified" : "needs attention");
             if (outcome.UnknownPaths.Count > 0)
-                Say($"Recovered the record, but {outcome.UnknownPaths.Count} file(s) have unknown content and were left untouched: {string.Join(", ", outcome.UnknownPaths.Take(3))}. Check them in Inbox.", Tone.Warn);
+                Say($"Recovered the record, but {Plural.Of(outcome.UnknownPaths.Count, "file")} {Plural.Word(outcome.UnknownPaths.Count, "has unknown content and was", "have unknown content and were")} left untouched: {string.Join(", ", outcome.UnknownPaths.Take(3))}. Check them in Inbox.", Tone.Warn);
             else if (follow.Succeeded) { SetPhase(DeployPhase.Done, 0, 0); Say("Recovered. The game is in a known, verified state.", Tone.Ok); }
             else { PhaseFailed(); Say("Recovery needs attention: " + follow.Message, Tone.Block); }
         }
@@ -189,7 +189,7 @@ public sealed partial class MainViewModel
         string? note = null;
         if (mods.Count > 0)
         {
-            Say($"Deploying {mods.Count} REDmod(s)… this can take a few minutes the first time.", Tone.Info);
+            Say($"Deploying {Plural.Of(mods.Count, "REDmod")}… this can take a few minutes the first time.", Tone.Info);
             IsOperating = true;
             RedModResult r;
             try { r = await _host.RunAsync(c => c.DeployRedMods()); }

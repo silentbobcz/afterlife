@@ -60,7 +60,7 @@ public sealed record CollectionItem(
 {
     /// <summary>Stable key inside a collection: Nexus file id, else MD5, else name.</summary>
     public string Key => FileId is not null ? "file:" + FileId : Md5 is not null ? "md5:" + Md5.ToLowerInvariant() : "name:" + Name.ToLowerInvariant();
-    public string? PageUrl => ModId is null ? Url : $"https://www.nexusmods.com/{NxmLink.Cyberpunk}/mods/{ModId}?tab=files" + (FileId is null ? "" : $"&file_id={FileId}&nmm=1");
+    public string? PageUrl => ModId is null ? Url : NexusPageQueue.FilePage(ModId, FileId);
 }
 
 /// <summary>"A loads before/after B", by item key.</summary>

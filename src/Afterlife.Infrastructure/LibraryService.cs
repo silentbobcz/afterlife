@@ -40,7 +40,7 @@ public sealed class LibraryService
         var r = Packages.Import(request);
         ActivityLog.Write("import", r.Package is null
             ? $"{Path.GetFileName(request.ArchivePath)} rejected: {string.Join("; ", r.Analysis.Problems)}"
-            : $"{Path.GetFileName(request.ArchivePath)} → {r.Package.ModName} {r.Package.Version} [{r.Package.PackageId}], {r.Package.Files.Count} file(s)");
+            : $"{Path.GetFileName(request.ArchivePath)} → {r.Package.ModName} {r.Package.Version} [{r.Package.PackageId}], {Plural.Of(r.Package.Files.Count, "file")}");
         if (r.Package is not { } p) return r;
         var same = Store.GetPackages()
             .Where(x => x.PackageId != p.PackageId && x.LayerOfModId is null && x.ManifestDigest == p.ManifestDigest)

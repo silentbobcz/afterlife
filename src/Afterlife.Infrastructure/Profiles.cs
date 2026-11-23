@@ -75,7 +75,7 @@ public sealed class ProfileService
             if (Store.GetPackage(id) is null) throw new InvalidOperationException($"unknown package {id}");
             p = p.WithEntry(id, enabled);
         }
-        ActivityLog.Write("profile", $"{(enabled ? "on " : "off")} {packageIds.Count} mod(s) in '{p.Name}': {string.Join(", ", packageIds)}");
+        ActivityLog.Write("profile", $"{(enabled ? "on " : "off")} {Plural.Of(packageIds.Count, "mod")} in '{p.Name}': {string.Join(", ", packageIds)}");
         Store.SaveProfile(p);
         return p;
     }

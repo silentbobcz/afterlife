@@ -359,7 +359,7 @@ public sealed class ScanService
             list.Add(gp);
         }
         var r = Removed.Remove(GameRoot, list, label);
-        ActivityLog.Write("removed", $"'{label}': moved {r.Moved} file(s) aside (batch {r.BatchId ?? "-"}, {r.Skipped.Count} skipped)\n" + string.Join("\n", list.Select(g => g.Value)));
+        ActivityLog.Write("removed", $"'{label}': moved {Plural.Of(r.Moved, "file")} aside (batch {r.BatchId ?? "-"}, {r.Skipped.Count} skipped)\n" + string.Join("\n", list.Select(g => g.Value)));
         Scan();
         return r;
     }
@@ -369,7 +369,7 @@ public sealed class ScanService
         using var _ = InstallLock.Acquire(Library, GameRoot);
         _ctx.EnsureQuiet();
         var r = Removed.Restore(GameRoot, batchId);
-        ActivityLog.Write("removed", $"restored batch {batchId}: {r.Moved} file(s) back, {r.Skipped.Count} skipped");
+        ActivityLog.Write("removed", $"restored batch {batchId}: {Plural.Of(r.Moved, "file")} back, {r.Skipped.Count} skipped");
         Scan();
         return r;
     }
@@ -399,7 +399,7 @@ public sealed class ScanService
             }
         if (list.Count == 0) return null;
         var r = Removed.Remove(GameRoot, list, $"Leftovers of {Capabilities.DisplayName(capability)}");
-        ActivityLog.Write("removed", $"leftovers of {Capabilities.DisplayName(capability)}: moved {r.Moved} file(s) aside (batch {r.BatchId ?? "-"})\n" + string.Join("\n", list.Select(g => g.Value)));
+        ActivityLog.Write("removed", $"leftovers of {Capabilities.DisplayName(capability)}: moved {Plural.Of(r.Moved, "file")} aside (batch {r.BatchId ?? "-"})\n" + string.Join("\n", list.Select(g => g.Value)));
         Scan();
         return r;
     }

@@ -214,8 +214,8 @@ public sealed partial class MainViewModel
             if (found > 0) await RefreshAsync();
             var tooOften = NexusLimits.SettingsWarning(items.Count, settings.FullCheckDays, settings.CheckUpdatesHourly) is not null;
             Say($"Nexus Mods reached its request limit for your key ({NexusLimits.PerHour} an hour, {NexusLimits.PerDay:N0} a day, for every program together). "
-                + $"{unread} mod(s) wait; checks rest until {resume.LocalDateTime:t} and then go on by themselves."
-                + (tooOften ? $" The full read of every mod is set to every {settings.FullCheckDays} day(s), which is too often for {items.Count:N0} mods: raise it in Settings → UPDATES." : ""),
+                + $"{Plural.Of(unread, "mod")} {Plural.Word(unread, "waits", "wait")}; checks rest until {resume.LocalDateTime:t} and then go on by themselves."
+                + (tooOften ? $" The full read of every mod is set to every {Plural.Of(settings.FullCheckDays, "day")}, which is too often for {items.Count:N0} mods: raise it in Settings → UPDATES." : ""),
                 Tone.Warn);
             return;
         }
@@ -223,9 +223,9 @@ public sealed partial class MainViewModel
         {
             await RefreshAsync();
             if (!asked) return;
-            var newer = found == 0 ? null : $"{found} mod(s) have a newer version on Nexus";
+            var newer = found == 0 ? null : $"{Plural.Of(found, "mod")} {Plural.Word(found, "has", "have")} a newer version on Nexus";
             if (unread > 0)
-                Say($"{newer ?? "No newer versions found so far"}, but {unread} mod(s) could not be checked ("
+                Say($"{newer ?? "No newer versions found so far"}, but {Plural.Of(unread, "mod")} could not be checked ("
                     + (limited ? "the request limit of Nexus Mods was reached; they come with the next check" : "Nexus Mods did not answer") + ").", Tone.Warn);
             else
                 Say(newer is null ? "All mods from Nexus are up to date." : newer + ".", newer is null ? Tone.Ok : Tone.Info);
@@ -294,7 +294,7 @@ public sealed partial class MainViewModel
         var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!)).ToList();
         if (list.Count == 0) return;
         var ok = await AskAsync(new ConfirmVm("UPDATE ALL?",
-            $"AFTERLIFE downloads {list.Count} newer version(s) from Nexus Mods, puts them in place of the old ones (profiles, collections, categories), updates the game and deletes the old versions from the library.",
+            $"AFTERLIFE downloads {list.Count} newer {Plural.Word(list.Count, "version")} from Nexus Mods, puts {Plural.Word(list.Count, "it", "them")} in place of the old {Plural.Word(list.Count, "one", "ones")} (profiles, collections, categories), updates the game and deletes the old versions from the library.",
             "UPDATE ALL", false, list.Select(x => $"{x.ModName}   → {x.Update.Version ?? x.Update.Name}").ToList()));
         if (!ok) return;
         var failed = new List<string>();
@@ -343,7 +343,7 @@ public sealed partial class MainViewModel
             _updateWaiting = null;
             OnPropertyChanged(nameof(CanUpdateAll));
             OnPropertyChanged(nameof(UpdateAllLabel));
-            Say($"All {_updateQueueTotal} update(s) arrived · apply to put them in the game.", Tone.Ok);
+            Say($"All {Plural.Of(_updateQueueTotal, "update")} arrived · apply to put them in the game.", Tone.Ok);
             return;
         }
         var next = _updateQueue.Dequeue();
@@ -368,7 +368,7 @@ public sealed partial class MainViewModel
         if (_updateQueue is null) return;
         var left = _updateQueue.Count + (_updateWaiting is null ? 0 : 1);
         var skip = await AskAsync(new ConfirmVm("UPDATES THROUGH THE WEBSITE",
-            $"Waiting for {_updateWaiting?.Name ?? "the current download"}; {left} update(s) left. Skip it and open the next page, or stop here (what already arrived stays).",
+            $"Waiting for {_updateWaiting?.Name ?? "the current download"}; {Plural.Of(left, "update")} left. Skip it and open the next page, or stop here (what already arrived stays).",
             "SKIP · NEXT PAGE", false) { CancelLabel = "Stop" });
         if (skip) { OpenNextUpdatePage(); return; }
         _updateQueue = null;
@@ -472,7 +472,7 @@ public sealed partial class MainViewModel
         else
         {
             replaceAll = await AskAsync(new ConfirmVm($"NEWER VERSIONS OF {updates.Count} MODS YOU HAVE?",
-                $"{updates.Count} of the {files.Count} files are downloads of mods already in the library. Put each in place of the old version? The game is updated and the old versions are deleted from the library. The other {plain.Count} file(s) are imported as new mods either way.",
+                $"{updates.Count} of the {files.Count} files are downloads of mods already in the library. Put each in place of the old version? The game is updated and the old versions are deleted from the library. The other {Plural.Of(plain.Count, "file")} {Plural.Word(plain.Count, "is", "are")} imported as new {Plural.Word(plain.Count, "mod", "mods")} either way.",
                 $"REPLACE ALL ({updates.Count})", false,
                 updates.Select(u => $"{u.Older.ModName} {u.Older.Version}   → {u.Version ?? "new file"}   ({Path.GetFileName(u.File)})").ToList(),
                 linesTitle: "Replaced") { CancelLabel = "Add all as separate mods" });

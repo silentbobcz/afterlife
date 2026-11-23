@@ -118,6 +118,10 @@ REDmods need the free **REDmod** DLC of the game (Steam, GOG and Epic all have i
 
 The library keeps every mod version you imported, the downloaded archives and the files it moved out of the game, so you can always go back. **Settings → Kept files** shows how much each part takes, opens its folder with **Show** and lets you delete it. Delete old mod versions you do not need with **DELETE EVERYWHERE**.
 
+## Can I move the library to another drive?
+
+Yes: **Settings → 01 · Game & library → MOVE…**. Choose an empty or new folder; AFTERLIFE moves everything it keeps there and uses the new folder from then on. The game is not touched and your mods keep working. If the move is interrupted, the next start offers to continue it or to keep the library where it was. Do not move the folder by hand in Explorer: AFTERLIFE would not find it.
+
 ## Does it work on Steam Deck, Linux or macOS?
 
 Not officially. AFTERLIFE is a Windows (WPF) app and is tested only on Windows 10 and 11.

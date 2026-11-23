@@ -466,10 +466,10 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public bool CanSelect => _rows.Count > 0;
     public string SelectTip => Kind switch
     {
-        ChapterKind.Core => "Select all core mods (for MOVE TO CATEGORY, bulk on/off, ...)",
-        ChapterKind.Collection => "Select all mods of this collection",
-        ChapterKind.Category => "Select all mods of this category",
-        _ => "Select all mods of MODS (with its categories)",
+        ChapterKind.Core => "Check all core mods (for MOVE TO CATEGORY, bulk on/off, ...)",
+        ChapterKind.Collection => "Check all mods of this collection",
+        ChapterKind.Category => "Check all mods of this category",
+        _ => "Check all mods of MODS (with its categories)",
     };
     public ICommand SelectAllCommand => _selectAll ??= new RelayCommand(() =>
     {
@@ -541,7 +541,7 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public string SortTip => IsCategory
         ? "Sort the mods of this category by name, once. Afterwards you can drag them again."
         : "Sort the mods of MODS without a category by name, once. Afterwards you can drag them again.";
-    public string EmptyHint => IsCategory ? "empty · drag mods here or select them and use MOVE TO CATEGORY" : "";
+    public string EmptyHint => IsCategory ? "empty · drag mods here or check them and use MOVE TO CATEGORY" : "";
     public bool IsEmpty => Total == 0;
 
     // what needs attention inside, as small marks in the header (also when folded)
@@ -551,9 +551,9 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public bool HasUpdates => Updates > 0;
     public bool HasConflicts => Conflicts > 0;
     public bool HasMissing => Missing > 0;
-    public string UpdatesTip => $"{Updates} mod(s) with a newer version on Nexus · click to show the first";
-    public string ConflictsTip => $"{Conflicts} mod(s) with file conflicts · click to show the first";
-    public string MissingTip => $"{Missing} mod(s) missing something they need · click to show the first";
+    public string UpdatesTip => $"{Plural.Of(Updates, "mod")} with a newer version on Nexus · click to show the first";
+    public string ConflictsTip => $"{Plural.Of(Conflicts, "mod")} with file conflicts · click to show the first";
+    public string MissingTip => $"{Plural.Of(Missing, "mod")} missing something they need · click to show the first";
     public ICommand? ShowUpdateCommand { get; set; }
     public ICommand? ShowConflictCommand { get; set; }
     public ICommand? ShowMissingCommand { get; set; }

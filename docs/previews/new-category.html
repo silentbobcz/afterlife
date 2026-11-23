@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEW: freshly installed mods</title>
+<!-- Static preview, no code behind it: it shows where freshly installed mods land (the NEW block) in three states.
+     Colours are the tokens of src/Afterlife.App/App.xaml; fonts fall back to system fonts, nothing is loaded from the net.
+     The design is described in new-category.md next to this file. -->
+<style>
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --o: #FF9F1C; --v: #B98CFF;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --tagtext: #C9C7BB; --tagline: #3A4256; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08); --vtint: rgba(185,140,255,.10); --gtint: rgba(57,255,138,.07);
+  --disp: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+  --body: "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--body); }
+body { padding: 16px; }
+code { font-family: var(--mono); font-size: 12px; color: var(--c); }
+
+.page-head { max-width: 1280px; margin: 0 auto 14px; }
+.page-head h1 { margin: 0 0 6px; font: 700 18px var(--disp); letter-spacing: .12em; color: var(--y); }
+.page-head h1 span { color: var(--m); }
+.page-head p { margin: 0; color: var(--t2); font-size: 13px; line-height: 1.5; max-width: 900px; }
+.seg-label { font: 11px var(--mono); color: var(--t3); margin-right: 6px; letter-spacing: .08em; }
+.seg { display: inline-flex; border: 1px solid var(--line2); margin-top: 12px; flex-wrap: wrap; }
+.seg button { background: none; border: 0; color: var(--t2); font: 500 11.5px var(--mono); padding: 7px 13px; cursor: pointer; letter-spacing: .06em; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button.on { background: var(--ctint); color: var(--c); }
+
+.stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .stage { grid-template-columns: 1fr; } }
+
+.panel { background: var(--bg2); border: 1px solid var(--line2); padding: 14px 14px 10px; min-width: 0; }
+.panel-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.panel-top .title { font: 700 15px var(--disp); letter-spacing: .1em; color: var(--y); }
+.status { margin-top: 8px; padding: 6px 10px; border: 1px solid var(--c); background: var(--ctint); font-size: 12.5px; line-height: 1.45; }
+.cols { display: grid; grid-template-columns: 30px 1fr 120px 150px 62px; margin: 12px 8px 6px 18px; font: 11px var(--mono); color: var(--t2); }
+.cols :last-child { text-align: right; }
+
+.block { position: relative; margin: 14px 0 6px; padding: 8px 12px; background: var(--bg3); border: 1px solid var(--tone); display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 0); }
+.block .ico { width: 28px; height: 28px; border: 1px solid var(--tone); background: color-mix(in srgb, var(--tone) 10%, transparent); display: grid; place-items: center; font: 700 11px var(--mono); color: var(--tone); position: relative; }
+.block .lock { position: absolute; right: -4px; bottom: -4px; width: 8px; height: 8px; background: var(--y); }
+.block .lab { font: 700 11px var(--mono); color: var(--tone); }
+.block .nm { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.block .cnt { font: 12px var(--mono); color: var(--t2); }
+.block.new { background: linear-gradient(90deg, var(--gtint), var(--bg3) 60%); }
+.hbtns { display: flex; align-items: center; gap: 8px; }
+.cat { margin: 8px 0 4px 22px; padding: 4px 12px 4px 6px; background: var(--vtint); border-left: 3px solid var(--v); border-bottom: 1px solid var(--v); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+.cat .ico { width: 22px; height: 22px; border: 1px solid var(--v); background: var(--vtint); }
+.cat .lab { font: 700 11px var(--mono); color: var(--v); margin-right: 8px; }
+.cat .nm { font-size: 13px; font-weight: 600; }
+.cat .cnt { font: 11.5px var(--mono); color: var(--t2); }
+.small { font: 700 10.5px var(--mono); min-height: 26px; padding: 0 11px; color: var(--t2); background: none; border: 1px solid var(--line2); cursor: pointer;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.small.go { color: var(--g); border-color: var(--g); background: var(--gtint); }
+.small.arrow { padding: 0 8px; }
+.tog { width: 40px; height: 24px; border: 1.5px solid var(--t3); background: var(--bg3); position: relative; justify-self: end; }
+.tog::after { content: ""; position: absolute; left: 4px; top: 4px; width: 15px; height: 14px; background: var(--t3); }
+.tog.on { border-color: var(--y); background: var(--bg); }
+.tog.on::after { left: auto; right: 4px; background: var(--y); }
+
+.row { position: relative; display: grid; grid-template-columns: 30px 1fr 120px 150px 62px; align-items: center; padding: 8px 8px 8px 18px; border-bottom: 1px solid var(--line); min-height: 54px; }
+.row.col { box-shadow: inset 2px 0 0 rgba(0,240,255,.55); }
+.row.isnew { box-shadow: inset 2px 0 0 rgba(57,255,138,.6); }
+.row.moved { background: var(--ctint); outline: 1px dashed var(--c); outline-offset: -2px; }
+.chk { width: 16px; height: 16px; border: 1.5px solid var(--t3); }
+.nameline { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.grip { color: var(--t3); font-size: 11px; align-self: center; }
+.num { font: 700 11.5px var(--mono); color: var(--c); min-width: 34px; text-align: right; }
+.nmx { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tags { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.tag { font: 10px var(--mono); color: var(--tagtext); background: rgba(201,199,187,.05); border: 1px solid var(--tagline); padding: 0 5px; }
+.tag.win { color: var(--o); border-color: var(--o); }
+.ver { font: 12px var(--mono); }
+.chip { justify-self: start; font: 700 11px var(--mono); padding: 2px 8px; border: 1px solid var(--tone); color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, transparent); }
+.more { padding: 8px 18px; font: 11.5px var(--mono); color: var(--t3); border-bottom: 1px solid var(--line); }
+
+.side { display: grid; gap: 14px; position: sticky; top: 12px; }
+.card { background: var(--bg2); border: 1px solid var(--line2); padding: 16px 18px; position: relative; }
+.card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--y); }
+.card h3 { margin: 0 0 8px; font: 700 12px var(--mono); letter-spacing: .1em; color: var(--t2); }
+.legend { font-size: 12.5px; line-height: 1.55; color: var(--t2); }
+.legend b { color: var(--t); font-weight: 600; }
+.legend ul { margin: 6px 0 0; padding-left: 18px; }
+.legend li { margin-bottom: 5px; }
+.opt { border: 1px solid var(--line2); padding: 8px 10px; margin-top: 8px; font-size: 12.5px; line-height: 1.5; color: var(--t2); }
+.opt b { color: var(--c); font: 700 11px var(--mono); letter-spacing: .06em; }
+.opt.rec { border-color: var(--c); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1><span>//</span> NEW: WHERE A FRESHLY INSTALLED MOD LANDS</h1>
+  <p>Static preview of the design in <code>new-category.md</code>. Every freshly installed mod falls into the block <b>NEW</b>, which stands on top by default, can be moved like any block and hides when it is empty. Pick a state:</p>
+  <div class="seg" id="seg">
+    <button data-s="top" class="on">1 · THREE NEW MODS, NEW ON TOP</button>
+    <button data-s="low">2 · NEW MOVED BELOW THE COLLECTION</button>
+    <button data-s="one">3 · TWO MODS DRAGGED OUT</button>
+    <button data-s="gone">4 · LAST MOD DRAGGED OUT: NEW IS GONE</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="panel">
+    <div class="panel-top"><span class="title">MODS</span></div>
+    <div class="status" id="status"></div>
+    <div class="cols"><span></span><span>MOD</span><span>VERSION</span><span>STATUS</span><span>ON</span></div>
+    <div id="list"></div>
+  </div>
+
+  <div class="side">
+    <div class="card">
+      <h3>WHAT THIS STATE SHOWS</h3>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="card">
+      <h3>RULES</h3>
+      <div class="legend">
+        <ul>
+          <li><b>Into NEW:</b> a mod you import or download yourself.</li>
+          <li><b>Not into NEW:</b> an update of a mod you already have, mods of a collection, mods placed by IMPORT ORDER, FIXER quests, files taken over by SCAN MANUAL MODS.</li>
+          <li><b>Out of NEW:</b> drag the mod into MODS or a category, or MOVE ALL TO MODS (they go to the end of MODS, where new mods landed until now).</li>
+          <li><b>Load order:</b> higher loads first, NEW included. Installing a mod never changes the order of the other mods among themselves.</li>
+          <li><b>Empty NEW</b> is not shown; it remembers its place.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3>TO DECIDE</h3>
+      <div class="legend">
+        <div class="opt rec"><b>1 · LOAD ORDER</b><br>A (shown): a mod in NEW loads where NEW stands; on top it wins file conflicts until moved. B: NEW is shown on top but always loads last.</div>
+        <div class="opt rec"><b>2 · MOVING NEW</b><br>A (shown): among the blocks (collections, MODS). B: also between the categories inside MODS; about twice the work.</div>
+        <div class="opt rec"><b>3 · SETTINGS</b><br>A (shown): no switch. B: a switch "Put new mods into NEW", off = the end of MODS as before.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var NEWM = [
+    { n: 'Street Vendor Overhaul', v: '2.1.0', t: ['archive', 'redscript'], win: 'wins 2 files over Night City Overhaul' },
+    { n: 'Kiroshi Scanner Tweaks', v: '1.0.4', t: ['archive'] },
+    { n: 'Quiet Radio Ads', v: '0.9', t: ['redscript'] }
+  ];
+  var CORE = [{ n: 'Cyber Engine Tweaks', v: '1.37.1', t: ['framework'] }, { n: 'RED4ext', v: '1.29.1', t: ['framework'] }];
+  var COL = [{ n: 'Enhanced Weather', v: '3.2', t: ['archive'] }, { n: 'Night City Lights', v: '1.8', t: ['archive'] }];
+  var MODS = [{ n: 'Appearance Menu Mod', v: '2.12', t: ['archive', 'CET'] }, { n: 'Better Loot Markers', v: '5.0.2', t: ['redscript'] }];
+  var VIS = [{ n: 'Hair Pack Vol. 3', v: '1.2', t: ['archive'] }];
+
+  var STATES = {
+    top:  { order: ['new', 'col', 'mods'], inNew: [0, 1, 2], status: '<b>3 mods installed.</b> They are in NEW at the top of the list: drag each one to where it belongs. Apply to put them in the game.',
+            legend: 'Three mods were just installed. NEW stands right under CORE MODS, so the new mods are <b>#1 to #3</b> and every other number grew by three; the other mods keep their order among themselves. The first new mod overrides two files of the collection and the row says so.' },
+    low:  { order: ['col', 'new', 'mods'], inNew: [0, 1, 2], status: 'NEW moved below Collection Night City Overhaul. Load order follows the list: higher loads first. Apply to update the game.',
+            legend: 'The user moved the NEW block one step down with the arrow in its header (or by dragging the header). The collection loads first again and the new mod no longer overrides it. NEW stays at this place from now on, also after it was empty.' },
+    one:  { order: ['col', 'new', 'mods'], inNew: [2], moved: { mods: [0], vis: [1] }, status: '2 mods moved out of NEW. Load order follows the list: higher loads first. Apply to update the game.',
+            legend: 'Two mods were dragged out: one into MODS, one into the category Visuals (dashed rows). They are ordinary mods now. One mod is left in NEW.' },
+    gone: { order: ['col', 'mods'], inNew: [], moved: { mods: [0, 2], vis: [1] }, status: 'Quiet Radio Ads moved to MODS. NEW is empty and hidden; the next mod you install brings it back below the collection.',
+            legend: 'The last mod left NEW, so the block is <b>not shown</b>: no empty frame in the list. Its place (below the collection) is remembered for the next installed mod.' }
+  };
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  var n;
+  function row(it, cls, numbered) {
+    var num = numbered ? '<span class="num">#' + (++n) + '</span>' : '<span class="num" style="color:var(--t3)">&ndash;</span>';
+    var tags = it.t.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+    if (it.win && cls.indexOf('isnew') >= 0 && it.showWin) tags += '<span class="tag win">' + esc(it.win) + '</span>';
+    return '<div class="row ' + cls + '"><span class="chk"></span><div style="min-width:0"><div class="nameline"><span class="grip">&#9776;</span>' + num +
+      '<span class="nmx">' + esc(it.n) + '</span></div><div class="tags" style="padding-left:52px">' + tags + '</div></div>' +
+      '<span class="ver">' + esc(it.v) + '</span><span class="chip" style="--tone:var(--' + (cls.indexOf('isnew') >= 0 || cls.indexOf('moved') >= 0 ? 'o' : 'g') + ')">' +
+      (cls.indexOf('isnew') >= 0 || cls.indexOf('moved') >= 0 ? 'NOT APPLIED' : 'IN GAME') + '</span><span class="tog on"></span></div>';
+  }
+  function render(key) {
+    var s = STATES[key], h = '';
+    n = 0;
+    h += '<div class="block" style="--tone:var(--y)"><div class="ico">&#9632;<span class="lock"></span></div><div><div class="lab">CORE MODS</div><div class="nm">Frameworks the other mods build on &middot; always load first</div></div><span class="cnt">' + CORE.length + ' mods</span><span class="tog on"></span></div>';
+    CORE.forEach(function (it) { h += row(it, 'core', false); });
+    s.order.forEach(function (b, bi) {
+      if (b === 'new') {
+        h += '<div class="block new" style="--tone:var(--g)"><div class="ico">+</div><div><div class="lab">NEW</div><div class="nm">Freshly installed &middot; drag each mod to where it belongs</div></div><span class="cnt">' + s.inNew.length + (s.inNew.length === 1 ? ' mod' : ' mods') + '</span>' +
+          '<div class="hbtns"><button class="small arrow" title="Move block up">&#9650;</button><button class="small arrow" title="Move block down">&#9660;</button><button class="small go">MOVE ALL TO MODS</button></div></div>';
+        s.inNew.forEach(function (i) { var it = NEWM[i]; it.showWin = bi === 0; h += row(it, 'isnew', true); });
+      } else if (b === 'col') {
+        h += '<div class="block" style="--tone:var(--c)"><div class="ico">&#9671;</div><div><div class="lab">COLLECTION</div><div class="nm">Night City Overhaul</div></div><span class="cnt">412 mods</span><span class="tog on"></span></div>';
+        COL.forEach(function (it) { h += row(it, 'col', true); });
+        h += '<div class="more">&hellip; 410 more mods of the collection</div>'; n += 410;
+      } else {
+        var mv = s.moved || {};
+        h += '<div class="block" style="--tone:var(--t)"><div class="ico">&#9776;</div><div><div class="lab">MODS</div><div class="nm">Mods and categories</div></div><span class="cnt">' + (MODS.length + VIS.length + (mv.mods || []).length + (mv.vis || []).length) + ' mods</span><div class="hbtns"><button class="small">+ CATEGORY</button><button class="small">A&rarr;Z</button></div></div>';
+        MODS.forEach(function (it) { h += row(it, '', true); });
+        (mv.mods || []).forEach(function (i) { h += row(NEWM[i], 'moved', true); });
+        h += '<div class="cat"><span class="ico"></span><div><span class="lab">CATEGORY</span><span class="nm">Visuals</span></div><span class="cnt">' + (VIS.length + (mv.vis || []).length) + ((VIS.length + (mv.vis || []).length) === 1 ? ' mod' : ' mods') + '</span></div>';
+        VIS.forEach(function (it) { h += row(it, '', true); });
+        (mv.vis || []).forEach(function (i) { h += row(NEWM[i], 'moved', true); });
+      }
+    });
+    document.getElementById('list').innerHTML = h;
+    document.getElementById('status').innerHTML = s.status;
+    document.getElementById('legend').innerHTML = s.legend;
+    Array.prototype.forEach.call(document.getElementById('seg').children, function (b) { b.classList.toggle('on', b.dataset.s === key); });
+  }
+  document.getElementById('seg').addEventListener('click', function (e) { if (e.target.dataset.s) render(e.target.dataset.s); });
+  render('top');
+})();
+</script>
+</body>
+</html>
