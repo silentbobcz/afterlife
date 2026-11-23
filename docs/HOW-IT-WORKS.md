@@ -63,6 +63,8 @@ Switching mods off (`MainViewModel.Library.cs`, `WithRelatedOffAsync`) asks in o
 
 `ActivityLog` (optional, Settings) and the error log of the window both pass every line through `LogPrivacy.Scrub` before it is written: user name, computer name, the folders of the game, the library and the profile, network shares, e-mail addresses and link secrets become marks. New log output goes through the same two writers, never straight to a file.
 
+The redscript log of the game (`r6/logs/redscript_rCURRENT.log`) is read by `RedscriptLog` (Core, pure: verdict, errors with file, line and column, the "caused by" list). `RedscriptDiagnosis.AnalyzeRedscript` (Infrastructure) ties each error to a mod, first by the exact path in the ledger (only read), then by its folder in `r6/scripts`, and calls everything else installed by hand; a log older than the last apply is stale. `RedscriptPrompt` writes the question for an AI chat through `LogPrivacy.Scrub`.
+
 ## Plan
 
 `Planner` builds the target state from the profile (enabled mods, conflict winners, load order) and compares it with the **ledger**, the record of every file AFTERLIFE put in the game. The result is a list of steps: add, replace, delete, and the generated `archive/pc/mod/modlist.txt`.
