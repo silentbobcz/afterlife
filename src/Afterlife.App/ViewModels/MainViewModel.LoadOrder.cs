@@ -76,7 +76,7 @@ public sealed partial class MainViewModel
         }
         return LoadOrder.Arrange(rows, r => r.PackageId, r => r.BlockRank,
             r => parentOf.TryGetValue(r.PackageId, out var p) ? p : null,
-            r => byName && r.InModsBlock, r => r.Overview.Package.ModName, r => r.Overview.Package.Version, RowNames);
+            r => byName && r.InFreeBlock, r => r.Overview.Package.ModName, r => r.Overview.Package.Version, RowNames);
     }
 
     /// <summary>Position numbers after CORE MODS, counted like <see cref="CurrentOrder"/> (and so like modlist.txt).</summary>

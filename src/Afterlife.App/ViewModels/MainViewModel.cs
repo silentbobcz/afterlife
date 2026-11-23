@@ -312,7 +312,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 inLibrary ? "in library" : canReimport ? "deleted · file kept" : "deleted",
                 inLibrary ? Tone.Ok : Tone.Neutral,
                 new RelayCommand(() => AppLinks.Open(url)),
-                canReimport ? new AsyncRelayCommand(async () => { Overlay = null; await ImportFilesCoreAsync([file!], new NexusSource(r.ModId, r.FileId, r.Name, r.Version)); }) : null);
+                canReimport ? new AsyncRelayCommand(async () => { Overlay = null; await ImportFilesCoreAsync([file!], new NexusSource(r.ModId, r.FileId, r.Name, r.Version), intoNew: true); }) : null);
         }).ToList();
         Overlay = new DownloadsVm(items) { CloseCommand = new RelayCommand(() => Overlay = null) };
     });

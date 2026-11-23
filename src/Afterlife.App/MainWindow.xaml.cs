@@ -319,6 +319,7 @@ public partial class MainWindow : Window
         ChapterKind.Plain => MainViewModel.PlainChapter,
         ChapterKind.Category => MainViewModel.CategoryChapterPrefix + h.Slug,
         ChapterKind.Core => MainViewModel.CoreChapter,
+        ChapterKind.New => MainViewModel.NewChapter,
         _ => MainViewModel.CollectionChapterPrefix + h.Name,
     };
 

@@ -74,6 +74,10 @@ public sealed partial class ModRowVm : ObservableObject
     public int BlockRank { get; set; }
     /// <summary>In MODS or one of its categories (can move between them).</summary>
     public bool InModsBlock => Chapter == MainViewModel.PlainChapter || Chapter.StartsWith(MainViewModel.CategoryChapterPrefix, StringComparison.Ordinal);
+    /// <summary>In NEW (freshly installed, not moved yet).</summary>
+    public bool InNewBlock => Chapter == MainViewModel.NewChapter;
+    /// <summary>In NEW, MODS or a category: free order, and a mod of NEW can go to MODS or a category.</summary>
+    public bool InFreeBlock => InModsBlock || InNewBlock;
     public bool InCollection => !IsCore && Overview.Collections.Count > 0;
     /// <summary>Selection for bulk actions is its own state; clicking a row only shows its details.</summary>
     [ObservableProperty] private bool _isChecked;
@@ -450,7 +454,7 @@ public sealed class CoreModVm(CoreModStatus s, NexusUpdate? update = null, IComm
 
 public sealed record NexusSource(string ModId, string? FileId, string? ModName, string? Version, string? ExistingModId = null);
 
-public enum ChapterKind { Core, Collection, Plain, Category }
+public enum ChapterKind { Core, Collection, Plain, Category, New }
 
 /// <summary>Header of a chapter in the mod list: fold arrow, count, marks, a switch for all its mods and (not core) a drag handle.</summary>
 public sealed class CollectionChapterVm(ChapterKind kind, string key, string label, string name, int on, int total, bool canToggle,
@@ -469,6 +473,7 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
         ChapterKind.Core => "Check all core mods (for MOVE TO CATEGORY, bulk on/off, ...)",
         ChapterKind.Collection => "Check all mods of this collection",
         ChapterKind.Category => "Check all mods of this category",
+        ChapterKind.New => "Check all freshly installed mods in NEW",
         _ => "Check all mods of MODS (with its categories)",
     };
     public ICommand SelectAllCommand => _selectAll ??= new RelayCommand(() =>
@@ -499,13 +504,14 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     /// <summary>A category inside a folded MODS block is hidden with it.</summary>
     public bool IsHidden { get; init; }
     public string CountText => $"{On} / {Total} ON";
-    public Tone Tone => Kind switch { ChapterKind.Core => Tone.Brand, ChapterKind.Collection => Tone.Info, ChapterKind.Category => Tone.Category, _ => Tone.Plain };
+    public Tone Tone => Kind switch { ChapterKind.Core => Tone.Brand, ChapterKind.Collection => Tone.Info, ChapterKind.Category => Tone.Category, ChapterKind.New => Tone.Ok, _ => Tone.Plain };
     /// <summary>Quickhack-like icon of the block in its colour (own drawing, not game art): chip, layers, cube, bookmark.</summary>
     public string IconData => Kind switch
     {
         ChapterKind.Core => "M4.5,4.5 H11.5 V11.5 H4.5 Z M6.5,6.5 H9.5 V9.5 H6.5 Z M6.5,1 V4.5 M9.5,1 V4.5 M6.5,11.5 V15 M9.5,11.5 V15 M1,6.5 H4.5 M1,9.5 H4.5 M11.5,6.5 H15 M11.5,9.5 H15",
         ChapterKind.Collection => "M8,1.5 L14.5,5 L8,8.5 L1.5,5 Z M1.5,8 L8,11.5 L14.5,8 M1.5,11 L8,14.5 L14.5,11",
         ChapterKind.Category => "M3.5,1.5 H12.5 V14.5 L8,10.8 L3.5,14.5 Z M6,5 H10",
+        ChapterKind.New => "M8,4 V12 M4,8 H12 M1.5,5 V1.5 H5 M11,1.5 H14.5 V5 M14.5,11 V14.5 H11 M5,14.5 H1.5 V11",
         _ => "M8,1.5 L14.5,4.8 V11.2 L8,14.5 L1.5,11.2 V4.8 Z M1.5,4.8 L8,8.1 L14.5,4.8 M8,8.1 V14.5",
     };
     public string IconTip => BlockKey is null ? "CORE MODS always stay on top and load first" : MoveTip;
@@ -516,6 +522,7 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
         ChapterKind.Core => "Switch all core mods on or off in this profile",
         ChapterKind.Collection => "Switch the whole collection on or off in this profile",
         ChapterKind.Category => "Switch all mods of this category on or off in this profile",
+        ChapterKind.New => "Switch all mods in NEW on or off in this profile",
         _ => "Switch all mods of MODS (with its categories) on or off in this profile",
     };
     public ICommand? ToggleCommand { get; } = toggle;
@@ -538,6 +545,8 @@ public sealed class CollectionChapterVm(ChapterKind kind, string key, string lab
     public ICommand? RemoveCommand { get; init; }
     /// <summary>A→Z: sorts this section (MODS without category, or this category) by name once.</summary>
     public ICommand? SortCommand { get; init; }
+    /// <summary>NEW only: every mod of NEW to the end of MODS without a category, in its current order.</summary>
+    public ICommand? MoveAllCommand { get; init; }
     public string SortTip => IsCategory
         ? "Sort the mods of this category by name, once. Afterwards you can drag them again."
         : "Sort the mods of MODS without a category by name, once. Afterwards you can drag them again.";

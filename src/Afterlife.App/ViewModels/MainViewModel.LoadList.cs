@@ -207,11 +207,17 @@ public sealed partial class MainViewModel
         var sections = new List<LoadListSection>();
         var core = mains.Where(r => r.IsCore).Select(ModOf).ToList();
         if (core.Count > 0) sections.Add(new LoadListSection(0, LoadListSectionKind.Core, "", core));
-        foreach (var key in _layout.Sections(CollectionSlugs))
+        // NEW is a working place, not part of the format: its mods are written as mods of MODS without a category,
+        // first in MODS when NEW stands above MODS, last when below
+        var keys = _layout.Sections(CollectionSlugs).ToList();
+        var fresh = mains.Where(r => !r.IsCore && r.Section == BlockLayout.NewBlock).Select(ModOf).ToList();
+        var freshFirst = keys.IndexOf(BlockLayout.NewBlock) < keys.IndexOf(BlockLayout.ModsBlock);
+        foreach (var key in keys)
         {
+            if (key == BlockLayout.NewBlock) continue;
             var mods = mains.Where(r => !r.IsCore && r.Section == key).Select(ModOf).ToList();
             if (key == BlockLayout.ModsBlock)
-                sections.Add(new LoadListSection(0, LoadListSectionKind.Mods, "", mods));
+                sections.Add(new LoadListSection(0, LoadListSectionKind.Mods, "", freshFirst ? fresh.Concat(mods).ToList() : mods.Concat(fresh).ToList()));
             else if (key.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal))
                 sections.Add(new LoadListSection(0, LoadListSectionKind.Category, CategoryName(key[BlockLayout.CategoryPrefix.Length..]), mods));
             else if (mods.Count > 0)
