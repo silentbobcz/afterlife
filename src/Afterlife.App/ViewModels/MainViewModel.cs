@@ -225,7 +225,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             ScanCompleted?.Invoke();
         });
         _ = AfterOpenAsync();
-        if (_pendingLink is not null) { var l = _pendingLink; _pendingLink = null; await HandleNxmAsync(l); }
+        await HandlePendingLinksAsync();
     }
 
     /// <summary>After opening: new requirement rules for old mods, Nexus account and mod pages.</summary>
@@ -336,13 +336,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (now - _lastActivationScan < TimeSpan.FromSeconds(15)) return;
         _lastActivationScan = now;
         await RunUiAsync(() => RefreshAsync(rescan: true));
-    }
-
-    public Task HandleExternalAsync(string message)
-    {
-        if (!message.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase)) return Task.CompletedTask;
-        if (!_host.IsOpen) { _pendingLink = message; return Task.CompletedTask; }
-        return HandleNxmAsync(message);
     }
 
     private async Task InitializeAsync(FirstRunVm vm)

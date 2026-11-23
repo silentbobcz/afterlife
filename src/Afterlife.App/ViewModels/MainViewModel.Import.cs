@@ -13,7 +13,23 @@ namespace Afterlife.App.ViewModels;
 /// <summary>Getting mods into the library: nxm links, Nexus downloads, files and folders.</summary>
 public sealed partial class MainViewModel
 {
-    private string? _pendingLink;
+    /// <summary>Links that arrived before the library was open, in the order they came; each becomes its own download.</summary>
+    private readonly Queue<string> _pendingLinks = new();
+
+    public Task HandleExternalAsync(string message)
+    {
+        if (!message.StartsWith("nxm://", StringComparison.OrdinalIgnoreCase)) return Task.CompletedTask;
+        if (!_host.IsOpen) { _pendingLinks.Enqueue(message); return Task.CompletedTask; }
+        return HandleNxmAsync(message);
+    }
+
+    /// <summary>Starts every waiting link the way a link arriving now would start (a collection may wait for later ones).</summary>
+    private Task HandlePendingLinksAsync()
+    {
+        var started = new List<Task>();
+        while (_pendingLinks.TryDequeue(out var link)) started.Add(HandleNxmAsync(link));
+        return Task.WhenAll(started);
+    }
 
     /// <summary>Downloads a Mod Manager Download link into the library and imports it like a dropped archive.</summary>
     private Task HandleNxmAsync(string text) => RunUiAsync(async () =>

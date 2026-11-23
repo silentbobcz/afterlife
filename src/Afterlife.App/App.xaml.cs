@@ -22,16 +22,32 @@ public partial class App : Application
         _instance = new Services.SingleInstance();
         if (!_instance.IsFirst)
         {
-            if (Services.SingleInstance.TrySend(link ?? "activate")) { Shutdown(); return; }
+            // another AFTERLIFE runs: hand the link over and never open a second window
+            if (!Services.SingleInstance.Deliver(link ?? Afterlife.Infrastructure.LinkInbox.Activate, TimeSpan.FromSeconds(10)))
+                MessageBox.Show("AFTERLIFE is already running, possibly as administrator, and did not take the link. "
+                    + "Close it, or start it without administrator rights, and try again.",
+                    "AFTERLIFE", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Shutdown();
+            return;
         }
 
+        // listen before the window is built: a link clicked while it starts must not find nobody there
+        _instance.Listen(msg => Dispatcher.BeginInvoke(() => Deliver(msg)), ex => Log(ex));
         var window = new MainWindow(link);
         MainWindow = window;
         window.Show();
-        if (_instance.IsFirst) _instance.Listen(msg => Dispatcher.BeginInvoke(() => window.OnExternalMessage(msg)));
+        foreach (var msg in _early) window.OnExternalMessage(msg);
+        _early.Clear();
     }
 
     private Services.SingleInstance? _instance;
+    private readonly List<string> _early = [];
+
+    private void Deliver(string message)
+    {
+        if (MainWindow is MainWindow window) window.OnExternalMessage(message);
+        else _early.Add(message);
+    }
 
     protected override void OnExit(ExitEventArgs e)
     {
