@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O18 (web: upozornění na edici Offline, Sonnet). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O18.“
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O20 (vydání plné edice s instalátorem, Opus); po něm O18 a O19 (Sonnet). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O20.“
 
 Poslední pracovní verze plné edice je `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni` (23. 11.): obsahuje load list (A16) i nový dialog při vypnutí modu (A15), ještě ne odkazy na web v aplikaci (A17). Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
 
@@ -20,7 +20,7 @@ Doporučená možnost je vždy první.
 
 | # | Co | O co jde | Možnosti | Stav |
 |---|---|---|---|---|
-| C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1, od 22. 11. i s nastavením v záložkách (A10). Vydání na GitHubu spustí až tag, a ten zakládáš ty. Vydá se edice Offline; plnou edici máš jako zkušební zip. | 1. Nejdřív projít A2 až A10 na zkušebním sestavení, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`). 2. Založit tag hned. | ☐ čeká |
+| C8 | Tag a vydání 1.0.0-beta.1 | Kód je v `main` s verzí 1.0.0-beta.1, od 22. 11. i s nastavením v záložkách (A10). Vydání na GitHubu spustí až tag, a ten zakládáš ty. Od 23. 11. platí: na GitHub plná edice (instalátor a zip) a Offline zip, na Nexus jen Offline zip; to umí workflow až po balíku O20. | 1. Počkat na O20, pak založit tag `v1.0.0-beta.1` na GitHubu (Releases → Draft a new release → tag `v1.0.0-beta.1`, cíl `main`); vyjde plná edice s instalátorem i Offline. 2. Založit tag hned: vyjde jen Offline zip jako dosud. | ☐ čeká |
 
 ## D. Dodat
 
@@ -32,6 +32,7 @@ Doporučená možnost je vždy první.
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | Rozhodnuto: na GitHubu se vydává plná edice (instalátor a zip) a vedle ní Offline zip, který jde na Nexus Mods; na Nexusu zůstává jen Offline. Instalátor jen pro plnou edici. Ruší se „vydání jen Offline“ (od alpha.9) a „instalátor nebude“ (22. 11.). Do kódu jde jako O20, web O18, návod k přechodu na novou verzi O19. |
 | 23. 11. | C10: web s návodem běží na Cloudflare Pages, <https://afterlife-13h.pages.dev>, a obnovuje se po každé změně v `main`. Adresa je v README, v okně About (tlačítko WEBSITE) a pod vestavěným návodem; na Nexus ji vkládáš ty. Úvodní stránka webu ještě nezdůrazňuje, že ke stažení je edice Offline: oprava je balík O18. |
 | 23. 11. | O15 (export a import load listu) a O17 (nový dialog při vypnutí modu) hotové a zkontrolované, 375 testů; zkouší se v A16 a A15. Druhá dávka fronty je uzavřená a v archivu. |
 | 23. 11. | Vyzkoušeno na pracovní verzi `1c1256e`: A2, A7, A8, A13 (volné pořadí modů) a A14 (fialová tlačítka) v pořádku. A12 (web a dokumentace): bez výhrad teď, úpravy případně později. |

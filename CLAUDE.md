@@ -48,7 +48,9 @@ The WPF window cannot run on Linux: what you could not see running goes to the h
 
 On the owner's PC there is no .NET 10 SDK. Push the work branch and start the checks on GitHub:
 `gh workflow run build.yml --ref <branch>` (a pushed work branch alone starts nothing). A run started by hand also
-makes a test build of the full edition, the artifact `AFTERLIFE-full-test`; releases carry only AFTERLIFE Offline.
+makes a test build of the full edition, the artifact `AFTERLIFE-full-test`. Releases on GitHub carry the full edition
+(installer and zip) and the AFTERLIFE Offline zip; Nexus Mods gets only the Offline zip, and Offline has no installer.
+Until the workflow does that (package O20 in `FRONTA.md`), a tag still releases only Offline.
 
 ## Rules
 
