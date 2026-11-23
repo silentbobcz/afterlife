@@ -41,13 +41,14 @@ public sealed partial class MainViewModel
         return _host.RunAsync(c => c.Store.SetMeta(LayoutKey, json));
     }
 
-    /// <summary>Section of a mod: core, its first collection, its category or MODS.</summary>
+    /// <summary>Section of a mod: core, its first collection, its category, NEW or MODS.</summary>
     private string SectionOf(ModOverview m, BlockLayout layout, IReadOnlyDictionary<string, string> slugOfName)
     {
         if (m.IsCore) return "core";
         foreach (var name in m.Collections)
             if (slugOfName.TryGetValue(name, out var slug)) return BlockLayout.CollectionKey(slug);
-        return layout.CategoryIdOf(m.Package.PackageId) is { } cat ? BlockLayout.CategoryKey(cat) : BlockLayout.ModsBlock;
+        if (layout.CategoryIdOf(m.Package.PackageId) is { } cat) return BlockLayout.CategoryKey(cat);
+        return layout.IsNew(m.Package.PackageId) ? BlockLayout.NewBlock : BlockLayout.ModsBlock;
     }
 
     private Dictionary<string, string> SlugOfName() =>
@@ -57,6 +58,7 @@ public sealed partial class MainViewModel
     {
         if (section == "core") return CoreChapter;
         if (section == BlockLayout.ModsBlock) return PlainChapter;
+        if (section == BlockLayout.NewBlock) return NewChapter;
         if (section.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal)) return CategoryChapterPrefix + section[BlockLayout.CategoryPrefix.Length..];
         var slug = section[BlockLayout.CollectionPrefix.Length..];
         return CollectionChapterPrefix + (_collections.FirstOrDefault(c => c.Slug == slug)?.Name ?? slug);
@@ -74,10 +76,11 @@ public sealed partial class MainViewModel
             r.Chapter = ChapterOfSection(r.Section);
             r.BlockRank = r.Section == "core" ? -1 : rank.TryGetValue(r.Section, out var i) ? i : sections.Count;
         }
-        // a layer ("└ name") of a mod in MODS or a category belongs to the section of that mod
+        // a layer ("└ name") of a mod in NEW, MODS or a category belongs to the section of that mod
         foreach (var (layer, parent) in ParentRows(rows))
         {
-            if (parent.Section != BlockLayout.ModsBlock && !parent.Section.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal)) continue;
+            if (parent.Section != BlockLayout.ModsBlock && parent.Section != BlockLayout.NewBlock
+                && !parent.Section.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal)) continue;
             layer.Section = parent.Section;
             layer.Chapter = parent.Chapter;
             layer.BlockRank = parent.BlockRank;
@@ -95,7 +98,7 @@ public sealed partial class MainViewModel
         if (_overview is not null && Mods.Count > 0 && !IsNarrowed)
         {
             if (Mods.Any(m => m.IsCore)) want.Add(CoreChapter);
-            want.AddRange(_layout.Sections(CollectionSlugs).Select(ChapterOfSection));
+            want.AddRange(_layout.Sections(CollectionSlugs).Where(s => s != BlockLayout.NewBlock || NewHasMods).Select(ChapterOfSection));
         }
         if (g.GroupNames.Cast<object>().Select(o => o as string).SequenceEqual(want)) return;
         g.GroupNames.Clear();
@@ -162,8 +165,9 @@ public sealed partial class MainViewModel
         chapter.StartsWith(CategoryChapterPrefix, StringComparison.Ordinal) ? chapter[CategoryChapterPrefix.Length..] : null;
 
     /// <summary>
-    /// Mods of MODS and its categories move between them; collection mods only inside their own collection;
-    /// Core mods never. Returns null when the drop is fine, otherwise why not.
+    /// Mods of MODS and its categories move between them; mods of NEW move inside NEW or out to MODS and its
+    /// categories, never in; collection mods only inside their own collection; core mods never.
+    /// Returns null when the drop is fine, otherwise why not.
     /// </summary>
     public string? WhyNotDrop(IReadOnlyList<string> moved, string targetChapter)
     {
@@ -171,7 +175,9 @@ public sealed partial class MainViewModel
         var rows = Mods.Where(m => moved.Contains(m.PackageId)).ToList();
         if (rows.Count == 0) return "nothing to move";
         if (InModsFamily(targetChapter))
-            return rows.All(r => r.InModsBlock) ? null : "mods of a collection stay in their collection";
+            return rows.All(r => r.InFreeBlock) ? null : "mods of a collection stay in their collection";
+        if (targetChapter == NewChapter)
+            return rows.All(r => r.InNewBlock) ? null : "NEW holds only freshly installed mods";
         return rows.All(r => r.Chapter == targetChapter) ? null : "a collection holds only its own mods";
     }
 
@@ -194,7 +200,7 @@ public sealed partial class MainViewModel
         if (InModsFamily(target.Chapter))
         {
             var cat = CategoryIdOfChapter(target.Chapter);
-            var changes = Mods.Where(m => movedSet.Contains(m.PackageId) && CategoryIdOfChapter(m.Chapter) != cat).ToList();
+            var changes = Mods.Where(m => movedSet.Contains(m.PackageId) && (m.InNewBlock || CategoryIdOfChapter(m.Chapter) != cat)).ToList();
             layout = layout.Assign(movedSet, cat);
             if (changes.Count > 0) into = $"{Plural.Of(changes.Count, "mod")} moved to {(cat is null ? "MODS" : CategoryName(cat))}.";
         }
@@ -246,7 +252,7 @@ public sealed partial class MainViewModel
             var blocks = layout.NormalizedBlocks(CollectionSlugs);
             if (!blocks.Contains(block) || !blocks.Contains(target)) return;
             layout = layout.WithBlocks(BlockLayout.MoveBefore(blocks, block, target, after));
-            name = block == BlockLayout.ModsBlock ? "MODS" : "Collection " + (_collections.FirstOrDefault(c => BlockLayout.CollectionKey(c.Slug) == block)?.Name ?? "");
+            name = block == BlockLayout.ModsBlock ? "MODS" : block == BlockLayout.NewBlock ? "NEW" : "Collection " + (_collections.FirstOrDefault(c => BlockLayout.CollectionKey(c.Slug) == block)?.Name ?? "");
         }
         await ApplyLayoutAsync(layout, CurrentOrder(), name + " moved.");
     });
@@ -254,9 +260,7 @@ public sealed partial class MainViewModel
     /// <summary>Arrow buttons: one step up or down among its siblings.</summary>
     private Task StepBlockAsync(string block, int delta)
     {
-        var siblings = block.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal)
-            ? _layout.Categories.Select(c => BlockLayout.CategoryKey(c.Id)).ToList()
-            : _layout.NormalizedBlocks(CollectionSlugs).ToList();
+        var siblings = SiblingsOf(block);
         var i = siblings.IndexOf(block);
         var j = i + delta;
         if (i < 0 || j < 0 || j >= siblings.Count) return Task.CompletedTask;
@@ -265,9 +269,7 @@ public sealed partial class MainViewModel
 
     private (IRelayCommand Up, IRelayCommand Down) StepCommands(string block)
     {
-        var siblings = block.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal)
-            ? _layout.Categories.Select(c => BlockLayout.CategoryKey(c.Id)).ToList()
-            : _layout.NormalizedBlocks(CollectionSlugs).ToList();
+        var siblings = SiblingsOf(block);
         var i = siblings.IndexOf(block);
         var canEdit = !IsModsOff && _overview?.Status.Unfinished is null;
         return (new AsyncRelayCommand(() => StepBlockAsync(block, -1), () => canEdit && i > 0),
@@ -327,7 +329,7 @@ public sealed partial class MainViewModel
     {
         var ids = _multi.Select(m => m.PackageId).ToList();
         if (ids.Count == 0 || _overview is null) return;
-        if (_multi.Any(m => !m.InModsBlock))
+        if (_multi.Any(m => !m.InFreeBlock))
         {
             Say("Only mods outside core and collections can go to a category; uncheck the others first.", Tone.Warn);
             return;
@@ -354,10 +356,10 @@ public sealed partial class MainViewModel
         await MoveModsToChapterAsync(ids, chapter);
     });
 
-    /// <summary>Forgets categories of mods deleted from the library (keeps the stored layout small).</summary>
+    /// <summary>Forgets categories and NEW membership of mods deleted from the library (keeps the stored layout small).</summary>
     private void PruneLayout()
     {
-        if (_overview is null || _layout.CategoryOf.Count == 0) return;
+        if (_overview is null || (_layout.CategoryOf.Count == 0 && _layout.NewIds.Count == 0)) return;
         var ids = _overview.Mods.Select(m => m.Package.PackageId).ToHashSet(StringComparer.Ordinal);
         var pruned = _layout.Prune(ids);
         if (!ReferenceEquals(pruned, _layout)) _ = SaveLayoutAsync(pruned);

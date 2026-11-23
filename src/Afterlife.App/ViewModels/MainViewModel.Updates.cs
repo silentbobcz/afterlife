@@ -398,8 +398,10 @@ public sealed partial class MainViewModel
             c.ReplaceVersion(older.PackageId, newer.PackageId);
             NexusUpdates.Save(c.Store, older.PackageId, null, DateTimeOffset.UtcNow);
         });
-        // the new version keeps the category of the old one
-        if (_layout.CategoryIdOf(older.PackageId) is { } cat) await SaveLayoutAsync(_layout.Assign([newer.PackageId], cat));
+        // the new version keeps the category of the old one, or its place in NEW
+        var layout = _layout.IsNew(older.PackageId) ? _layout.AddNew([newer.PackageId]) : _layout;
+        if (layout.CategoryIdOf(older.PackageId) is { } cat) layout = layout.Assign([newer.PackageId], cat);
+        if (!ReferenceEquals(layout, _layout)) await SaveLayoutAsync(layout);
         _replacedOld.Add((older.PackageId, $"{older.ModName} {older.Version} → {newer.Version}"));
         await RefreshAsync();
         if (_updateBatch) return;

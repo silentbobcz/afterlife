@@ -11,8 +11,8 @@ public class BlockLayoutTests
     public void New_collections_go_before_MODS_and_MODS_is_always_there()
     {
         var layout = BlockLayout.Empty.WithBlocks(["mods", "collection:ui-pack", "collection:gone"]);
-        Assert.Equal(["collection:night-city", "mods", "collection:ui-pack"], layout.NormalizedBlocks(Slugs));
-        Assert.Equal(["collection:night-city", "collection:ui-pack", "mods"], BlockLayout.Empty.NormalizedBlocks(Slugs));
+        Assert.Equal(["new", "collection:night-city", "mods", "collection:ui-pack"], layout.NormalizedBlocks(Slugs));
+        Assert.Equal(["new", "collection:night-city", "collection:ui-pack", "mods"], BlockLayout.Empty.NormalizedBlocks(Slugs));
     }
 
     [Fact]
@@ -20,7 +20,7 @@ public class BlockLayoutTests
     {
         var layout = BlockLayout.Empty.WithBlocks(["mods", "collection:night-city"])
             .WithCategories([new ModCategory("a", "UI"), new ModCategory("b", "Weapons")]);
-        Assert.Equal(["collection:ui-pack", "mods", "category:a", "category:b", "collection:night-city"], layout.Sections(Slugs));
+        Assert.Equal(["new", "collection:ui-pack", "mods", "category:a", "category:b", "collection:night-city"], layout.Sections(Slugs));
     }
 
     [Fact]

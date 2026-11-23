@@ -4,6 +4,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 ## Unreleased
 
+- **NEW: freshly added mods on top**: a mod you add from a file or download from Nexus yourself goes into the green block NEW, right under CORE MODS, instead of the end of MODS. Drag each mod to where it belongs or press MOVE ALL TO MODS; NEW loads where it stands, can be moved like any block, and hides when empty. Updates, collections, IMPORT ORDER downloads and FIXER quests stay out of it, and an existing library looks and loads exactly as before.
 - **Texts**: messages that said "mod(s)", "file(s)" and similar now use the right singular or plural form for the number they print; the guide and the window call ticked rows "checked" (Check all, REMOVE CHECKED FROM GAME) and keep "selected" for the selected profile and the highlighted row.
 - **Buttons stay locked while any action runs**: when two actions overlapped, the first one to finish unlocked the window while the other was still working; now the window waits for the last one. Talking to Nexus Mods reuses one connection instead of opening a new one for every download and check.
 - **Script mods did not load? AFTERLIFE says why**: after you return from the game (and at start) a banner tells you when redscript could not compile, once per log; ANALYZE (or LIST & ORDER → ANALYZE REDSCRIPT ERROR) names the mods behind it, switches the checked ones off through the normal switch-off (nothing is deleted or applied) and has a text to COPY for an AI chat.

@@ -35,7 +35,7 @@
 
             <DataTemplate DataType="{x:Type vm:CollectionChapterVm}">
                 <Grid Visibility="{Binding IsHidden, Converter={StaticResource InverseBoolToVis}}">
-                    <!-- framed block for core (yellow), collection (cyan) and MODS (light grey) -->
+                    <!-- framed block for core (yellow), NEW (green), collection (cyan) and MODS (light grey) -->
                     <c:CutBorder Margin="0,14,0,6" Background="{StaticResource Bg3}" BorderBrush="{Binding Tone, Converter={StaticResource ToneBrush}}" AccentBrush="{Binding Tone, Converter={StaticResource ToneBrush}}"
                                  CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="8,8,12,8"
                                  Visibility="{Binding IsBlock, Converter={StaticResource BoolToVis}}">
@@ -117,6 +117,12 @@
                             <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
                                 <!-- new category inside MODS -->
                                 <Button Style="{StaticResource SortSectionButton}" />
+                                <!-- NEW only: empties NEW into the end of MODS -->
+                                <Button Style="{StaticResource SmallButton}" Content="MOVE ALL TO MODS" Command="{Binding MoveAllCommand}"
+                                        Foreground="{StaticResource G}" BorderBrush="{StaticResource G}" Background="{StaticResource GTint}"
+                                        ToolTip="Put every mod of NEW at the end of MODS without a category, in its current order"
+                                        AutomationProperties.Name="Move all to MODS"
+                                        Visibility="{Binding MoveAllCommand, Converter={StaticResource NullToVis}}" />
                                 <Button Style="{StaticResource SmallButton}" Content="+ CATEGORY" Command="{Binding AddCategoryCommand}"
                                         ToolTip="New category inside MODS; its mods load after the mods without a category"
                                         Visibility="{Binding AddCategoryCommand, Converter={StaticResource NullToVis}}" />
