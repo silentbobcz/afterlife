@@ -183,4 +183,8 @@ public sealed partial class MainViewModel
         catch (Exception ex) when (IsExpected(ex)) { Say(ex.Message, Tone.Block); }
         finally { IsBusy = false; }
     }
+
+    /// <summary>Footer link to the website with the full guide, kept in plain sight.</summary>
+    [RelayCommand]
+    private void OpenWebsite() => AppLinks.Open(AppLinks.Website);
 }

@@ -1235,7 +1235,13 @@
                     </Grid.ColumnDefinitions>
                     <Image Source="{StaticResource BrandImage}" Height="40" VerticalAlignment="Center" />
                     <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                        <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource T}" Text="© 2026 Silentbobcz · MIT License · free &amp; open source" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource T}" VerticalAlignment="Center" Text="© 2026 Silentbobcz · MIT License · free &amp; open source" />
+                            <!-- website with the full guide, in plain sight -->
+                            <Button Margin="14,0,0,0" Style="{StaticResource LinkButton}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
+                                    Command="{Binding OpenWebsiteCommand}" Content="Guide &amp; website ↗"
+                                    ToolTip="afterlife-13h.pages.dev" AutomationProperties.Name="Open the website with the full guide" />
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontSize="11" Foreground="{StaticResource T2}" VerticalAlignment="Center"
                                        Text="This is an unofficial fan work and is not approved/endorsed by CD PROJEKT RED." />

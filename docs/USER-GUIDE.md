@@ -1,6 +1,6 @@
 # AFTERLIFE user guide
 
-This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run to removing it again.
+This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run to removing it again. It is also on the web at [afterlife-13h.pages.dev](https://afterlife-13h.pages.dev); **Guide & website ↗** in the footer of the window opens it.
 
 - [1. Before you start](#1-before-you-start)
 - [2. First run](#2-first-run)
