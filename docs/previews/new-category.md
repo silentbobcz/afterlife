@@ -61,6 +61,8 @@ An update is **not** a new mod. The newer version takes over the category of the
 
 ## Decisions for the owner
 
+**Decided on 23 Nov 2026: 1 A, 2 A, 3 A.** NEW is on top by default and can be moved among the blocks; a mod in NEW loads where NEW stands; no switch in Settings.
+
 ### 1. Where a mod in NEW loads
 
 - **A. Where NEW stands in the list (recommended).** One rule for the whole list: higher loads first. A new mod on top wins file conflicts until it is moved; the row shows every conflict it wins. Costs: a new mod can override a file of an older mod right after installing, where today it would lose to the uncategorised mods.

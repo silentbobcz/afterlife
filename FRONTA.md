@@ -1,7 +1,7 @@
 # AFTERLIFE: fronta pro modely (4. dávka)
 
 Sestaveno 23. 11. 2026 z námětů a odložených věcí v [`UKOLY.md`](UKOLY.md) (stav po vydání 1.0.0-beta.1) a z odložených nálezů revize z 19. 11. Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md). Starší dávky jsou v `archiv/` (jen archiv, stav z nich nečti).
-Další volná čísla: S2 O27 F6
+Další volná čísla: S2 O28 F6
 
 Nejnovější kód: větev `main` (dávka kromě O24 je sloučená od 23. 11.). Každý balík má vlastní větev a vlastní pracovní složku (`git worktree add <složka> -b <větev> origin/main`); hlavní klon zůstává na `main`. Do `main` se slučuje jen na výslovný pokyn uživatele.
 Kontroly: `dotnet test tests/Afterlife.Tests` a `dotnet build src/Afterlife.App -p:EnableWindowsTargeting=true`; na počítači uživatele není .NET 10 SDK, tam `git push` větve a `gh workflow run build.yml --ref <větev>`.
@@ -26,7 +26,8 @@ Skilly: alt, ukoly-a-fronty, kohn, afterlife, u náhledů grafika-cyberpunk (zdr
 | F5 | Fable | Přesun knihovny do jiné složky z aplikace | ✅ hotovo (testy a uživatel: A23) |
 | O22 | sub-Opus | Chyba redscriptu: čtení logu a nalezení viníka (bez okna) | ✅ zkontrolováno |
 | O23 | sub-Opus | Chyba redscriptu: náhled okna a texty (návrh, bez kódu) | ✅ hotovo, čeká na B11 |
-| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ☐ čeká na B11 |
+| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ▶ běží (B11 schváleno 23. 11.) |
+| O27 | sub-Opus | Kategorie NEW: kód podle schváleného návrhu (kontroluje Fable) | ▶ běží (B10 rozhodnuto 23. 11.) |
 | O25 | sub-Opus | Import load listu: fronta stránek pro účty zdarma | ✅ zkontrolováno (A24) |
 | O26 | sub-Opus | Drobné opravy z revize: počítadlo „pracuji“, jeden klient HTTP | ✅ zkontrolováno |
 | S1 | sub-Sonnet | Texty: „mod(s)“ ve hláškách, „selected“ a „checked“ v návodu | ✅ zkontrolováno (A25) |
@@ -87,7 +88,7 @@ Hotovo, když: náhled se otevře dvojklikem bez sítě a B11 má rozhodnutí s 
 
 ## O24. Chyba redscriptu: okno a tlačítko v aplikaci
 
-Čeká na O22 (rozbor) a B11 (schválený náhled). Mění `MainViewModel.Apply.cs` (návrat ze hry) a nabídku pod seznamem: nepouštět vedle O25 a O26 ve stejné pracovní kopii.
+Může začít: O22 je hotové a B11 schváleno 23. 11. (tlačítko jako první řádek nabídky LIST & ORDER; log se čte sám po návratu ze hry a při startu, jen když je novější než naposledy zpracovaný). Mění `MainViewModel.Apply.cs` (návrat ze hry) a nabídku pod seznamem: nepouštět vedle O25 a O26 ve stejné pracovní kopii.
 
 1. Podle schváleného náhledu přidej okno (`Overlays`, nový soubor) nad záznamem z O22 a nový dílčí soubor `MainViewModel.Redscript.cs`.
 2. Ruční spuštění z místa schváleného v B11; automatické čtení podle B11 (po `LaunchGame` v `MainViewModel.Apply.cs` a po startu), jen když je log novější než poslední zpracovaný, aby se upozornění neopakovalo.
@@ -118,6 +119,18 @@ Může začít hned. Nálezy S6 a E12 z revize 19. 11.
 3. Test na počítadlo (dvě překrývající se akce) a kontrola, že `NexusTests.cs` prochází beze změny chování.
 
 Hotovo, když: testy a sestavení obou edic projdou.
+
+## O27. Kategorie NEW: kód podle schváleného návrhu
+
+Může začít. Návrh je `docs/previews/new-category.md`, náhled `new-category.html`; rozhodnutí B10 z 23. 11.: mod v NEW se načítá tam, kde NEW stojí (1A), NEW se přesouvá mezi bloky (2A), bez vypínače v Nastavení (3A). Návrh je hotový, proto sub-Opus; rozdíl kontroluje Fable (pořadí načítání).
+
+1. `BlockLayout` (Core): blok `new`, sada `NewIds` v uloženém rozložení (staré rozložení = prázdná), `NormalizedBlocks` ho přidá jako první, když ho uložené pořadí nezná; `Prune` a `Assign` z `NewIds` odebírají. Testy: staré JSON, prázdný NEW nemění pořadí, pořadí ostatních modů zůstává.
+2. Okno v novém souboru `MainViewModel.NewBlock.cs`: `SectionOf` vrací `new` pro členy bez kolekce a kategorie, kapitola NEW se zeleným tónem, prázdný NEW se neukazuje a pozici si drží, MOVE ALL TO MODS (na konec MODS bez kategorie v dnešním pořadí).
+3. Do NEW jde mod z importu a ze stažení; ne aktualizace, sloučení verzí, kolekce, stažení pro load list, FIXER ani převzaté ruční mody. Import load listu umístěné mody z NEW vyjme; export píše člena NEW jako mod bloku MODS.
+4. Přetažení modu z NEW do MODS nebo kategorie ho z NEW vyjme; uvnitř NEW platí volné pořadí jako jinde, bez A→Z, přejmenování a smazání.
+5. `docs/USER-GUIDE.md`, `docs/HOW-IT-WORKS.md`, `CHANGELOG.md` (pod `## Unreleased`).
+
+Hotovo, když: testy a sestavení obou edic projdou; „Neověřeno: okno ve Windows“ jde do `UKOLY.md` jako položka A.
 
 ## S1. Texty: „mod(s)“ a „selected“ / „checked“
 
@@ -193,7 +206,6 @@ Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ 
 
 ## Co do fronty nepatří
 
-- Kód kategorie NEW: až po schválení B10, balík v další dávce (podklad dá předávka F4).
 - Z revize 19. 11. zůstává odloženo: S5 (úklid osiřelých složek v knihovně: mazání dat, nejdřív rozhodnout, jestli mazat, nebo jen ukázat), E10 (přesun do Removed přejmenováním), rozdělení `ImportAnalyzer.Analyze` a `SnapshotBuilder.Build`. Nízký přínos, další dávka.
 - Odpověď pisateli na Nexusu: čeká na D1.
 - Přestavba okna (W1 až W3), styl MUTED, hustší řádek, ruční závislosti pro Offline: odložené nebo neschválené, bez pokynu se neotvírají.
@@ -202,4 +214,4 @@ Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ 
 
 ## Jak pustit
 
-- Zbývá O24. Po schválení B11, model Fable (výrobní vlákno) nebo Opus: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O24.“
+- O24 a O27 běží pod výrobním vláknem (23. 11.). Po nich se dávka uzavře.
