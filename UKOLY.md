@@ -11,12 +11,8 @@ Další volná čísla: A28 B12 C12 D6 · balíky S2 O29 F6
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A22 | Volitelný požadavek z Nexusu (oprava `2317e5b`) | Příští zkušební sestavení plné edice, mod RedFileSystem v seznamu | 1. Otevři AFTERLIFE s klíčem Nexusu. 2. Najdi RedFileSystem a podívej se na jeho požadavky. 3. Nesmí hlásit „missing: RedData“; napiš, co ukazuje. | ☐ čeká na sestavení |
 | A23 | Přesun knihovny | Zkušební sestavení → Settings → 01 · Game & library → MOVE… | 1. Vyber prázdnou složku na stejném disku a potvrď; má to být hned a seznam modů zůstat stejný. 2. Totéž na jiný disk; sleduj procenta, po dokončení zkontroluj, že stará složka zmizela a hra jde spustit s mody. 3. Napiš, co se stalo. Neověřeno: okno, velká knihovna mezi disky. Pracuje se skutečnou knihovnou: napoprvé zkus stejný disk. | ☐ čeká na sestavení |
 | A24 | Import load listu s účtem zdarma | Zkušební sestavení plné edice → LIST & ORDER → IMPORT ORDER | Jen pokud máš po ruce účet Nexus bez Premium: 1. Načti load list, ve kterém chybí mod se souborem z Nexusu. 2. Klikni „Get from Nexus, page by page“ a na stránce Mod Manager Download. 3. Po posledním souboru LOAD THE LIST AGAIN. Napiš, kde se to zadrhlo. | ☐ čeká na sestavení |
-| A25 | Nové popisky a hlášky | Zkušební sestavení, běžná práce | Hlášky už nepíšou „mod(s)“. Přejmenováno: „Check all mods“ (dřív Select all mods), „REMOVE CHECKED FROM GAME“, v nápovědě „CHECKING AND MOVING“. Napiš jen, kdyby některá věta zněla špatně nebo ti nový popisek vadil. | ☐ čeká na sestavení |
-| A26 | Okno chyby redscriptu | Zkušební sestavení; LIST & ORDER → ANALYZE REDSCRIPT ERROR a oranžový pruh nad seznamem | 1. Přidej přes Add mod malý zip se souborem `r6/scripts/BrokenTest/Broken.reds` (jeden řádek: `public func Broken() -> Int32 { return UnknownType.Nothing(); }`), zapni, APPLY, JACK IN. 2. Ukonči hru a klikni do AFTERLIFE: má se objevit pruh SCRIPT MODS DID NOT LOAD; ANALYZE ukáže kartu BrokenTest, zkus COPY a SWITCH OFF 1 MOD, pak APPLY a hra znovu. 3. Napiš, co nesedělo; nakonec mod BrokenTest smaž. Neověřeno: celé okno a jestli se návrat ze hry pozná. | ☐ čeká na sestavení |
-| A27 | Blok NEW pro nové mody | Zkušební sestavení, hlavní seznam | 1. Po otevření se nesmí nic pohnout (stejná čísla, žádné čekající změny). 2. Přidej 2 až 3 mody: nahoře se objeví zelený blok NEW; jeden přetáhni do MODS, jeden do kategorie, NEW posuň šipkou pod MODS. 3. Zmáčkni MOVE ALL TO MODS (NEW zmizí) a přidej další mod (NEW se vrátí na uložené místo). Napiš, co nesedělo. Neověřeno: vše v okně. | ☐ čeká na sestavení |
 
 ## D. Dodat
 
@@ -33,6 +29,7 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | Vyzkoušeno na zkušebním sestavení `380579e`: A22 (RedFileSystem už nehlásí chybějící RedData), A25 (nové popisky a hlášky), A26 (okno chyby redscriptu) a A27 (blok NEW) v pořádku. |
 | 23. 11. | Čtvrtá dávka uzavřena a celá v `main`: přibylo okno chyby redscriptu (O24, zkouší se v A26) a blok NEW (O27, zkouší se v A27). Fronta je v archivu. |
 | 23. 11. | B10 rozhodnuto: blok NEW je ve výchozím stavu nahoře, jde přesunout mezi bloky (nad a pod kolekce a MODS) a mod v něm se načítá tam, kde NEW stojí; žádný vypínač v Nastavení (kdo NEW nechce, použije MOVE ALL TO MODS). Kód je balík O27. |
 | 23. 11. | B11 schváleno podle doporučení: tlačítko ANALYZE REDSCRIPT ERROR je první řádek nabídky LIST & ORDER; log se čte sám po návratu ze hry a při startu, jen když je novější než naposledy zpracovaný. Kód je balík O24. |
@@ -44,4 +41,3 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 | 23. 11. | A15 (dialog při vypnutí modu), A16 (export a import load listu) a A17 (odkaz na web v patičce, doplněný rychlý návod) schváleny. A15 a A16 jsou v `main`, A17 ve větvi vydání. |
 | 23. 11. | O20, O18 a O19 hotové ve větvi `beta1-release`: workflow vyrábí instalátor a zip plné edice a Offline zip; README, návod, FAQ a web říkají, co se kde stahuje; nový oddíl Updating AFTERLIFE. Nainstalovaná kopie nenabízí knihovnu ve vlastní složce. Zkouší se v A20 a A21. |
 | 23. 11. | D2: doména afterlife.silentbob.cz je připojená a web na ní odpovídá (u některých poskytovatelů se adresa ještě šíří). |
-| 23. 11. | B9 schváleno: pod seznamem zůstává REFRESH, CHECK UPDATES a UPDATE ALL, čtyři občasná tlačítka jsou v nabídce LIST & ORDER (náhled `docs/previews/tools-menu.html`). V kódu, zkouší se v A19. |
