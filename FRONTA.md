@@ -67,6 +67,7 @@ Opus. Může začít hned. Hlášení z Nexusu (23. 11.): po přidání dalšíc
 - Neověřeno: nic neběželo v okně; výška lišty se třemi řádky v úzkém okně, Esc s fokusem na řádku seznamu.
 - Rozhodnuto bez uživatele: Esc výběr neruší, dokud je fokus v hledání (ani v prázdném), v otevřeném seznamu nebo nabídce; tooltip je na celém prvním řádku a říká, že hromadné akce berou i schované mody; „folded sections“ místo „category“; jednotné číslo „1 mod checked“.
 - Změna po B8 (uživatel schválil náhled `docs/previews/bulk-bar.html`): lišta se už nevyměňuje celá. Při zaškrtnutí ustoupí jen řada malých nástrojů hromadným akcím (malá tlačítka), stavový řádek, PREVIEW a APPLY zůstávají; vysvětlující věta odpadla. Body 1 a 4 zadání tím neplatí. Neověřeno navíc: malá barevná tlačítka při najetí myší zmodrají (šablona `SmallButton`).
+- Navíc po B9 (mimo zadání balíku): EXPORT LIST, EXPORT ORDER, IMPORT ORDER a RESET ORDER jsou v nabídce LIST & ORDER (`Views/ToolsMenu.xaml`, `MainViewModel.ToolsMenu.cs`). Neověřeno: otevírání, zavírání a poloha nabídky v okně.
 - Mimo balík: zaškrtnutí celé sekce přepočítává výběr po každém řádku (bylo i dřív); návod říká zaškrtnutým modům střídavě „selected“ a „checked“.
 - Pro uživatele: A18 v `UKOLY.md`.
 
