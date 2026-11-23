@@ -21,8 +21,8 @@ Další volná čísla: A23 B12 C12 D5 · balíky S2 O27 F6
 
 | # | Co | Kde to najdu | Co mám rozhodnout | Stav |
 |---|---|---|---|---|
-| B10 | Kategorie NEW: návrh a náhled | vznikne v balíku F4 (`docs/previews/new-category.html`, dvojklik) | doplní F4 | ☐ rezervováno 23. 11., čeká na F4 |
-| B11 | Chyba redscriptu: náhled okna a texty | vznikne v balíku O23 (`docs/previews/redscript-error.html`, dvojklik) | doplní O23 | ☐ rezervováno 23. 11., čeká na O23 |
+| B10 | Kategorie NEW: návrh a náhled | [docs/previews/new-category.html](docs/previews/new-category.html) (dvojklik, nahoře čtyři stavy k přepnutí); popis v [new-category.md](docs/previews/new-category.md) | Tři rozhodnutí, napiš třeba „B10: 1A 2A 3A“. **1. Kde se mod v NEW načítá:** A (doporučuji) tam, kde NEW v seznamu stojí; nahoře tedy nový mod vyhrává střety souborů, dokud ho nepřesuneš, a řádek to ukáže · B NEW se ukazuje nahoře, ale načítá se vždy poslední (nic nepřebije, ale jediné místo, kde pořadí v seznamu neplatí). **2. Kam jde NEW posunout:** A (doporučuji) mezi bloky (nad a pod kolekce a MODS) · B i mezi kategorie uvnitř MODS (asi dvojnásobek práce). **3. Vypínač v Nastavení:** A (doporučuji) žádný, kdo NEW nechce, zmáčkne MOVE ALL TO MODS · B vypínač „nové mody do NEW“. | ☐ čeká |
+| B11 | Chyba redscriptu: náhled okna a texty | [docs/previews/redscript-error.html](docs/previews/redscript-error.html) (dvojklik); texty v [redscript-error-texts.md](docs/previews/redscript-error-texts.md) | Schválit vzhled a texty a dvě rozhodnutí, napiš třeba „B11: 1A 2A“. **1. Kde je tlačítko ANALYZE REDSCRIPT ERROR:** A (doporučuji) první řádek nabídky LIST & ORDER · B odkaz pod JACK IN (vždy na očích, ale řádek navíc) · C v Nastavení. **2. Kdy se log čte sám:** A (doporučuji) po návratu ze hry a při startu aplikace, jen když je log novější než naposledy zpracovaný · B jen po návratu ze hry spuštěné z AFTERLIFE · C jen tlačítkem. Po schválení se pouští balík O24. | ☐ čeká |
 
 ## D. Dodat
 
