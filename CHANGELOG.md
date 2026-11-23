@@ -4,6 +4,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 ## Unreleased
 
+- **Update check no longer skipped at start**: when Nexus Mods answered the requirements question for one mod with an empty reply, reading mod pages stopped with an error in the log, and the update check at start and the hourly check never ran. Such a mod is now read without requirements and the rest goes on.
 - **NEW: freshly added mods on top**: a mod you add from a file or download from Nexus yourself goes into the green block NEW, right under CORE MODS, instead of the end of MODS. Drag each mod to where it belongs or press MOVE ALL TO MODS; NEW loads where it stands, can be moved like any block, and hides when empty. Updates, collections, IMPORT ORDER downloads and FIXER quests stay out of it, and an existing library looks and loads exactly as before.
 - **Texts**: messages that said "mod(s)", "file(s)" and similar now use the right singular or plural form for the number they print; the guide and the window call ticked rows "checked" (Check all, REMOVE CHECKED FROM GAME) and keep "selected" for the selected profile and the highlighted row.
 - **Buttons stay locked while any action runs**: when two actions overlapped, the first one to finish unlocked the window while the other was still working; now the window waits for the last one. Talking to Nexus Mods reuses one connection instead of opening a new one for every download and check.

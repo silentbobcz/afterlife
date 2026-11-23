@@ -156,6 +156,16 @@ public class NexusRequirementTests
         Assert.True(r[1].External);
         using var empty = System.Text.Json.JsonDocument.Parse("""{"data":{"mod":null}}""");
         Assert.Empty(NexusClient.ParseRequirements(empty.RootElement));
+        foreach (var json in new[]
+                 {
+                     """{"data":null,"errors":[{"message":"x"}]}""", """{"data":{"mod":{"modRequirements":null}}}""",
+                     """{"data":{"mod":{"modRequirements":{"nexusRequirements":null}}}}""",
+                     """{"data":{"mod":{"modRequirements":{"nexusRequirements":{"nodes":[null]}}}}}""", "null", "[]",
+                 })
+        {
+            using var d = System.Text.Json.JsonDocument.Parse(json);
+            Assert.Empty(NexusClient.ParseRequirements(d.RootElement));
+        }
     }
 }
 

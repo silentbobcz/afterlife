@@ -466,12 +466,18 @@ public sealed class NexusClient : IDisposable
     public static IReadOnlyList<NexusRequirement> ParseRequirements(JsonElement root)
     {
         var list = new List<NexusRequirement>();
-        if (!root.TryGetProperty("data", out var d) || !d.TryGetProperty("mod", out var m) || m.ValueKind != JsonValueKind.Object
-            || !m.TryGetProperty("modRequirements", out var mr) || mr.ValueKind != JsonValueKind.Object
-            || !mr.TryGetProperty("nexusRequirements", out var nr) || !nr.TryGetProperty("nodes", out var nodes) || nodes.ValueKind != JsonValueKind.Array)
+        // Any level may be null (a hidden or removed mod, or an answer with "errors" and no data).
+        static bool Prop(JsonElement e, string k, out JsonElement v)
+        {
+            v = default;
+            return e.ValueKind == JsonValueKind.Object && e.TryGetProperty(k, out v);
+        }
+        if (!Prop(root, "data", out var d) || !Prop(d, "mod", out var m) || !Prop(m, "modRequirements", out var mr)
+            || !Prop(mr, "nexusRequirements", out var nr) || !Prop(nr, "nodes", out var nodes) || nodes.ValueKind != JsonValueKind.Array)
             return list;
         foreach (var n in nodes.EnumerateArray())
         {
+            if (n.ValueKind != JsonValueKind.Object) continue;
             string S(string k) => n.TryGetProperty(k, out var v) ? v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : v.ToString() : "";
             var ext = n.TryGetProperty("externalRequirement", out var e) && e.ValueKind == JsonValueKind.True;
             var notes = S("notes");

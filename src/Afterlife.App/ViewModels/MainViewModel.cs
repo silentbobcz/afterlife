@@ -240,7 +240,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         await CheckDuplicatesAsync();
         await CheckOldVersionsAsync(); 
         await CheckNexusAsync(null);
-        await FetchNexusInfoAsync(onlyMissing: true);
+        // An unreadable mod page must not cost the update check and its hourly timer.
+        try { await FetchNexusInfoAsync(onlyMissing: true); }
+        catch (Exception ex) when (IsExpected(ex)) { }
         await CheckUpdatesAsync(force: false);
         StartUpdateTimer();
     }
