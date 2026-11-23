@@ -29,7 +29,8 @@ public sealed record SettingsActions(
     Action LinkMods,
     Action<bool> SetVirtualizeList,
     Action<bool, bool, bool, int> SetUpdateChecks,
-    Action CheckAllMods);
+    Action CheckAllMods,
+    Func<SettingsVm, string, Task> MoveLibrary);
 
 /// <summary>Settings in tabs: game and library, Nexus Mods, updates, display, kept files, diagnostics, FIXER.</summary>
 public sealed partial class SettingsVm : OverlayVm
@@ -186,6 +187,18 @@ public sealed partial class SettingsVm : OverlayVm
         if (d.ShowDialog() != true) return;
         Busy = true;
         try { await _a.ChangeGame(this, d.FolderName); }
+        finally { Busy = false; }
+    }
+
+    public string LibraryHint => "MOVE… takes the whole library to another folder or drive. The game is not touched; mods in the game keep working.";
+
+    [RelayCommand]
+    private async Task MoveLibrary()
+    {
+        var d = new Microsoft.Win32.OpenFolderDialog { Title = "Choose the new place for the library (an empty or new folder)" };
+        if (d.ShowDialog() != true) return;
+        Busy = true;
+        try { await _a.MoveLibrary(this, d.FolderName); }
         finally { Busy = false; }
     }
 

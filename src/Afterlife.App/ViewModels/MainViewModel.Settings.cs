@@ -99,7 +99,7 @@ public sealed partial class MainViewModel
             new SettingsActions(ChangeGameFolderAsync, SetReduceMotion, SetActivityLog, SaveNexusKeyAsync, ForgetNexusKey, CheckNexusAsync, SetNxmHandlerAsync,
                 () => OpenGameFolder(), () => OpenInbox(), LoadStorageAsync, PurgeAsync, CopyDiagnostics, RemoveFromPcAsync, SetFixerAsync,
                 () => { Overlay = null; LinkGuessedModsCommand.Execute(null); }, SetVirtualizeList,
-                SetUpdateChecks, () => { Overlay = null; CheckUpdatesFullCommand.Execute(null); }))
+                SetUpdateChecks, () => { Overlay = null; CheckUpdatesFullCommand.Execute(null); }, MoveLibraryAsync))
         { CloseCommand = new RelayCommand(() => Overlay = null) };
         vm.SetFixerSilently(_fixerOn);
         vm.SetVirtualizeListSilently(VirtualizeList);

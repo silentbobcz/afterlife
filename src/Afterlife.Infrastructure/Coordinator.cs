@@ -230,10 +230,7 @@ public sealed class InstallCoordinator : IDisposable
         var lib = new LibraryPaths(libraryRoot);
         var full = Path.GetFullPath(gameRoot);
         if (!Directory.Exists(full)) throw new DirectoryNotFoundException($"game folder not found: {full}");
-        var libFull = lib.Root;
-        if (libFull.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-            full.StartsWith(libFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(full, libFull, StringComparison.OrdinalIgnoreCase))
+        if (FolderRules.Overlap(full, lib.Root))
             throw new InvalidOperationException("the library must not overlap with the game folder");
         lib.EnsureCreated();
         var store = AfterlifeStore.Open(lib.Database);
@@ -277,9 +274,8 @@ public sealed class InstallCoordinator : IDisposable
         if (string.Equals(full.TrimEnd(Path.DirectorySeparatorChar), GameRoot.TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase)) return;
         if (!File.Exists(GamePath.Parse(WindowsGameEnvironment.ExeRelativePath).ToOsPath(full)))
             throw new InvalidOperationException("Cyberpunk2077.exe not found in bin\\x64 of that folder");
-        var libFull = Library.Root;
-        if (libFull.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || string.Equals(full, libFull, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("the library must not be inside the game folder");
+        if (FolderRules.Overlap(full, Library.Root))
+            throw new InvalidOperationException("the library must not be inside the game folder, and the game must not be inside the library");
         using var _ = InstallLock.Acquire(Library, GameRoot);
         if (Store.GetUnfinishedOperation() is not null) throw new InvalidOperationException("an operation did not finish; run recovery first");
         if (_ctx.Env.IsGameRunning()) throw new InvalidOperationException("Cyberpunk 2077 is running; close it first");

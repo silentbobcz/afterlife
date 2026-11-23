@@ -192,11 +192,14 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Style="{StaticResource Mono}" FontSize="12.5" VerticalAlignment="Center" Text="{Binding Library}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Library}" />
                                     <Button Grid.Column="1" Margin="10,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenLibraryCommand}" Content="Open in Explorer" VerticalAlignment="Center" />
                                     <Button Grid.Column="2" Margin="14,0,0,0" Style="{StaticResource LinkButton}" Command="{Binding OpenScanCommand}" Content="Removed mods…" VerticalAlignment="Center" />
+                                    <Button Grid.Column="3" Margin="14,0,0,0" Style="{StaticResource AccentButton}" Command="{Binding MoveLibraryCommand}" Content="MOVE…" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
                                 </Grid>
+                                <TextBlock Margin="0,6,0,0" Style="{StaticResource Meta}" Text="{Binding LibraryHint}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                     </StackPanel>

@@ -69,8 +69,10 @@ A newer version reads the same settings and the same library, so your mods, prof
 
 - **Zip over zip**: close AFTERLIFE and unzip the new zip over the old folder, replacing the files. The app is replaced, `AFTERLIFE Library` stays. You can also unzip the new version to another place: it finds the library in the old folder, which then has to stay.
 - **Installer over installer**: close AFTERLIFE and run the newer installer. It replaces the app in place.
-- **From the zip to the installer**: run the installer. The installed AFTERLIFE keeps using the library where it is, also when that is inside the old zip folder, so keep that folder. AFTERLIFE cannot move a library to another place.
+- **From the zip to the installer**: run the installer. The installed AFTERLIFE keeps using the library where it is, also when that is inside the old zip folder, so keep that folder, or move the library out of it first (see below).
 - **Between AFTERLIFE Offline and the full edition**: nothing to do, both read the same settings and library.
+
+**Moving the library**: **Settings → 01 · Game & library → MOVE…** takes the whole library (mods, profiles, downloads, removed files) to another folder or drive. Choose an empty or new folder; if the folder you choose already holds something, the library goes into `AFTERLIFE Library` inside it. AFTERLIFE shows from where, to where and how much before it starts. The game folder is not touched and the mods in the game keep working. On the same drive the move takes a moment; to another drive every file is copied and checked first and the old folder is emptied only afterwards, so do not close AFTERLIFE meanwhile. If it is closed or the PC goes off half-way, nothing is lost: the next start asks whether to continue the move or keep the library where it was. Files in the old folder that AFTERLIFE did not put there stay.
 
 To be extra safe, save the load order of each profile with **EXPORT ORDER** before you update ([section 10](#10-conflicts-and-load-order)).
 
@@ -370,7 +372,7 @@ The settings have tabs on the left and the chosen tab on the right. They open on
 
 | Tab | |
 |---|---|
-| **01 · Game & library** | The game folder: **CHANGE…** moves AFTERLIFE to another install (it asks to take the mods out of the old one first). Where the library is, with **Open in Explorer**. |
+| **01 · Game & library** | The game folder: **CHANGE…** moves AFTERLIFE to another install (it asks to take the mods out of the old one first). Where the library is, with **Open in Explorer** and **MOVE…** to take it to another folder or drive ([Updating AFTERLIFE](#updating-afterlife)). |
 | **02 · Nexus Mods** | *Account*: your key and account type (a green dot on the tab means the key works). *Link mods*: **Link all unlinked mods…** ([section 4](#4-adding-mods)). *Download links*: open `nxm://` links in AFTERLIFE. Locked in AFTERLIFE Offline. |
 | **03 · Updates** | When AFTERLIFE looks for newer versions and what it reads, and the cost in requests to Nexus Mods ([section 11](#11-nexus-mods-key-downloads-updates)). Visible with a lock in AFTERLIFE Offline. |
 | **04 · Display** | **Reduce motion** stops the background, glitches, scans and the breach animation. **Draw only the visible rows** (experimental, off by default) makes a list of hundreds of mods open and scroll faster; switch it off again if the list jumps while scrolling or dragging. |
