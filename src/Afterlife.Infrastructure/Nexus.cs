@@ -219,9 +219,13 @@ public static class DownloadHistory
 
 public static class NexusInfo
 {
-    /// <summary>Nexus has no optional flag on requirements; the author's note says it.</summary>
+    /// <summary>
+    /// Nexus has no optional flag on requirements; the author's note says it, at the start ("Optional: …") or
+    /// anywhere as a word ("v0.9.0+ (optional, only required for JSON)").
+    /// </summary>
     public static bool IsOptionalNote(string? notes) => notes is { } n &&
-        (n.TrimStart().StartsWith("optional", StringComparison.OrdinalIgnoreCase) || n.TrimStart().StartsWith("recommended", StringComparison.OrdinalIgnoreCase));
+        (n.TrimStart().StartsWith("recommended", StringComparison.OrdinalIgnoreCase)
+         || System.Text.RegularExpressions.Regex.IsMatch(n, @"\boptional(ly)?\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
 
     private static string Key(string modId) => "nexus:mod:" + modId;
 

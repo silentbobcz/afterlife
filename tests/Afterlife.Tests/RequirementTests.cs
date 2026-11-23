@@ -295,3 +295,17 @@ public class SwitchOffPromptTests
         Assert.Empty(OverviewBuilder.KeptRequirements(o, [mod.PackageId], unneeded));
     }
 }
+
+/// <summary>The author's note on a Nexus requirement decides whether it is optional.</summary>
+public class OptionalNoteTests
+{
+    [Theory]
+    [InlineData("Optional: for the settings menu", true)]
+    [InlineData("Recommended", true)]
+    [InlineData("v0.9.0+ (optional, only required for JSON)", true)]
+    [InlineData("optionally for the CET menu", true)]
+    [InlineData("v1.29.0+", false)]
+    [InlineData(null, false)]
+    public void Optional_is_read_from_the_whole_note(string? note, bool optional) =>
+        Assert.Equal(optional, NexusInfo.IsOptionalNote(note));
+}
