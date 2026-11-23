@@ -22,7 +22,7 @@
 
 ## Status
 
-**Beta (1.0.0-beta.1).** The features for 1.0 are together and are being tuned on real installs with hundreds of mods. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
+**Beta (1.0.0-beta.2).** The features for 1.0 are together and are being tuned on real installs with hundreds of mods. Keep a way back: your launcher's *verify files* option repairs the game, and AFTERLIFE never deletes files it did not put there itself.
 The executable is not code-signed yet, so Windows SmartScreen shows a warning the first time (*More info → Run anyway*). See [FAQ](docs/FAQ.md#windows-says-it-protected-my-pc).
 
 ## What it does
