@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redscript error analysis</title>
+<!-- Static preview, no code behind it: what AFTERLIFE shows when the game could not compile redscript, and the window
+     that names the mods behind it. Colours are the tokens of src/Afterlife.App/App.xaml; the fonts come from the repo
+     (src/Afterlife.App/Assets/Fonts) or fall back to system fonts, nothing is loaded from the net.
+     All texts are in docs/previews/redscript-error-texts.md. -->
+<style>
+@font-face { font-family: "Chakra Petch"; font-weight: 400; src: local("Chakra Petch"), url("../../src/Afterlife.App/Assets/Fonts/ChakraPetch-Regular.ttf"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 600; src: local("Chakra Petch SemiBold"), url("../../src/Afterlife.App/Assets/Fonts/ChakraPetch-SemiBold.ttf"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 700; src: local("Chakra Petch Bold"), url("../../src/Afterlife.App/Assets/Fonts/ChakraPetch-Bold.ttf"); }
+@font-face { font-family: "JetBrains Mono"; src: local("JetBrains Mono"), url("../../src/Afterlife.App/Assets/Fonts/JetBrainsMono.ttf"); }
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --o: #FF9F1C; --v: #B98CFF;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08); --mtint: rgba(255,42,109,.10); --otint: rgba(255,159,28,.10); --gtint: rgba(57,255,138,.10); --vtint: rgba(185,140,255,.10);
+  --disp: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+  --body: "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--body); }
+body { padding: 16px; max-width: 1180px; margin: 0 auto; }
+h1 { margin: 0 0 6px; font: 700 18px var(--disp); letter-spacing: .12em; color: var(--y); }
+h2 { margin: 30px 0 8px; font: 700 13px var(--disp); letter-spacing: .1em; color: var(--c); }
+p, li { color: var(--t2); font-size: 13px; line-height: 1.55; margin: 0 0 6px; }
+b { color: var(--t); }
+code { font: 12px var(--mono); color: var(--t); }
+.row-note { font: 11px var(--mono); color: var(--t3); margin: 14px 0 4px; letter-spacing: .06em; }
+.cap { margin-top: 6px; }
+
+/* the library panel around the banner */
+.panel { background: var(--bg2); border: 1px solid var(--line2); padding: 12px 14px; }
+.ptitle { font: 600 16px var(--disp); color: var(--y); margin-bottom: 10px; }
+.list { border-top: 1px solid var(--line); margin-top: 4px; }
+.mod { display: flex; align-items: center; gap: 10px; height: 30px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.num { font: 11px var(--mono); color: var(--t3); width: 28px; flex: none; }
+.name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip { font: 700 10.5px var(--mono); padding: 2px 7px; border: 1px solid; flex: none; }
+.chip.on { color: var(--g); border-color: var(--g); } .chip.off { color: var(--t3); border-color: var(--line2); } .chip.wait { color: var(--y); border-color: var(--y); }
+
+/* banner: same as the "game was updated" banner (CutBorder, OTint, O) */
+.banner { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--o); background: var(--otint); margin-bottom: 8px;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.banner .txt { flex: 1; min-width: 0; }
+.banner .ttl { font: 700 12px var(--mono); color: var(--o); }
+.banner .msg { font-size: 12.5px; color: var(--t); margin-top: 3px; line-height: 1.45; }
+.banner .act { display: flex; align-items: center; gap: 12px; flex: none; flex-wrap: wrap; }
+
+/* notice line: Border with ToneBrush / ToneTint and a dismiss cross */
+.notice { display: flex; gap: 12px; padding: 7px 12px; border: 1px solid; font-size: 12.5px; line-height: 1.45; margin-bottom: 8px; }
+.notice.g { border-color: var(--g); background: var(--gtint); }
+.notice.o { border-color: var(--o); background: var(--otint); }
+.notice .x { margin-left: auto; color: var(--t2); flex: none; }
+
+/* buttons */
+.big { font: 600 12.5px var(--disp); height: 32px; padding: 0 16px; display: inline-flex; align-items: center; white-space: nowrap; border: 1px solid; letter-spacing: .04em;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.big.o { color: var(--o); border-color: var(--o); background: var(--otint); }
+.primary { font: 600 12.5px var(--disp); color: var(--bg); background: var(--y); height: 32px; min-width: 150px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: .04em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.primary.off { background: var(--bg3); color: var(--t3); outline: 1px solid var(--line2); }
+.sm { font: 700 10.5px var(--mono); color: var(--t2); border: 1px solid var(--line2); background: transparent; height: 26px; padding: 0 11px; display: inline-flex; align-items: center; white-space: nowrap;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.sm.c, .sm.open { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.apply { font: 600 14px var(--disp); color: var(--bg); background: var(--y); height: 38px; min-width: 170px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: .04em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.link { font-size: 12.5px; color: var(--c); white-space: nowrap; }
+.quiet { font-size: 12.5px; color: var(--t2); white-space: nowrap; }
+
+/* overlay: CutBorder Bg2 / Line2 with the yellow accent, PanelTitle and "Close" */
+.ov { position: relative; background: var(--bg2); border: 1px solid var(--line2); padding: 22px 26px; width: 680px; max-width: 100%;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px); }
+.ov::before { content: ""; position: absolute; left: 10px; right: 10px; top: 0; height: 2px; background: var(--y); }
+.ov-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.ov-title { font: 600 16px var(--disp); color: var(--y); }
+.ov .msg { font-size: 13.5px; color: var(--t); line-height: 1.5; }
+.ov .meta { font-size: 12px; color: var(--t2); line-height: 1.5; }
+.label { font: 11px var(--mono); color: var(--t2); margin: 16px 0 4px; letter-spacing: .02em; }
+.foot { display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 20px; }
+
+/* one culprit: like a DecisionsVm row (Bg3 card, name, mono line, checkbox on the right) */
+.card { display: flex; gap: 12px; align-items: flex-start; background: var(--bg3); border: 1px solid var(--line2); padding: 8px 12px; margin-top: 6px; }
+.card .who { flex: 1; min-width: 0; }
+.card .nm { font-size: 13px; font-weight: 600; color: var(--t); }
+.card .nm .ver { font: 11px var(--mono); color: var(--t2); font-weight: 400; margin-left: 8px; }
+.card .err { font: 11.5px var(--mono); color: var(--t2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .err .loc { color: var(--t); }
+.card .note { font-size: 12px; color: var(--t2); margin-top: 4px; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--t); flex: none; white-space: nowrap; margin-top: 2px; }
+.check .bx { width: 18px; height: 18px; border: 1.5px solid var(--t3); background: var(--bg3); display: inline-flex; align-items: center; justify-content: center; }
+.check .bx.on::after { content: ""; width: 10px; height: 10px; background: var(--y); }
+.check.dis { opacity: .45; }
+
+/* read-only text to copy: DarkTextBox, mono 11.5 */
+.ro { background: var(--bg3); border: 1px solid var(--line2); padding: 8px 10px; font: 11.5px/1.5 var(--mono); color: var(--t); white-space: pre; overflow: auto; max-height: 230px; margin-top: 8px; }
+.toast { display: inline-block; border: 1px solid var(--c); background: var(--bg2); color: var(--c); font: 12px var(--mono); padding: 7px 14px; margin-top: 10px; }
+
+/* LIST & ORDER menu */
+.menu { width: 380px; max-width: 100%; background: var(--bg3); border: 1px solid var(--line2); padding: 4px 0; margin: 0 0 4px 196px; }
+.item { padding: 7px 12px; }
+.item.hover { background: var(--sel); }
+.item .n { font: 700 11px var(--mono); color: var(--t); letter-spacing: .04em; }
+.item .d { font-size: 12px; color: var(--t2); margin-top: 1px; }
+.item.warn .n { color: var(--o); }
+.sep { height: 1px; background: var(--line2); margin: 4px 0; }
+.new { font: 700 9.5px var(--mono); color: var(--c); border: 1px solid var(--c); padding: 0 4px; margin-left: 6px; }
+.bar { display: flex; align-items: center; gap: 12px; }
+.left { flex: 1; min-width: 0; }
+.status { font-size: 13px; color: var(--t); }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 7px; }
+.right { display: flex; align-items: center; gap: 10px; flex: none; }
+
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; margin-top: 6px; }
+td, th { border: 1px solid var(--line2); padding: 5px 8px; text-align: left; color: var(--t2); vertical-align: top; }
+th { color: var(--t); font: 700 11px var(--mono); }
+@media (max-width: 720px) { .banner { flex-wrap: wrap; } .menu { margin-left: 0; } .card { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<h1>Redscript error analysis</h1>
+<p>When the game cannot compile redscript, <b>no</b> script mod runs, and the user only sees some other mod misbehave. The game writes the reason to <code>r6\logs\redscript_rCURRENT.log</code>. AFTERLIFE reads that log, names the mods behind it and offers to switch them off through the normal switch-off. It never deletes anything; the user applies the changes as usual.</p>
+
+<h2>(a) Notice after returning from the game</h2>
+<div class="row-note">A BANNER ABOVE THE MOD LIST · same place and look as the “game was updated” banner · JACK IN stays usable</div>
+<div class="panel">
+  <div class="ptitle">MOD LIBRARY</div>
+  <div class="banner">
+    <div class="txt">
+      <div class="ttl">! SCRIPT MODS DID NOT LOAD</div>
+      <div class="msg">The game could not compile redscript, so none of your script mods ran in the last session. The log names 3 mods. AFTERLIFE can switch them off for you; nothing is deleted.</div>
+    </div>
+    <div class="act"><span class="big o">ANALYZE</span><span class="quiet">Dismiss</span></div>
+  </div>
+  <div class="list">
+    <div class="mod"><span class="num">#41</span><span class="name">Appearance Menu Mod</span><span class="chip on">ON</span></div>
+    <div class="mod"><span class="num">#42</span><span class="name">Smarter Scanner</span><span class="chip on">ON</span></div>
+    <div class="mod"><span class="num">#43</span><span class="name">Night City Taxi Plus</span><span class="chip on">ON</span></div>
+  </div>
+</div>
+<p class="cap">At app start the same banner appears when the log is newer than the last one AFTERLIFE looked at (the game was started outside AFTERLIFE); only the first sentence changes: <i>“The game could not compile redscript the last time it ran …”</i>. <b>Dismiss</b> hides it until the game writes a new log. Orange, not magenta: the game still starts, it is not a blocking error like an unfinished change.</p>
+
+<h2>(b) Analysis window: culprits from the library</h2>
+<div class="row-note">OVERLAY · ConfirmVm frame · each culprit is a card like the rows of “Keep my edits”</div>
+<div class="ov">
+  <div class="ov-head"><span class="ov-title">REDSCRIPT ERROR</span><span class="quiet">Close</span></div>
+  <div class="msg">The game could not compile redscript, so no script mod is running. These mods from your library are named in the log.</div>
+  <div class="meta" style="margin-top:4px">Log written 23 Nov 2026, 21:14, after the last launch · profile <b>Main</b></div>
+
+  <div class="label">FROM YOUR LIBRARY</div>
+  <div class="meta">Usually an older mod that does not match the game or a framework it needs. Switching it off lets the other script mods load again.</div>
+  <div class="card">
+    <div class="who"><div class="nm">Smarter Scanner<span class="ver">2.1.0</span></div>
+      <div class="err"><span class="loc">r6\scripts\SmarterScanner\Main.reds:42:15</span>  unresolved type 'ScannerHudDef'</div>
+      <div class="err"><span class="loc">r6\scripts\SmarterScanner\Main.reds:88:9</span>  unresolved type 'ScannerHudDef'</div></div>
+    <span class="check"><span class="bx on"></span>Switch off</span>
+  </div>
+  <div class="card">
+    <div class="who"><div class="nm">Night City Taxi Plus<span class="ver">1.4.2</span></div>
+      <div class="err"><span class="loc">r6\scripts\NCTaxi\Fares.reds:117:22</span>  function 'GetDistanceToPlayer' not found on 'VehicleObject'</div></div>
+    <span class="check"><span class="bx on"></span>Switch off</span>
+  </div>
+  <div class="card">
+    <div class="who"><div class="nm">Quiet Elevators<span class="ver">0.9.1</span></div>
+      <div class="err"><span class="loc">r6\scripts\QuietElevators\Lift.reds:12:5</span>  wrong number of arguments: expected 2, found 3</div>
+      <div class="note">Already off in this profile. Apply the changes to take it out of the game.</div></div>
+    <span class="check dis"><span class="bx"></span>Switch off</span>
+  </div>
+
+  <div class="meta" style="margin-top:14px">AFTERLIFE only switches the mods off in this profile. Nothing is deleted; you can switch them on again at any time. Apply the changes, then launch the game again.</div>
+  <div class="foot"><span class="quiet">Close</span><span class="primary">SWITCH OFF 2 MODS</span></div>
+</div>
+<p class="cap"><b>SWITCH OFF 2 MODS</b> runs the normal switch-off of the checked mods: when other mods need them, the usual “SWITCH OFF …?” dialog comes next. The window closes, nothing is applied yet; the bar under the list then shows the waiting change:</p>
+<div class="panel" style="max-width:680px">
+  <div class="bar">
+    <div class="left"><div class="status">2 changes wait: 2 mods go off</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm">LIST &amp; ORDER ▾</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+<p class="cap">The button counts the checked cards (“SWITCH OFF 1 MOD”) and is greyed out when none is checked. Cards are checked by default when the mod is on in the selected profile.</p>
+
+<h2>(c) Culprit outside the library</h2>
+<div class="row-note">SAME WINDOW · a script AFTERLIFE did not install · name and path only, no checkbox</div>
+<div class="ov">
+  <div class="ov-head"><span class="ov-title">REDSCRIPT ERROR</span><span class="quiet">Close</span></div>
+  <div class="msg">The game could not compile redscript, so no script mod is running. The log names a script that was not installed through AFTERLIFE.</div>
+  <div class="meta" style="margin-top:4px">Log written 23 Nov 2026, 21:14, after the last launch · profile <b>Main</b></div>
+
+  <div class="label">NOT IN YOUR LIBRARY</div>
+  <div class="meta">AFTERLIFE did not install these files, so it does not switch them off. Update the mod they came from, or move its folder out of <code>r6\scripts</code> while the game is closed.</div>
+  <div class="card">
+    <div class="who"><div class="nm">CustomHud</div>
+      <div class="err"><span class="loc">&lt;game&gt;\r6\scripts\CustomHud\hud.reds</span></div></div>
+    <span class="link">Open folder</span>
+  </div>
+  <div class="foot"><span class="primary">CLOSE</span></div>
+</div>
+<p class="cap">With culprits of both kinds, the window shows FROM YOUR LIBRARY first, then NOT IN YOUR LIBRARY, then ASK AN AI, and keeps <b>SWITCH OFF N MODS</b>. With only outside culprits there is nothing to switch off, so the yellow button is <b>CLOSE</b>. Tip for these files: “Scan manual mods” in the left panel can adopt them into the library.</p>
+
+<h2>(d) Ask an AI</h2>
+<div class="row-note">BOTTOM OF THE SAME WINDOW · read-only text like EXPORT LIST · COPY puts it on the clipboard</div>
+<div class="ov">
+  <div class="label" style="margin-top:0">ASK AN AI</div>
+  <div class="meta">Not sure what to do? Copy this text into an AI chat or a forum post. Nothing is sent anywhere; your user name is removed from the paths.</div>
+<div class="ro">Cyberpunk 2077 2.31, redscript compilation failed.
+Mod manager: AFTERLIFE. Mods named in redscript_rCURRENT.log:
+
+- Smarter Scanner 2.1.0 (Nexus 12345)
+  r6\scripts\SmarterScanner\Main.reds:42:15 unresolved type 'ScannerHudDef'
+  r6\scripts\SmarterScanner\Main.reds:88:9 unresolved type 'ScannerHudDef'
+- Night City Taxi Plus 1.4.2 (Nexus 23456)
+  r6\scripts\NCTaxi\Fares.reds:117:22 function 'GetDistanceToPlayer' not found on 'VehicleObject'
+- CustomHud (installed by hand)
+  r6\scripts\CustomHud\hud.reds
+
+Frameworks on: redscript 0.5.27, Cyber Engine Tweaks 1.35.0, ArchiveXL 1.21.0,
+TweakXL 1.10.8, Codeware 1.15.0, RED4ext 1.27.0
+
+Which of these mods is out of date for this game version, and what should I
+update or switch off?</div>
+  <div class="foot" style="margin-top:12px"><span class="primary">COPY</span></div>
+</div>
+<div class="toast">Copied to clipboard</div>
+<p class="cap">The usual short notice at the bottom of the window confirms the copy. The text is the same in both editions; the Offline edition sends nothing either.</p>
+
+<h2>Other results of the manual analysis</h2>
+<div class="row-note">THE NOTICE LINE ABOVE THE LIST · used only when the user pressed the button; the automatic check stays silent in these cases</div>
+<div class="notice g"><span>Redscript compiled without errors in the last game session. Nothing to fix.</span><span class="x">✕</span></div>
+<div class="notice o"><span>No script log found in r6\logs. Start the game once with redscript installed, then analyze again.</span><span class="x">✕</span></div>
+<div class="notice o"><span>The script log is older than the last launch (log 21 Nov, 18:02 · launch 23 Nov, 21:10), so it does not describe the last session. Start the game, return here and analyze again.</span><span class="x">✕</span></div>
+
+<h2>Where the manual button lives</h2>
+<div class="row-note">RECOMMENDED · a new first line in the LIST &amp; ORDER menu under the mod list</div>
+<div class="panel">
+  <div class="menu">
+    <div class="item hover"><div class="n">ANALYZE REDSCRIPT ERROR <span class="new">NEW</span></div><div class="d">Script mods not working? Read the game's script log and find the mod behind it</div></div>
+    <div class="sep"></div>
+    <div class="item"><div class="n">EXPORT LIST</div><div class="d">Active mods with versions, for a bug report or a forum post</div></div>
+    <div class="sep"></div>
+    <div class="item"><div class="n">EXPORT ORDER</div><div class="d">Save the load order of this profile to a text file</div></div>
+    <div class="item"><div class="n">IMPORT ORDER</div><div class="d">Load an order from a file; you see what changes first</div></div>
+    <div class="sep"></div>
+    <div class="item warn"><div class="n">RESET ORDER</div><div class="d">Back to the game's alphabetical order; nothing changes in the game before you apply</div></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="status">Everything is applied · 212 mods on</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm open">LIST &amp; ORDER ▴</span></div></div>
+    <div class="right"></div>
+  </div>
+</div>
+<p class="cap">Why here: it is a now-and-then tool, like EXPORT LIST (also for troubleshooting), and it adds no button to the row. Its sentence says when to use it, which a button alone could not. The menu name could then become <b>MORE ▾</b>, which the menu preview already left open.</p>
+<p class="cap"><b>Alternative:</b> a quiet link <i>“Script mods not working? Analyze”</i> under JACK IN in the left panel, next to the launch hint. Always visible and close to where the problem starts, but it adds a line to the calm launch area for something most users never need.</p>
+
+<h2>Which existing parts each state uses</h2>
+<table>
+  <tr><th>State</th><th>Existing element</th></tr>
+  <tr><td>(a) banner</td><td>The “game was updated” banner in <code>MainWindow.xaml</code> (CutBorder, OTint / O, Mono bold title, Body 12.5 text), <code>WarnButton</code> ANALYZE, <code>QuietLinkButton</code> Dismiss</td></tr>
+  <tr><td>(b) window</td><td>Overlay frame (PanelTitle + Close), Body 13.5 message, <code>MonoLabel</code> section titles, <code>Meta</code> sentences; cards as the <code>DecisionsVm</code> rows; <code>PlainCheck</code>; <code>QuietLinkButton</code> Close + <code>PrimaryButton</code></td></tr>
+  <tr><td>(b) after</td><td>Normal switch-off with the “SWITCH OFF …?” <code>ConfirmVm</code> dialog; status line and APPLY CHANGES unchanged</td></tr>
+  <tr><td>(c) outside</td><td>Same card without checkbox, <code>LinkButton</code> Open folder</td></tr>
+  <tr><td>(d) Ask an AI</td><td>Read-only mono <code>DarkTextBox</code> as in <code>ExportVm</code>, <code>PrimaryButton</code> COPY, the toast “Copied to clipboard”</td></tr>
+  <tr><td>Other results</td><td>The notice line (<code>Notice</code>, <code>NoticeTone</code>: G for OK, O for missing or old log)</td></tr>
+  <tr><td>Manual button</td><td>A <code>ToolsMenuItem</code> in <code>Views/ToolsMenu.xaml</code></td></tr>
+</table>
+</body>
+</html>
