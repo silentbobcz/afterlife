@@ -56,11 +56,29 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Style="{StaticResource LinkButton}" Command="{Binding GetFromNexusCommand}" Content="Get from Nexus" Margin="0,0,18,0"
+                <Button Style="{StaticResource LinkButton}" Command="{Binding GetFromNexusCommand}" Content="{Binding DownloadLabel}" Margin="0,0,18,0"
                         Visibility="{Binding CanDownload, Converter={StaticResource BoolToVis}}"
-                        ToolTip="Download the missing mods that name a Nexus file, then load this list again" />
+                        ToolTip="{Binding DownloadTip}" />
                 <Button Style="{StaticResource QuietLinkButton}" Command="{Binding CancelCommand}" Content="Cancel" Margin="0,0,18,0" />
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding ConfirmCommand}" Content="IMPORT" MinWidth="150" />
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Missing mods of a list, page by page on Nexus (free accounts); the progress block is the collection download view (CollectionViews.xaml). -->
+    <DataTemplate DataType="{x:Type vm:LoadListQueueVm}">
+        <StackPanel Width="640">
+            <TextBlock Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource T2}" Text="{Binding Subtitle}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Subtitle}" />
+            <TextBlock Margin="0,8,0,0" Style="{StaticResource Meta}" TextWrapping="Wrap"
+                       Text="Nexus lets free accounts download only on the website. AFTERLIFE opens the page of each missing mod that names a Nexus file: click Mod Manager Download there and the file comes into the library switched off. Mods the list names without a Nexus file stay as links in IMPORT ORDER." />
+            <ContentControl Margin="0,12,0,0" Content="{Binding Progress}" Focusable="False" />
+            <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource QuietLinkButton}" Command="{Binding SkipCommand}" Content="Skip this mod" Margin="0,0,18,0"
+                        Visibility="{Binding CanSkip, Converter={StaticResource BoolToVis}}"
+                        ToolTip="Leave this mod out and open the next page" />
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding LoadAgainCommand}" Content="LOAD THE LIST AGAIN" MinWidth="150"
+                        Visibility="{Binding CanLoadAgain, Converter={StaticResource BoolToVis}}"
+                        ToolTip="Show the preview of the same list again, now with the mods that came in" />
             </StackPanel>
         </StackPanel>
     </DataTemplate>
