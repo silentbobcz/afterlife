@@ -35,7 +35,7 @@ The requirements of a package are derived from its scripts once per `FrameworkCa
 
 ## Editions
 
-`dotnet publish -p:Edition=Offline` builds **AFTERLIFE Offline** (`AppEdition.Offline`, compile symbol `OFFLINE`): `NexusKeyStore.Load` always returns nothing, nxm:// is never registered, mod pictures are never downloaded, and every entry point that needs the Nexus Mods API calls `LockedOffline` first, which explains the lock (`OfflineInfoVm`). The workflow builds both editions and fails when the two executables are identical.
+`dotnet publish -p:Edition=Offline` builds **AFTERLIFE Offline** (`AppEdition.Offline`, compile symbol `OFFLINE`): `NexusKeyStore.Load` always returns nothing, nxm:// is never registered, mod pictures are never downloaded, and every entry point that needs the Nexus Mods API calls `LockedOffline` first, which explains the lock (`OfflineInfoVm`). The workflow builds both editions and fails when the two executables are identical. A release carries three files: the zip and the installer of the full edition (`installer/AFTERLIFE.iss`, per user, GitHub only) and the Offline zip for Nexus Mods. A copy with an uninstaller next to it never suggests a library inside its own folder (`AppSettings.SuggestLibrary`).
 
 ## The FIXER drop box
 

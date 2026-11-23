@@ -1,7 +1,8 @@
 namespace Afterlife.App;
 
 /// <summary>
-/// Which edition this build is. <c>dotnet publish -p:Edition=Offline</c> builds AFTERLIFE Offline: the edition for
+/// Which edition this build is. A release on GitHub carries both; Nexus Mods gets only AFTERLIFE Offline.
+/// <c>dotnet publish -p:Edition=Offline</c> builds AFTERLIFE Offline: the edition for
 /// Nexus Mods while it has not registered AFTERLIFE as an app (API Acceptable Use Policy). It never reads an API
 /// key, never registers for nxm:// links and never connects to Nexus Mods; the features that need it stay visible
 /// with a lock and explain why. Everything else is the same code.
