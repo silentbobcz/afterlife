@@ -12,7 +12,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 - Sestavení pro uživatele jen na pokyn. Testy a překlad: na počítači uživatele není .NET 10 SDK, pouští se `gh workflow run build.yml --ref <větev>`; ruční běh vyrobí i zkušební zip plné edice (artefakt `AFTERLIFE-full-test`).
 - Co nešlo vidět běžet: v předávce „Neověřeno“ a uživateli položka A v `UKOLY.md`.
 - Každý zápis do logu jde přes `ActivityLog` nebo chybový log okna.
-- Předávka pod balíkem, nejvýš deset řádků. Čísla balíků pokračují: další volné je O21.
+- Předávka pod balíkem, nejvýš deset řádků. Čísla balíků pokračují: další volné je O22.
 
 ## Stav balíků
 
@@ -21,6 +21,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O20 | Opus | Vydání plné edice na GitHubu: zip a instalátor plné edice, zip Offline pro Nexus | nic | může začít |
 | O18 | Sonnet | Web: dvě edice ke stažení (GitHub plná, Nexus Offline) a proč | O20 (názvy souborů) | čeká |
 | O19 | Sonnet | Návod: jak přejít na novou verzi (zip i instalátor), knihovna a nastavení zůstávají | O20 | čeká |
+| O21 | Opus | Zaškrtnuté mody schovají APPLY a JACK IN: vysvětlit proč a nabídnout cestu zpět | nic | může začít |
 
 Další balíky vzniknou z toho, co uživatel najde při zkoušení (A15 až A17 v `UKOLY.md`).
 
@@ -48,11 +49,23 @@ Sonnet. Čeká na O20. Podnět: uživatel na Nexusu měl potíže přenést mody
 2. Krátký odkaz na oddíl v `README.md` (Quick start) a v FAQ na webu (`site/`), `npm run build` jako v O18.
 3. Jen dokumentace, žádný kód; řádek do `CHANGELOG.md` jen pokud se mění text v aplikaci.
 
+## O21. Zaškrtnuté mody schovají APPLY a JACK IN
+
+Opus. Může začít hned. Hlášení z Nexusu (23. 11.): po přidání dalších modů „zmizelo“ APPLY a nešlo kliknout na JACK IN; ve spodní liště byly jen MOVE TO CATEGORY, ACTIVATE, DEACTIVATE a DELETE EVERYWHERE. Příčina: jakmile je zaškrtnutý aspoň jeden mod (`HasMultiSelection = _multi.Count > 0`, `UpdateChecked` v `MainViewModel.Library.cs`), lišta hromadných akcí v `MainWindow.xaml` (oddíl „Bulk actions“) nahradí lištu APPLY. Zaškrtnutí vzniká i nechtěně: Ctrl+klik a Shift+klik na řádek (`OnRowPreviewMouseDown` v `MainWindow.xaml.cs`), Ctrl+A; výběr navíc přežije obnovu seznamu (`keepMulti` v `MainViewModel.cs`), i když jsou zaškrtnuté řádky schované filtrem, hledáním nebo sbalenou kategorií. Cíl: uživatel vždy ví, proč APPLY nevidí, a jedním krokem se k němu vrátí. Rozložení okna se nemění.
+1. Text v liště hromadných akcí: místo „N mods selected“ „N mods checked“ a pod tím ve stylu `Meta` „APPLY and JACK IN come back when nothing is checked“ (kratší znění smíš zvolit, musí se vejít do úzkého okna). Odkaz „Clear selection“ přejmenuj na „Clear selection (Esc)“.
+2. Schované zaškrtnuté: když část zaškrtnutých řádků neprojde filtrem nebo hledáním, nebo leží ve sbalené kategorii, připiš „(K not visible)“ s tooltipem proč. Počítej ve viewmodelu, ne v XAML.
+3. Esc zruší výběr. Pořadí v obsluze kláves v `MainWindow.xaml.cs`: zavřít dialog → vymazat hledání (má-li fokus) → zrušit výběr. Esc výběr neruší, když je otevřený dialog nebo se píše do textového pole.
+4. Bez nového dialogu, vyskakovacího okna a zápisů do logu; stačí text v liště.
+5. `MainWindow.xaml` má přes 800 řádků: do něj jen úprava textů a vazeb v existující liště. Nový kód (počet schovaných, Esc) do nového souboru vedle, například `MainViewModel.Selection.cs`.
+6. Test v `tests/Afterlife.Tests` pro počet schovaných zaškrtnutých (filtr, hledání), pokud jde výpočet oddělit od WPF. Řádek do `CHANGELOG.md`; do `docs/USER-GUIDE.md` (oddíl o výběru modů) jedna věta: zaškrtnuté mody přepnou spodní lištu na hromadné akce, Esc nebo Clear selection vrátí APPLY. `USER-GUIDE.md` upravuje i O19 a `CHANGELOG.md` i O20: při sloučení dej pozor na konflikt.
+7. Kontroly přes `gh workflow run build.yml --ref <větev>`. Okno neuvidíš: do `UKOLY.md` položka A (zaškrtnout dva mody, jeden schovat filtrem, zkontrolovat text a počet, Esc vrátí APPLY).
+
 ## Co do fronty nepatří
 
 - Přestavba celého okna (návrhy W1 až W3) a styl MUTED: odložené alternativy.
 - Instalátor pro AFTERLIFE Offline: není třeba, na Nexus jde zip (23. 11.).
 - Hlášky ve stavovém řádku s „mod(s)“: drobnost k příští úpravě textů.
+- Lišta hromadných akcí nad lištou APPLY, aby APPLY nemizelo vůbec: mění rozložení okna, nejdřív statický náhled; až o ni uživatel řekne (navazuje na O21).
 - Fronta stránek pro účty zdarma u chybějících modů z load listu (dnes jen odkazy): až o ni uživatel řekne.
 
 ## Co přinesla 2. dávka (22. až 23. 11.)

@@ -2,7 +2,7 @@
 
 Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A1 hotovo“ nebo „C4 první možnost“) v kterémkoli vláknu.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O20 (vydání plné edice s instalátorem, Opus); po něm O18 a O19 (Sonnet). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O20.“
+**Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O20 (vydání plné edice s instalátorem, Opus); po něm O18 a O19 (Sonnet). Nezávisle může začít O21 (proč zaškrtnuté mody schovají APPLY a jak se k němu vrátit, Opus). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O20.“
 
 Poslední pracovní verze plné edice je `AFTERLIFE-test-2fab46c-win-x64.zip` ve složce `zkusebni` (23. 11.): obsahuje load list (A16) i nový dialog při vypnutí modu (A15), ještě ne odkazy na web v aplikaci (A17). Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
 
