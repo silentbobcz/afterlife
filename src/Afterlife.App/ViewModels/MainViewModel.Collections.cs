@@ -271,11 +271,7 @@ public sealed partial class MainViewModel
             return true;
         };
         var first = missing[0];
-        if (progress.Item(first.Key) is { } fr) { fr.Status = "open on Nexus"; fr.Tone = Tone.Info; }
-        progress.Current = first.Name;
-        progress.CurrentPercent = 0;
-        progress.StatusText = $"Click Mod Manager Download on the page for {first.Name}. AFTERLIFE opens the next one by itself.";
-        AppLinks.Open(first.PageUrl!);
+        OpenFilePage(progress, first.Key, first.Name, first.PageUrl!);
         Say($"Collection {r.Name}: click Mod Manager Download on the page ({r.Wanted.Count() - missing.Count + 1}/{r.Wanted.Count()}: {first.Name}). AFTERLIFE opens the next one by itself.", Tone.Info);
     });
 

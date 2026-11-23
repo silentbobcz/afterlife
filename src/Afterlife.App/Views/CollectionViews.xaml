@@ -45,6 +45,52 @@
         </StackPanel>
     </DataTemplate>
 
+    <!-- a download page by page or by Premium: a collection, or the missing mods of a load list (LoadList.xaml) -->
+    <DataTemplate DataType="{x:Type vm:CollectionProgressVm}">
+        <c:CutBorder Background="{StaticResource Bg}" BorderBrush="{Binding Tone, Converter={StaticResource ToneBrush}}" AccentBrush="{Binding Tone, Converter={StaticResource ToneBrush}}"
+                     CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="14,10">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" Text="{Binding StateLabel}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Margin="12,0" Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource T}" Text="{Binding CountText}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Style="{StaticResource AccentButton}" Command="{Binding PauseCommand}" Content="PAUSE" Margin="0,0,8,0"
+                                Visibility="{Binding CanPause, Converter={StaticResource BoolToVis}}" />
+                        <Button Style="{StaticResource PrimaryButton}" Command="{Binding ResumeCommand}" Content="RESUME"
+                                Visibility="{Binding CanResume, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </Grid>
+                <ProgressBar Margin="0,10,0,0" Style="{StaticResource NeonBar}" Height="16" Value="{Binding OverallPercent, Mode=OneWay}"
+                             Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" AutomationProperties.Name="Download progress" />
+                <!-- one bar is enough; the file in progress is a line of text -->
+                <TextBlock Margin="0,8,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource T2}" Text="{Binding CurrentLine}" TextTrimming="CharacterEllipsis"
+                           Visibility="{Binding CurrentLine, Converter={StaticResource NullToVis}}" />
+                <TextBlock Margin="0,8,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource C}" Text="{Binding StatusText}" TextWrapping="Wrap" />
+                <ScrollViewer Margin="0,8,0,0" MaxHeight="150" VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:CollectionProgressItemVm}">
+                                <Grid Margin="0,1,6,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource T}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Mono}" FontSize="11" Text="{Binding Status}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </c:CutBorder>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type vm:ManageCollectionVm}">
         <StackPanel Width="760">
             <Grid>
@@ -52,49 +98,8 @@
                 <Button HorizontalAlignment="Right" Style="{StaticResource LinkButton}" FontSize="12" Command="{Binding OpenPageCommand}" Content="Open on Nexus ↗" />
             </Grid>
             <TextBlock Margin="0,6,0,0" Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource C}" Text="{Binding LockState}" />
-            <!-- download of the collection -->
-            <c:CutBorder Margin="0,12,0,0" Background="{StaticResource Bg}" BorderBrush="{Binding Progress.Tone, Converter={StaticResource ToneBrush}}" AccentBrush="{Binding Progress.Tone, Converter={StaticResource ToneBrush}}"
-                         CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Cut="10" Padding="14,10" Visibility="{Binding HasProgress, Converter={StaticResource BoolToVis}}">
-                <StackPanel DataContext="{Binding Progress}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource MonoLabel}" FontWeight="Bold" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" Text="{Binding StateLabel}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Margin="12,0" Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource T}" Text="{Binding CountText}" VerticalAlignment="Center" />
-                        <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <Button Style="{StaticResource AccentButton}" Command="{Binding PauseCommand}" Content="PAUSE" Margin="0,0,8,0"
-                                    Visibility="{Binding CanPause, Converter={StaticResource BoolToVis}}" />
-                            <Button Style="{StaticResource PrimaryButton}" Command="{Binding ResumeCommand}" Content="RESUME"
-                                    Visibility="{Binding CanResume, Converter={StaticResource BoolToVis}}" />
-                        </StackPanel>
-                    </Grid>
-                    <ProgressBar Margin="0,10,0,0" Style="{StaticResource NeonBar}" Height="16" Value="{Binding OverallPercent, Mode=OneWay}"
-                                 Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" AutomationProperties.Name="Collection progress" />
-                    <!-- one bar is enough; the file in progress is a line of text -->
-                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource T2}" Text="{Binding CurrentLine}" TextTrimming="CharacterEllipsis"
-                               Visibility="{Binding CurrentLine, Converter={StaticResource NullToVis}}" />
-                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource C}" Text="{Binding StatusText}" TextWrapping="Wrap" />
-                    <ScrollViewer Margin="0,8,0,0" MaxHeight="150" VerticalScrollBarVisibility="Auto" Focusable="False">
-                        <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:CollectionProgressItemVm}">
-                                    <Grid Margin="0,1,6,1">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Style="{StaticResource Mono}" FontSize="11.5" Foreground="{StaticResource T}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Grid.Column="1" Margin="12,0,0,0" Style="{StaticResource Mono}" FontSize="11" Text="{Binding Status}" Foreground="{Binding Tone, Converter={StaticResource ToneBrush}}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </StackPanel>
-            </c:CutBorder>
+            <!-- download of the collection (the CollectionProgressVm template above) -->
+            <ContentControl Margin="0,12,0,0" Content="{Binding Progress}" Focusable="False" Visibility="{Binding HasProgress, Converter={StaticResource BoolToVis}}" />
             <ScrollViewer Margin="0,10,0,0" MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource GrowWithWindow}, ConverterParameter=300}" VerticalScrollBarVisibility="Auto" Visibility="{Binding HasProgress, Converter={StaticResource InverseBoolToVis}}">
                 <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource CollectionItemTemplate}" Focusable="False" />
             </ScrollViewer>
