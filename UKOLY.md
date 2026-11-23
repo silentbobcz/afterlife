@@ -1,11 +1,11 @@
 # AFTERLIFE: co čeká na tebe
 
 Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
-Další volná čísla: A28 B12 C12 D5 · balíky S2 O28 F6
+Další volná čísla: A28 B12 C12 D6 · balíky S2 O29 F6
 
 **Stav (23. 11.):** verze **1.0.0-beta.1 je vydaná** na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.1>): instalátor a zip plné edice a Offline zip, každý se `.sha256`. Všechno je v `main`, žádná pracovní větev nezůstala.
 
-**Fronta modelů:** čtvrtá dávka je uzavřená a v `archiv/FRONTA-4-davka.md`; nová dávka zatím není (soubor `FRONTA.md` vznikne s ní). Vše je v `main`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A27. Odložené: z revize S5 (úklid osiřelých složek v knihovně), E10 (přesun do Removed přejmenováním) a rozdělení dvou dlouhých metod; čtyři hlášky s „(s)“ v souborech nasazení; D4 (skutečný log redscriptu) by zpřesnil rozbor chyby.
+**Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), 5. dávka: O28 (odkaz nxm otevírá další okna). Do nového vlákna s Opusem stačí napsat: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O28.“ Čtvrtá dávka je v `archiv/FRONTA-4-davka.md`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A27. Odložené: z revize S5 (úklid osiřelých složek v knihovně), E10 (přesun do Removed přejmenováním) a rozdělení dvou dlouhých metod; čtyři hlášky s „(s)“ v souborech nasazení; D4 (skutečný log redscriptu) by zpřesnil rozbor chyby.
 
 ## A. Vyzkoušet
 
@@ -24,6 +24,7 @@ Další volná čísla: A28 B12 C12 D5 · balíky S2 O28 F6
 |---|---|---|---|
 | D1 | Odpověď pisatele komentáře | Komentáře u AFTERLIFE na Nexus Mods: snímek maximalizovaného okna, rozlišení a měřítko, příklad vypnutého modu, názvy ZIPů, pohledy, které chce. Vlož ji do vlákna, které na AFTERLIFE pracuje. | ☐ čeká |
 | D4 | Log s chybou redscriptu (nepovinné, zpřesní balík O22) | `<složka hry>/r6/logs/redscript_rCURRENT.log` z doby, kdy skripty nefungovaly (hra ho při dalším spuštění přepíše). Vlož text do vlákna, které frontu vyrábí; cesty se jménem uživatele se před uložením do repozitáře odstraní. | ☐ čeká |
+| D5 | Odpověď pisatele o „30 oknech“ (nepovinné, zpřesní O28) | Nexus Mods, komentář o oknech při stahování: běží AFTERLIFE jako správce? A poslední záznam z `%LOCALAPPDATA%\AFTERLIFE\logs\error-….log`, pokud existuje. Vlož do vlákna s O28. | ☐ čeká |
 
 
 ## Hotovo
