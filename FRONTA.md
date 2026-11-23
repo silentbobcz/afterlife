@@ -21,7 +21,7 @@ Skilly: alt, ukoly-a-fronty, kohn, afterlife (zdroje v `D:/_AI/_skills/<skill>/S
 
 | Balík | Kde běží | Co | Stav |
 |---|---|---|---|
-| O28 | Opus | Odkaz nxm nesmí otevřít druhé okno | ☑ hotovo ve větvi `fix/nxm-single-window`, čeká na „sloučit“ |
+| O28 | Opus | Odkaz nxm nesmí otevřít druhé okno | ☑ hotovo, sloučeno do `main` |
 
 ## O28. Odkaz nxm nesmí otevřít druhé okno (`App.xaml.cs`, `Services/`)
 
@@ -44,7 +44,7 @@ Hotovo, když: kontroly projdou a v předávce je položka A pro uživatele: AFT
 
 ### Předávka O28 (23. 11. 2026)
 
-**Stav:** hotovo ve větvi `fix/nxm-single-window` (2 commity: přesun `SingleInstance` beze změny, pak oprava). Kontroly na GitHubu prošly: <https://github.com/silentbobcz/afterlife/actions/runs/45282336687> (464 testů, build plné i Offline edice, zkušební zip `AFTERLIFE-full-test`). Do `main` nesloučeno, čeká na „sloučit“.
+**Stav:** hotovo, sloučeno do `main` 23. 11. (2 commity: přesun `SingleInstance` beze změny, pak oprava). Kontroly na GitHubu prošly: <https://github.com/silentbobcz/afterlife/actions/runs/45282336687> (464 testů, build plné i Offline edice, zkušební zip `AFTERLIFE-full-test`).
 
 Co se změnilo:
 - `Services/SingleInstance.cs` (nový soubor): druhé spuštění **nikdy neotevře okno**. `Deliver` zkouší rouru asi 4 s (při odmítnutí, tj. AFTERLIFE jako správce, hned dál), pak zapíše odkaz do `inbox` a do 10 s celkem čeká, až ho běžící okno převezme. Když ne, soubor smaže, ukáže krátké hlášení a skončí. Mutex vlastněný procesem správce už nevyhodí výjimku (bere se jako „běží jiný“).
@@ -57,7 +57,7 @@ Co se změnilo:
 
 Mimo balík (nesahal jsem): když AFTERLIFE poprvé ukazuje úvodní nastavení knihovny, čekající odkazy se po jeho dokončení nespustí (tak to bylo i dřív s jedním odkazem; patří to do `InitializeAsync` v `MainViewModel.cs`, který je nad 600 řádků).
 
-Pro uživatele (při sloučení dostane číslo A z hlavičky `UKOLY.md`): **Vyzkoušet: jedno okno při Mod Manager Download.** Ze zkušebního zipu `AFTERLIFE-full-test` (běh výše) spusť AFTERLIFE normálně, na Nexusu u tří různých modů rychle za sebou klikni na Mod Manager Download: má zůstat jedno okno a přijít tři stažení. Pak AFTERLIFE zavři, spusť ho pravým tlačítkem „Spustit jako správce“ a zopakuj totéž: zase jedno okno a tři stažení. Napiš, jestli se někde otevřelo druhé okno nebo se objevilo hlášení „AFTERLIFE is already running…“.
+Pro uživatele (A28 v `UKOLY.md`): **Vyzkoušet: jedno okno při Mod Manager Download.** Ze zkušebního zipu `AFTERLIFE-full-test` (běh výše) spusť AFTERLIFE normálně, na Nexusu u tří různých modů rychle za sebou klikni na Mod Manager Download: má zůstat jedno okno a přijít tři stažení. Pak AFTERLIFE zavři, spusť ho pravým tlačítkem „Spustit jako správce“ a zopakuj totéž: zase jedno okno a tři stažení. Napiš, jestli se někde otevřelo druhé okno nebo se objevilo hlášení „AFTERLIFE is already running…“.
 
 ## Co do fronty nepatří
 
