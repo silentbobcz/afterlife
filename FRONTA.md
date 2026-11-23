@@ -3,7 +3,7 @@
 Sestaveno 23. 11. 2026 z námětů a odložených věcí v [`UKOLY.md`](UKOLY.md) (stav po vydání 1.0.0-beta.1) a z odložených nálezů revize z 19. 11. Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md). Starší dávky jsou v `archiv/` (jen archiv, stav z nich nečti).
 Další volná čísla: S2 O27 F6
 
-Nejnovější kód: větev `batch4` (vše z této dávky kromě O24; do `main` nesloučeno, čeká na pokyn uživatele). Balík O24 začni z ní. Každý balík má vlastní větev a vlastní pracovní složku (`git worktree add <složka> -b <větev> origin/main`); hlavní klon zůstává na `main`. Do `main` se slučuje jen na výslovný pokyn uživatele.
+Nejnovější kód: větev `main` (dávka kromě O24 je sloučená od 23. 11.). Každý balík má vlastní větev a vlastní pracovní složku (`git worktree add <složka> -b <větev> origin/main`); hlavní klon zůstává na `main`. Do `main` se slučuje jen na výslovný pokyn uživatele.
 Kontroly: `dotnet test tests/Afterlife.Tests` a `dotnet build src/Afterlife.App -p:EnableWindowsTargeting=true`; na počítači uživatele není .NET 10 SDK, tam `git push` větve a `gh workflow run build.yml --ref <větev>`.
 Skilly: alt, ukoly-a-fronty, kohn, afterlife, u náhledů grafika-cyberpunk (zdroje v `D:/_AI/_skills/<skill>/SKILL.md`, když nejsou nahrané).
 
@@ -189,8 +189,7 @@ Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ 
 - Každá větev balíku s kódem prošla sama během na GitHubu (sestavení obou edic, testy, instalátor); potom vše sloučeno do `batch4` a puštěno znovu.
 - Nález: v F5 chybný `using` (neexistující jmenný prostor) a chybějící `System.IO`, opraveno před sloučením. U agentů četba rozdílu nenašla chybu k opravě.
 - Changelog: nové řádky jsou pod novým oddílem `## Unreleased` (beta.1 je vydaná); při vydání ho přejmenovat na číslo verze.
-- Čísla A23 až A25 jsou vzatá ve větvi `batch4` (počítadlo v `UKOLY.md` tam říká A26), ne rezervací v `main`: při sloučení zkontrolovat proti `main`.
-- Zbývá: O24 (čeká na B11), kód kategorie NEW (čeká na B10), sloučení `batch4` do `main` (na pokyn uživatele). Dávku uzavřít až po O24.
+- Zbývá: O24 (čeká na B11), kód kategorie NEW (čeká na B10), ; `batch4` je od 23. 11. sloučená do `main`. Dávku uzavřít až po O24.
 
 ## Co do fronty nepatří
 
@@ -203,4 +202,4 @@ Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ 
 
 ## Jak pustit
 
-- Zbývá O24. Po schválení B11, model Fable (výrobní vlákno) nebo Opus: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O24.“ Začíná se z větve `batch4`, dokud není sloučená do `main`.
+- Zbývá O24. Po schválení B11, model Fable (výrobní vlákno) nebo Opus: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O24.“

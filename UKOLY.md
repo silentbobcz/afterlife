@@ -5,7 +5,7 @@ Další volná čísla: A26 B12 C12 D5 · balíky S2 O27 F6
 
 **Stav (23. 11.):** verze **1.0.0-beta.1 je vydaná** na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.1>): instalátor a zip plné edice a Offline zip, každý se `.sha256`. Všechno je v `main`, žádná pracovní větev nezůstala.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), čtvrtá dávka. **Stav 23. 11.:** hotové a zkontrolované je vše kromě O24 (okno chyby redscriptu, čeká na tvé B11) a kódu kategorie NEW (čeká na B10). Vše je ve větvi `batch4`, v `main` zatím ne: napiš „sloučit“, až to budeš chtít v `main`, a „sestavení“, až budeš chtít zkušební verzi k A22 až A25.
+**Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), čtvrtá dávka. **Stav 23. 11.:** hotové a zkontrolované je vše kromě O24 (okno chyby redscriptu, čeká na tvé B11) a kódu kategorie NEW (čeká na B10). Vše je sloučené v `main`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A25.
 
 **Námět (23. 11., od uživatele): analýza chyby redscriptu.** Spadne-li překlad redscriptu, přestanou fungovat **všechny** skriptové mody, ale AFTERLIFE o tom neví a uživatel vidí jen poruchu nějakého jiného modu. Chyba je přitom čitelná: `<hra>/r6/logs/redscript_rCURRENT.log` končí oddílem `REDScript compilation has failed` a jmenovitým seznamem „caused by“ modů. Námět: po spuštění hry (nebo tlačítkem ANALYZE REDSCRIPT ERROR) log přečíst, viníka najít v knihovně a nabídnout vypnutí; co model nerozluští sám, vypsat jako hotový dotaz pro AI, který si uživatel zkopíruje. Nedělat to záplatou v `FrameworkCatalog.InferFromContent` (pravidlo na jeden typ v textu skriptu) — to řeší jeden mod, ne třídu problému.
 
@@ -55,7 +55,7 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 
 | Kdy | Co |
 |---|---|
-| 23. 11. | Čtvrtá dávka vyrobena ve větvi `batch4`: návrh kategorie NEW (B10), přesun knihovny (A23), rozbor chyby redscriptu bez okna a náhled okna (B11), fronta stránek pro účty zdarma u IMPORT ORDER (A24), počítadlo „pracuji“ a sdílený klient HTTP, texty (A25). Zbývá O24 po B11. |
+| 23. 11. | Čtvrtá dávka vyrobena a sloučena do `main`: návrh kategorie NEW (B10), přesun knihovny (A23), rozbor chyby redscriptu bez okna a náhled okna (B11), fronta stránek pro účty zdarma u IMPORT ORDER (A24), počítadlo „pracuji“ a sdílený klient HTTP, texty (A25). Zbývá O24 po B11. |
 | 23. 11. | A21 schváleno: úvodní stránka webu se dvěma edicemi a oddíl Updating AFTERLIFE v návodu. D3 hotovo: Offline zip 1.0.0-beta.1 a nový popis jsou na Nexus Mods. |
 | 23. 11. | Opraveno v `main` (`2317e5b`): volitelný požadavek z Nexusu se pozná podle slova „optional“ kdekoli v poznámce, RedFileSystem už nehlásí „missing: RedData“. Ve hře neověřeno, přijde s dalším sestavením. |
 | 23. 11. | **1.0.0-beta.1 vydána** (C8, C11): sloučeno vše včetně lišty se zaškrtnutými mody a nabídky LIST & ORDER, tag `v1.0.0-beta.1`, vydání má instalátor a zip plné edice a Offline zip. Třetí dávka fronty je uzavřená a v archivu. |
