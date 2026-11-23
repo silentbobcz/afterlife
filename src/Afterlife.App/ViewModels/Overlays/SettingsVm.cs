@@ -99,7 +99,7 @@ public sealed partial class SettingsVm : OverlayVm
 
     /// <summary>Mods linked to Nexus Mods: what the update check has to ask about.</summary>
     public int LinkedMods { get; private set; }
-    public string UpdatesLoad => $"With your {LinkedMods:N0} linked mod(s) this costs about {NexusLimits.RequestsPerDay(LinkedMods, FullCheckDays, CheckUpdatesHourly):N0} requests a day. "
+    public string UpdatesLoad => $"With your {LinkedMods:N0} linked {Plural.Word(LinkedMods, "mod")} this costs about {NexusLimits.RequestsPerDay(LinkedMods, FullCheckDays, CheckUpdatesHourly):N0} requests a day. "
         + $"Nexus Mods allows {NexusLimits.PerDay:N0} a day and {NexusLimits.PerHour} an hour per key; when it is reached AFTERLIFE waits and goes on later.";
     /// <summary>The days between full reads are too few for this library.</summary>
     public string? UpdatesWarning => NexusLimits.SettingsWarning(LinkedMods, FullCheckDays, CheckUpdatesHourly);

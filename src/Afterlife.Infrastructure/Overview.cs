@@ -441,7 +441,7 @@ public static class OverviewBuilder
         var foreign = issues.Where(i => i.Kind == IssueKind.ForeignFileAtTarget && i.Path is not null).Select(i => i.Path!).Distinct().ToList();
         if (foreign.Count > 0)
             return (ModState.FileInTheWay, "× FILE IN THE WAY", Tone.Block,
-                $"{foreign.Count} file(s) at this mod's paths are already in the game with other content and were not written by AFTERLIFE "
+                $"{Plural.Of(foreign.Count, "file")} at this mod's paths {Plural.Word(foreign.Count, "is", "are")} already in the game with other content and {Plural.Word(foreign.Count, "was", "were")} not written by AFTERLIFE "
                 + $"(for example left from a manual install): {string.Join(", ", foreign.Take(3))}{(foreign.Count > 3 ? $" +{foreign.Count - 3} more" : "")}. "
                 + "Nothing was overwritten. REPLACE moves them aside (restorable in Scan manual mods); DISCARD IMPORT keeps them and drops this mod.");
         if (issues.Any(i => i.Kind == IssueKind.ModifiedManagedFile))

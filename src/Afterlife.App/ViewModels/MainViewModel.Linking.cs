@@ -33,14 +33,14 @@ public sealed partial class MainViewModel
         if (candidates.Count == 0)
         {
             Say(noHint == 0 ? "Every mod added by hand is linked to Nexus Mods already."
-                : $"Nothing to look up: {noHint} mod(s) carry neither a Nexus id in the file name nor a checksum of their archive. Link them one by one in the details.", Tone.Info);
+                : $"Nothing to look up: {Plural.Of(noHint, "mod")} {Plural.Word(noHint, "carries", "carry")} neither a Nexus id in the file name nor a checksum of {Plural.Word(noHint, "its archive. Link it", "their archive. Link them")} one by one in the details.", Tone.Info);
             return;
         }
         var run = await VerifyLinksAsync(candidates, key, showProgress: true);
         var rest = RestLine(run, noHint);
         if (run.Verified.Count == 0)
         {
-            Say($"Nexus Mods confirmed none of the {candidates.Count} mod(s).{rest}", run.Unread > 0 ? Tone.Warn : Tone.Info);
+            Say($"Nexus Mods confirmed none of the {Plural.Of(candidates.Count, "mod")}.{rest}", run.Unread > 0 ? Tone.Warn : Tone.Info);
             return;
         }
         var lines = run.Verified.OrderBy(v => v.Package.ModName, StringComparer.OrdinalIgnoreCase)
@@ -51,10 +51,10 @@ public sealed partial class MainViewModel
         if (!ok) return;
         var linked = await ApplyLinksAsync(run.Verified.Select(v => v.Match).ToList());
         await RefreshAsync();
-        Say($"Linked {linked} mod(s) to Nexus Mods. Reading their pages…", Tone.Info);
+        Say($"Linked {Plural.Of(linked, "mod")} to Nexus Mods. Reading their pages…", Tone.Info);
         var read = await FetchNexusInfoAsync(onlyMissing: true, limit: int.MaxValue);
-        Say(read ? $"Linked {linked} mod(s) to Nexus Mods.{rest}"
-                 : $"Linked {linked} mod(s) to Nexus Mods. Some pages could not be read yet; they come with the next start.{rest}", read ? Tone.Ok : Tone.Warn);
+        Say(read ? $"Linked {Plural.Of(linked, "mod")} to Nexus Mods.{rest}"
+                 : $"Linked {Plural.Of(linked, "mod")} to Nexus Mods. Some pages could not be read yet; they come with the next start.{rest}", read ? Tone.Ok : Tone.Warn);
     }
 
     private static string RestLine(LinkRun run, int noHint)

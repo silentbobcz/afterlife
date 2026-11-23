@@ -30,8 +30,8 @@ public sealed partial class MainViewModel
             else
             {
                 await _host.RunAsync(c => c.SetEnabledMany(c.SelectedProfile.Id, ids, want));
-                Say(want ? $"{row.Name} and {ids.Count - 1} mod(s) it needs are in the profile. Apply to put them in the game."
-                         : $"{row.Name} and {ids.Count - 1} related mod(s) are switched off. Apply to remove them from the game.", Tone.Info);
+                Say(want ? $"{row.Name} and {Plural.Of(ids.Count - 1, "mod")} it needs {Plural.Word(ids.Count - 1, "is", "are")} in the profile. Apply to put them in the game."
+                         : $"{row.Name} and {ids.Count - 1} related {Plural.Word(ids.Count - 1, "mod")} {Plural.Word(ids.Count - 1, "is", "are")} switched off. Apply to remove them from the game.", Tone.Info);
             }
             await RefreshAsync();
         }
@@ -63,9 +63,9 @@ public sealed partial class MainViewModel
         var related = OverviewBuilder.InactiveRequirements(_overview, ids);
         if (related.Count == 0) return ids;
         var vm = new ConfirmVm("ALSO SWITCH ON WHAT IT NEEDS?",
-            $"{SubjectOf(ids)} needs {related.Count} mod(s) that are in your library but switched off in this profile. Without them it may not work.",
+            $"{SubjectOf(ids)} needs {Plural.Of(related.Count, "mod")} that {Plural.Word(related.Count, "is", "are")} in your library but switched off in this profile. Without {Plural.Word(related.Count, "it", "them")} it may not work.",
             "SWITCH ON", false, related.Select(r => $"{r.Name}   · needed by {r.NeededBy}").ToList(),
-            $"Also switch on the {related.Count} needed mod(s)", true, "NEEDED, NOW OFF");
+            $"Also switch on the {related.Count} needed {Plural.Word(related.Count, "mod")}", true, "NEEDED, NOW OFF");
         if (!await AskAsync(vm)) return null;
         return vm.OptionChecked ? ids.Concat(related.Select(r => r.PackageId)).Distinct().ToList() : ids;
     }
@@ -162,7 +162,7 @@ public sealed partial class MainViewModel
     {
         await _host.RunAsync(c => c.UpdateSelected(p => paths.Aggregate(p, (acc, path) => acc.WithWinner(GamePath.Parse(path).Key, packageId))));
         await RefreshAsync();
-        Say($"{name} now wins {paths.Count} conflicting file(s). Apply to update the game.", Tone.Info);
+        Say($"{name} now wins {paths.Count} conflicting {Plural.Word(paths.Count, "file")}. Apply to update the game.", Tone.Info);
     });
 
     public Task SetWinnerAsync(string path, string packageId) => RunUiAsync(async () =>
@@ -216,8 +216,8 @@ public sealed partial class MainViewModel
             report.AddRange(r.Deleted.Select(n => "  · " + n));
             if (r.Kept.Count > 0) report.Add($"Not deleted ({r.Kept.Count}):");
             report.AddRange(r.Kept.Select(k => $"  · {k.Name}: {k.Reason}"));
-            if (dependents.Count > 0 && vm.OptionChecked) report.Add($"Switched off {dependents.Count} mod(s) that needed it.");
-            if (r.Leftovers > 0) report.Add($"{r.Leftovers} file(s) the deleted mods had created themselves (logs, settings) moved to Removed.");
+            if (dependents.Count > 0 && vm.OptionChecked) report.Add($"Switched off {Plural.Of(dependents.Count, "mod")} that needed it.");
+            if (r.Leftovers > 0) report.Add($"{Plural.Of(r.Leftovers, "file")} the deleted mods had created themselves (logs, settings) moved to Removed.");
             if (r.Kept.Count == 0) report.AddRange(await CleanLeftoversAsync(caps));
             SayLines(report, r.Kept.Count > 0 ? Tone.Warn : Tone.Ok);
         }
@@ -304,7 +304,7 @@ public sealed partial class MainViewModel
         if (mods.Count == 0) return;
         var files = mods.SelectMany(m => m.Files.Select(f => f.Path)).ToList();
         var label = mods.Count == 1 ? mods[0].Name : $"{mods.Count} mods";
-        var lines = mods.Select(m => $"{m.Name}   · {m.Files.Count} file(s){(m.IsFramework ? " · core mod" : "")}").ToList();
+        var lines = mods.Select(m => $"{m.Name}   · {Plural.Of(m.Files.Count, "file")}{(m.IsFramework ? " · core mod" : "")}").ToList();
         var caps = mods.Select(m => m.Capability).OfType<string>().ToList();
         var dependents = caps.Count == 0 ? [] : await _host.RunAsync(c => c.DependentsOf(caps));
         if (caps.Count > 0)
@@ -329,11 +329,11 @@ public sealed partial class MainViewModel
         {
             var r = await _host.RunAsync(c => c.RemoveUnmanaged(files, label));
             foreach (var f in files.Take(9)) AddBreachLine($"> PURGE   {f}", Tone.Warn);
-            EndBreach(r.Skipped.Count == 0, $"{r.Moved} file(s) moved out");
+            EndBreach(r.Skipped.Count == 0, $"{Plural.Of(r.Moved, "file")} moved out");
             await RefreshAsync();
             Say(r.Skipped.Count == 0
                 ? $"Removed {label} from the game. Restore it from Scan manual mods if you need it back."
-                : $"Removed {r.Moved} file(s); {r.Skipped.Count} changed meanwhile and stayed in the game.", r.Skipped.Count == 0 ? Tone.Ok : Tone.Warn);
+                : $"Removed {Plural.Of(r.Moved, "file")}; {r.Skipped.Count} changed meanwhile and stayed in the game.", r.Skipped.Count == 0 ? Tone.Ok : Tone.Warn);
         }
         catch { EndBreach(false, "stopped"); throw; }
     });
@@ -353,9 +353,9 @@ public sealed partial class MainViewModel
         {
             var r = await _host.RunAsync(c => c.MoveAsideFor(packageId));
             foreach (var f in paths.Take(9)) AddBreachLine($"> PURGE   {f}", Tone.Warn);
-            EndBreach(r.Skipped.Count == 0, $"{r.Moved} file(s) moved aside");
+            EndBreach(r.Skipped.Count == 0, $"{Plural.Of(r.Moved, "file")} moved aside");
             await RefreshAsync();
-            var lines = new List<string> { $"Moved aside {r.Moved} file(s) for {name} (restorable in Scan manual mods)." };
+            var lines = new List<string> { $"Moved aside {Plural.Of(r.Moved, "file")} for {name} (restorable in Scan manual mods)." };
             if (r.Skipped.Count > 0) lines.Add($"Skipped {r.Skipped.Count}: {string.Join(", ", r.Skipped.Take(3))}");
             lines.Add(_overview?.Mods.FirstOrDefault(m => m.Package.PackageId == packageId)?.Wanted == true
                 ? "Apply to install it." : $"Switch {name} on and apply to install it.");
@@ -372,10 +372,10 @@ public sealed partial class MainViewModel
         {
             var r = await _host.RunAsync(c => c.RestoreRemoved(batch.Id));
             foreach (var f in batch.Files.Take(9)) AddBreachLine($"> RESTORE {f.Path}", Tone.Info);
-            EndBreach(r.Skipped.Count == 0, $"{r.Moved} file(s) restored");
+            EndBreach(r.Skipped.Count == 0, $"{Plural.Of(r.Moved, "file")} restored");
             await RefreshAsync();
             Say(r.Skipped.Count == 0 ? $"{batch.Label} is back in the game."
-                : $"Restored {r.Moved} file(s). Skipped {r.Skipped.Count} because a file with the same name is in the game now: {string.Join(", ", r.Skipped.Take(3))}.",
+                : $"Restored {Plural.Of(r.Moved, "file")}. Skipped {r.Skipped.Count} because a file with the same name is in the game now: {string.Join(", ", r.Skipped.Take(3))}.",
                 r.Skipped.Count == 0 ? Tone.Ok : Tone.Warn);
         }
         catch { EndBreach(false, "stopped"); throw; }

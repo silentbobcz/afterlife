@@ -143,7 +143,7 @@ public sealed partial class MainViewModel
         if (flips.Count == 0) return "";
         var first = flips[0];
         var total = flips.Sum(f => f.Count);
-        return $" {total} conflicting file(s) now come from another mod" +
+        return $" {total} conflicting {Plural.Word(total, "file")} now {Plural.Word(total, "comes", "come")} from another mod" +
                (first.Old is null ? "" : $" (for example {first.New} now wins over {first.Old})") + ".";
     }
 
@@ -196,7 +196,7 @@ public sealed partial class MainViewModel
             var cat = CategoryIdOfChapter(target.Chapter);
             var changes = Mods.Where(m => movedSet.Contains(m.PackageId) && CategoryIdOfChapter(m.Chapter) != cat).ToList();
             layout = layout.Assign(movedSet, cat);
-            if (changes.Count > 0) into = $"{changes.Count} mod(s) moved to {(cat is null ? "MODS" : CategoryName(cat))}.";
+            if (changes.Count > 0) into = $"{Plural.Of(changes.Count, "mod")} moved to {(cat is null ? "MODS" : CategoryName(cat))}.";
         }
         // dropped where it already was: nothing to write (a profile in the game's default order stays so)
         if (into.Length == 0 && order.SequenceEqual(current)) return;
@@ -216,7 +216,7 @@ public sealed partial class MainViewModel
         order.RemoveAll(movedSet.Contains);
         order.AddRange(movedSet); // the stable sort by section puts them at the end of their section
         await ApplyLayoutAsync(_layout.Assign(movedSet, cat), order,
-            $"{movedSet.Count} mod(s) moved to {(cat is null ? "MODS" : CategoryName(cat))}.");
+            $"{Plural.Of(movedSet.Count, "mod")} moved to {(cat is null ? "MODS" : CategoryName(cat))}.");
         SetAllChecked(false); 
     });
 
@@ -295,7 +295,7 @@ public sealed partial class MainViewModel
         if (name is null) return;
         await SaveLayoutAsync(_layout.WithCategories([.. _layout.Categories, new ModCategory(BlockLayout.NewCategoryId(), name)]));
         await RefreshAsync();
-        Say($"Category {name} added at the end of MODS. Drag mods onto it, or select them and use MOVE TO CATEGORY.", Tone.Ok);
+        Say($"Category {name} added at the end of MODS. Drag mods onto it, or check them and use MOVE TO CATEGORY.", Tone.Ok);
     });
 
     private Task RenameCategoryAsync(string id) => RunUiAsync(async () =>
@@ -314,7 +314,7 @@ public sealed partial class MainViewModel
         if (current is null) return;
         var members = Mods.Count(m => m.Section == BlockLayout.CategoryKey(id));
         if (members > 0 && !await AskAsync(new ConfirmVm("REMOVE CATEGORY?",
-                $"Category {current.Name} is removed; its {members} mod(s) stay in the library and in the profile and go back to MODS without a category. Their load order moves with them.",
+                $"Category {current.Name} is removed; its {Plural.Of(members, "mod")} {Plural.Word(members, "stays", "stay")} in the library and in the profile and {Plural.Word(members, "goes", "go")} back to MODS without a category. Their load order moves with them.",
                 "REMOVE"))) return;
         var layout = _layout.WithCategories(_layout.Categories.Where(c => c.Id != id).ToList());
         if (members == 0) { await SaveLayoutAsync(layout); await RefreshAsync(); Say($"Category {current.Name} removed.", Tone.Info); return; }
@@ -336,7 +336,7 @@ public sealed partial class MainViewModel
         options.AddRange(_layout.Categories.Select(c => c.Name));
         options.Add("+ New category…");
         var vm = new ChoiceVm("MOVE TO CATEGORY",
-            $"{ids.Count} selected mod(s) go to the end of the chosen category. Categories load in their order inside MODS, so the load order of these mods changes.",
+            $"{ids.Count} checked {Plural.Word(ids.Count, "mod")} {Plural.Word(ids.Count, "goes", "go")} to the end of the chosen category. Categories load in their order inside MODS, so the load order of these mods changes.",
             options, "MOVE", selected: options.Count > 2 ? 1 : options.Count - 1);
         var pick = await AskAsync(vm, v => ((ChoiceVm)v).Result);
         if (pick is null) return;

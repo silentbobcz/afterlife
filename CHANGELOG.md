@@ -4,6 +4,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 ## Unreleased
 
+- **Texts**: messages that said "mod(s)", "file(s)" and similar now use the right singular or plural form for the number they print; the guide and the window call ticked rows "checked" (Check all, REMOVE CHECKED FROM GAME) and keep "selected" for the selected profile and the highlighted row.
 - **Buttons stay locked while any action runs**: when two actions overlapped, the first one to finish unlocked the window while the other was still working; now the window waits for the last one. Talking to Nexus Mods reuses one connection instead of opening a new one for every download and check.
 - **Redscript errors traced to mods (groundwork, no window yet)**: AFTERLIFE reads `r6/logs/redscript_rCURRENT.log`, ties each error to the mod of the library that deployed the script (or marks it as installed by hand), says whether that mod is on in the profile, and writes a question for an AI chat with the paths filtered like the logs.
 - **IMPORT ORDER for free Nexus accounts**: missing mods that name a Nexus file are fetched page by page, as with collections: AFTERLIFE opens each file page, you click Mod Manager Download, the file comes in switched off and the next page opens; the window shows waiting, open, in library and skipped, and at the end offers to load the same list again.

@@ -44,7 +44,7 @@ public sealed partial class DetectedGroupVm : ObservableObject
 public sealed record RemovedBatchVm(RemovedBatch Batch, ICommand Restore)
 {
     public string Label => Batch.Label;
-    public string Detail => $"{Batch.Pending} file(s) · removed {Batch.RemovedAt.LocalDateTime:g}";
+    public string Detail => $"{Plural.Of(Batch.Pending, "file")} · removed {Batch.RemovedAt.LocalDateTime:g}";
 }
 
 /// <summary>

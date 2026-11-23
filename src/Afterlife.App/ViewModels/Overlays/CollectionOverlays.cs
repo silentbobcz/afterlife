@@ -25,8 +25,8 @@ public sealed partial class CollectionPreviewVm : OverlayVm
         Summary = rev.Summary;
         Instructions = string.IsNullOrWhiteSpace(rev.Instructions) ? null : rev.Instructions;
         DownloadNote = missing == 0 ? "Everything required is already in your library."
-            : isPremium ? $"{missing} required mod(s) will be downloaded one after another (Premium)."
-            : $"{missing} required mod(s) to download: AFTERLIFE opens each page, you click Mod Manager Download, it moves on to the next.";
+            : isPremium ? $"{missing} required {Plural.Word(missing, "mod")} will be downloaded one after another (Premium)."
+            : $"{missing} required {Plural.Word(missing, "mod")} to download: AFTERLIFE opens each page, you click Mod Manager Download, it moves on to the next.";
         Warning = rev.LatestRevision is { } l && l > rev.Revision ? $"A newer revision ({l}) exists." : null;
         if (!rev.FromBundle) Warning = (Warning is null ? "" : Warning + " ") + "The collection's installer choices and load rules could not be read; mods install with their defaults.";
         Adult = rev.Adult;

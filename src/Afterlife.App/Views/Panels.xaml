@@ -27,14 +27,14 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource Mono}" VerticalAlignment="Center" Text="{Binding Summary}" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Style="{StaticResource LinkButton}" Command="{Binding SelectAllCommand}" Content="Select all mods" Margin="0,0,16,0" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource LinkButton}" Command="{Binding SelectAllCommand}" Content="Check all mods" Margin="0,0,16,0" VerticalAlignment="Center" />
                     <Button Style="{StaticResource AccentButton}" Command="{Binding RescanCommand}" Margin="0,0,10,0" IsEnabled="{Binding IsScanning, Converter={StaticResource Not}}">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse Width="7" Height="7" Stroke="{StaticResource C}" StrokeThickness="1.5" Margin="0,0,8,0" VerticalAlignment="Center" />
                             <TextBlock Text="RESCAN" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource DangerButton}" Command="{Binding RemoveSelectedCommand}" Content="REMOVE SELECTED FROM GAME" />
+                    <Button Style="{StaticResource DangerButton}" Command="{Binding RemoveSelectedCommand}" Content="REMOVE CHECKED FROM GAME" />
                 </StackPanel>
             </Grid>
             <TextBlock Margin="0,6,0,0" Style="{StaticResource Body}" Foreground="{StaticResource G}" Text="Clean. Every file in the mod folders is managed by AFTERLIFE."
@@ -170,7 +170,7 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CHECKBOXES" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Select mods for bulk actions; the checkbox in a block or category header selects all of it. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Check mods for bulk actions; the checkbox in a block or category header checks all of it. A click into the column header (MOD · TAGS, VERSION …) unchecks all." />
             </Grid>
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
@@ -357,7 +357,7 @@
                 </ContentControl>
                 <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Back to the game's alphabetical order. In the LIST &amp; ORDER menu below the list." />
             </Grid>
-            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="SELECTING AND MOVING" />
+            <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="CHECKING AND MOVING" />
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="160" />
@@ -366,7 +366,7 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="CTRL / SHIFT" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+click adds one mod to the selection, Shift+click a range, Ctrl+A all visible mods." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+click checks one more mod, Shift+click checks a range, Ctrl+A all visible mods." />
             </Grid>
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
@@ -489,7 +489,7 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="KEYS" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A select all · Ctrl+Up / Ctrl+Down move the checked mods one place, Ctrl+Home / Ctrl+End to the start or end of their section · Esc closes a panel." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A check all · Ctrl+Up / Ctrl+Down move the checked mods one place, Ctrl+Home / Ctrl+End to the start or end of their section · Esc closes a panel." />
             </Grid>
             </StackPanel>
             <WrapPanel Margin="0,8,0,0">
