@@ -15,6 +15,12 @@ Poslední pracovní verze plné edice je `AFTERLIFE-test-f77c9ad-win-x64.zip` ve
 | A17 | Odkazy na web s návodem v aplikaci | Pracovní verze `AFTERLIFE-test-f77c9ad-win-x64.zip` ve složce `zkusebni`; okno About a rychlý návod (QUICK GUIDE) | V About klikni na WEBSITE a v rychlém návodu dole na „Full guide on the web ↗“; obojí má otevřít web v prohlížeči. Zkontroluj, že se tlačítka v About vejdou vedle sebe. Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
 | A18 | Zaškrtnuté mody a lišta APPLY (O21, B8) | Pracovní verze `AFTERLIFE-test-f77c9ad-win-x64.zip` ve složce `zkusebni`; spodní lišta pod seznamem | 1. Udělej změnu (přepni jeden mod), pak zaškrtni dva mody: stavový řádek, PREVIEW a APPLY CHANGES zůstanou, jen řadu malých tlačítek vystřídá „2 checked“, MOVE TO CATEGORY, ACTIVATE, DEACTIVATE, DELETE EVERYWHERE a „Clear (Esc)“. APPLY má jít zmáčknout. 2. Schovej jeden zaškrtnutý filtrem, hledáním nebo sbalením sekce: přibude „(1 not visible)“ a po najetí myší důvod. 3. Klikni do seznamu a zmáčkni Esc: výběr zmizí a malá tlačítka jsou zpět; Esc v hledání má jen smazat text. Zkus i úzké okno. Neověřeno: nic z toho neběželo v okně; malá barevná tlačítka nejspíš při najetí myší zmodrají. | ☐ čeká na tebe |
 
+## B. Promyslet a rozhodnout
+
+| # | Co | Kde to najdu | Co mám rozhodnout | Stav |
+|---|---|---|---|---|
+| B9 | Méně tlačítek pod seznamem: čtyři občasná do jedné nabídky | Větev `o21-checked-mods`, soubor [docs/previews/tools-menu.html](docs/previews/tools-menu.html) (dvojklik, otevře se v prohlížeči) | Náhled ukazuje dnešní řadu a návrh v pěti stavech. 1. Schválit: v řadě zůstane REFRESH, CHECK UPDATES (a UPDATE ALL), ostatní čtyři jsou v nabídce s popisem. 2. Nechat dnešní řadu. K tomu vyber název nabídky: LIST & ORDER, ORDER & EXPORT nebo MORE. | ☐ čeká na tebe |
+
 ## C. Rozhodnout (stačí odpověď)
 
 Doporučená možnost je vždy první.

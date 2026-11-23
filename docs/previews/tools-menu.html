@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fewer buttons under the mod list</title>
+<!-- Static preview, no code behind it: the row of small tools under the mod list keeps the daily buttons and folds
+     the four list and order tools into one menu. Colours are the tokens of src/Afterlife.App/App.xaml; fonts fall
+     back to system fonts, nothing is loaded from the net. -->
+<style>
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --o: #FF9F1C; --v: #B98CFF;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08); --mtint: rgba(255,42,109,.08); --otint: rgba(255,159,28,.08); --vtint: rgba(185,140,255,.10);
+  --disp: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+  --body: "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--body); }
+body { padding: 16px; max-width: 1180px; margin: 0 auto; }
+h1 { margin: 0 0 6px; font: 700 18px var(--disp); letter-spacing: .12em; color: var(--y); }
+h2 { margin: 28px 0 8px; font: 700 13px var(--disp); letter-spacing: .1em; color: var(--c); }
+p, li { color: var(--t2); font-size: 13px; line-height: 1.55; margin: 0 0 6px; }
+b { color: var(--t); }
+.row-note { font: 11px var(--mono); color: var(--t3); margin: 14px 0 4px; letter-spacing: .06em; }
+
+.panel { background: var(--bg2); border: 1px solid var(--line2); padding: 12px 14px; }
+.w640 { max-width: 640px; }
+.bar { display: flex; align-items: center; gap: 12px; }
+.left { flex: 1; min-width: 0; }
+.status { font-size: 13px; color: var(--t); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status i { font-style: normal; color: var(--c); }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 7px; position: relative; }
+.right { display: flex; align-items: center; gap: 10px; flex: none; }
+
+.sm { font: 700 10.5px var(--mono); color: var(--t2); border: 1px solid var(--line2); background: transparent; height: 26px; padding: 0 11px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.sm.c { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.sm.v { color: var(--v); border-color: var(--v); background: var(--vtint); }
+.sm.o { color: var(--o); border-color: var(--o); background: var(--otint); }
+.sm.m { color: var(--m); border-color: var(--m); background: var(--mtint); }
+.sm.open { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.apply { font: 600 14px var(--disp); color: var(--bg); background: var(--y); height: 38px; min-width: 170px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: .04em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.count { font-size: 13px; color: var(--t); margin-right: 4px; white-space: nowrap; }
+.count b { font-weight: 600; }
+.link { font-size: 12px; color: var(--t2); text-decoration: underline; white-space: nowrap; margin-left: 4px; }
+
+/* the menu opens upwards, above its button */
+.menuwrap { margin-top: 10px; padding-top: 4px; }
+.menu { width: 380px; max-width: 100%; background: var(--bg3); border: 1px solid var(--line2); padding: 4px 0; margin: 0 0 4px 196px; }
+.w640 .menu { margin-left: 196px; }
+.item { padding: 7px 12px; }
+.item.hover { background: var(--sel); }
+.item .n { font: 700 11px var(--mono); color: var(--t); letter-spacing: .04em; }
+.item .d { font-size: 12px; color: var(--t2); margin-top: 1px; }
+.item.off .n, .item.off .d { color: var(--t3); opacity: .55; }
+.sep { height: 1px; background: var(--line2); margin: 4px 0; }
+.item.warn .n { color: var(--o); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; margin-top: 6px; }
+td, th { border: 1px solid var(--line2); padding: 5px 8px; text-align: left; color: var(--t2); vertical-align: top; }
+th { color: var(--t); font: 700 11px var(--mono); }
+</style>
+</head>
+<body>
+<h1>Fewer buttons under the mod list</h1>
+<p>The row under the list has six or seven small buttons that all look equally important. Two are used every day; four are used now and then and all deal with the list and its order. The proposal keeps the daily ones and folds the other four into one menu, where each line also says what it does.</p>
+
+<h2>Today, for comparison</h2>
+<div class="panel">
+  <div class="bar">
+    <div class="left"><div class="status"><i>114</i> file changes ready: 1 replace · 113 remove</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm">EXPORT LIST</span><span class="sm">EXPORT ORDER</span><span class="sm">IMPORT ORDER</span><span class="sm">RESET ORDER</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<h2>Proposal</h2>
+<div class="row-note">1 · CALM · three buttons</div>
+<div class="panel">
+  <div class="bar">
+    <div class="left"><div class="status"><i>114</i> file changes ready: 1 replace · 113 remove</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm">LIST &amp; ORDER ▾</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<div class="row-note">2 · MENU OPEN · it opens upwards, over the end of the list; the mouse is on the second line</div>
+<div class="panel">
+  <div class="menu" style="margin-top:0">
+    <div class="item"><div class="n">EXPORT LIST</div><div class="d">Active mods with versions, for a bug report or a forum post</div></div>
+    <div class="sep"></div>
+    <div class="item hover"><div class="n">EXPORT ORDER</div><div class="d">Save the load order of this profile to a text file</div></div>
+    <div class="item"><div class="n">IMPORT ORDER</div><div class="d">Load an order from a file; you see what changes first</div></div>
+    <div class="sep"></div>
+    <div class="item warn"><div class="n">RESET ORDER</div><div class="d">Back to the game's alphabetical order</div></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="status"><i>114</i> file changes ready: 1 replace · 113 remove</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm open">LIST &amp; ORDER ▴</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+<p style="margin-top:6px">RESET ORDER is greyed out in the menu while the profile is in the game's default order (today the button is hidden then).</p>
+
+<div class="row-note">3 · UPDATES FOUND · UPDATE ALL appears between the daily buttons, as today</div>
+<div class="panel">
+  <div class="bar">
+    <div class="left"><div class="status"><i>114</i> file changes ready: 1 replace · 113 remove</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm c">UPDATE ALL · 7</span><span class="sm">LIST &amp; ORDER ▾</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<div class="row-note">4 · MODS CHECKED · the bulk actions take the row, unchanged</div>
+<div class="panel">
+  <div class="bar">
+    <div class="left"><div class="status"><i>114</i> file changes ready: 1 replace · 113 remove</div>
+      <div class="tools"><span class="count"><b>2</b> checked</span><span class="sm v">MOVE TO CATEGORY</span><span class="sm c">ACTIVATE</span><span class="sm o">DEACTIVATE</span><span class="sm m">DELETE EVERYWHERE</span><span class="link">Clear (Esc)</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<div class="row-note">5 · NARROW WINDOW (640 px) · one row; today the six buttons wrap to two</div>
+<div class="panel w640">
+  <div class="bar">
+    <div class="left"><div class="status"><i>114</i> file changes ready: 1 replace · 113 remove</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm">LIST &amp; ORDER ▾</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<h2>What changes and what does not</h2>
+<table>
+  <tr><th>Button today</th><th>Where it is in the proposal</th></tr>
+  <tr><td>REFRESH, CHECK UPDATES, UPDATE ALL</td><td>stay in the row</td></tr>
+  <tr><td>EXPORT LIST, EXPORT ORDER, IMPORT ORDER, RESET ORDER</td><td>in the menu <b>LIST &amp; ORDER ▾</b>, one click further</td></tr>
+</table>
+<ul style="margin-top:10px">
+  <li>Each line of the menu says what it does; today that is only in a tooltip, and EXPORT LIST and EXPORT ORDER are easy to mix up.</li>
+  <li>RESET ORDER sits apart at the bottom of the menu, so it is not pressed by mistake next to IMPORT ORDER. It still asks before it does anything.</li>
+  <li>The name of the menu is open: <b>LIST &amp; ORDER</b>, <b>ORDER &amp; EXPORT</b> or <b>MORE</b>.</li>
+</ul>
+</body>
+</html>
