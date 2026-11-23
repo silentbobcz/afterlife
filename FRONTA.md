@@ -21,7 +21,7 @@ Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (
 | O20 | Opus | Vydání plné edice na GitHubu: zip a instalátor plné edice, zip Offline pro Nexus | nic | může začít |
 | O18 | Sonnet | Web: dvě edice ke stažení (GitHub plná, Nexus Offline) a proč | O20 (názvy souborů) | čeká |
 | O19 | Sonnet | Návod: jak přejít na novou verzi (zip i instalátor), knihovna a nastavení zůstávají | O20 | čeká |
-| O21 | Opus | Zaškrtnuté mody schovají APPLY a JACK IN: vysvětlit proč a nabídnout cestu zpět | nic | může začít |
+| O21 | Opus | Zaškrtnuté mody schovají APPLY a JACK IN: vysvětlit proč a nabídnout cestu zpět | nic | ✅ zkontrolováno, větev `o21-checked-mods`, čeká na sloučení |
 
 Další balíky vzniknou z toho, co uživatel najde při zkoušení (A15 až A17 v `UKOLY.md`).
 
@@ -60,12 +60,22 @@ Opus. Může začít hned. Hlášení z Nexusu (23. 11.): po přidání dalšíc
 6. Test v `tests/Afterlife.Tests` pro počet schovaných zaškrtnutých (filtr, hledání), pokud jde výpočet oddělit od WPF. Řádek do `CHANGELOG.md`; do `docs/USER-GUIDE.md` (oddíl o výběru modů) jedna věta: zaškrtnuté mody přepnou spodní lištu na hromadné akce, Esc nebo Clear selection vrátí APPLY. `USER-GUIDE.md` upravuje i O19 a `CHANGELOG.md` i O20: při sloučení dej pozor na konflikt.
 7. Kontroly přes `gh workflow run build.yml --ref <větev>`. Okno neuvidíš: do `UKOLY.md` položka A (zaškrtnout dva mody, jeden schovat filtrem, zkontrolovat text a počet, Esc vrátí APPLY).
 
+**Předávka O21** (23. 11., podřízený Opus, kontrola výrobní vlákno)
+- Stav: hotovo, větev `o21-checked-mods`, do `main` nesloučeno.
+- Změněno: `MainWindow.xaml` (texty lišty), `MainWindow.xaml.cs` (Esc), nové `MainViewModel.Selection.cs`, `CheckedRows.cs` (Infrastructure, čistý výpočet) a `CheckedRowsTests.cs`; `CHANGELOG.md`, `USER-GUIDE.md`, `HOW-IT-WORKS.md`.
+- Ověřeno: překlad a testy na GitHubu (ruční běh `build` na větvi), rozdíl přečten proti kódu.
+- Neověřeno: nic neběželo v okně; výška lišty se třemi řádky v úzkém okně, Esc s fokusem na řádku seznamu.
+- Rozhodnuto bez uživatele: Esc výběr neruší, dokud je fokus v hledání (ani v prázdném), v otevřeném seznamu nebo nabídce; tooltip je na celém prvním řádku a říká, že hromadné akce berou i schované mody; „folded sections“ místo „category“; jednotné číslo „1 mod checked“.
+- Změna po B8 (uživatel schválil náhled `docs/previews/bulk-bar.html`): lišta se už nevyměňuje celá. Při zaškrtnutí ustoupí jen řada malých nástrojů hromadným akcím (malá tlačítka), stavový řádek, PREVIEW a APPLY zůstávají; vysvětlující věta odpadla. Body 1 a 4 zadání tím neplatí. Neověřeno navíc: malá barevná tlačítka při najetí myší zmodrají (šablona `SmallButton`).
+- Navíc po B9 (mimo zadání balíku): EXPORT LIST, EXPORT ORDER, IMPORT ORDER a RESET ORDER jsou v nabídce LIST & ORDER (`Views/ToolsMenu.xaml`, `MainViewModel.ToolsMenu.cs`). Neověřeno: otevírání, zavírání a poloha nabídky v okně.
+- Mimo balík: zaškrtnutí celé sekce přepočítává výběr po každém řádku (bylo i dřív); návod říká zaškrtnutým modům střídavě „selected“ a „checked“.
+- Pro uživatele: A18 v `UKOLY.md`.
+
 ## Co do fronty nepatří
 
 - Přestavba celého okna (návrhy W1 až W3) a styl MUTED: odložené alternativy.
 - Instalátor pro AFTERLIFE Offline: není třeba, na Nexus jde zip (23. 11.).
 - Hlášky ve stavovém řádku s „mod(s)“: drobnost k příští úpravě textů.
-- Lišta hromadných akcí nad lištou APPLY, aby APPLY nemizelo vůbec: mění rozložení okna, nejdřív statický náhled; až o ni uživatel řekne (navazuje na O21).
 - Fronta stránek pro účty zdarma u chybějících modů z load listu (dnes jen odkazy): až o ni uživatel řekne.
 
 ## Co přinesla 2. dávka (22. až 23. 11.)

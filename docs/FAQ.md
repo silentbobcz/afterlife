@@ -48,7 +48,7 @@ Only archive mods (`.archive`) have a load order; the top of the list loads firs
 
 ## How do I move my load order to another PC?
 
-**EXPORT ORDER** (above the list) saves the load order of the selected profile to a text file. On the other PC, with the mods in its library, select a profile and press **IMPORT ORDER**: a preview shows what changes before anything is written, including mods the other library does not have and mods found only by their name. Categories are shared by all profiles, so categories the list creates appear in every profile there. Nothing changes in the game until **APPLY CHANGES**. The file is plain text you can also edit in Notepad; the format is in the [user guide, section 10](USER-GUIDE.md#save-and-load-the-order-export-order-import-order). EXPORT LIST is a report for bug reports and cannot be loaded back.
+**EXPORT ORDER** (in the **LIST & ORDER** menu below the list) saves the load order of the selected profile to a text file. On the other PC, with the mods in its library, select a profile and press **IMPORT ORDER**: a preview shows what changes before anything is written, including mods the other library does not have and mods found only by their name. Categories are shared by all profiles, so categories the list creates appear in every profile there. Nothing changes in the game until **APPLY CHANGES**. The file is plain text you can also edit in Notepad; the format is in the [user guide, section 10](USER-GUIDE.md#save-and-load-the-order-export-order-import-order). EXPORT LIST is a report for bug reports and cannot be loaded back.
 
 ## AFTERLIFE says the request limit of Nexus Mods is reached
 

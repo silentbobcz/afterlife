@@ -2,20 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:c="clr-namespace:Afterlife.App.Controls"
                     xmlns:vm="clr-namespace:Afterlife.App.ViewModels">
-    <!-- Load list: EXPORT ORDER and IMPORT ORDER next to EXPORT LIST, and the preview of an import. -->
-
-    <!-- the two buttons; the main window hosts them with one ContentControl -->
-    <ControlTemplate x:Key="LoadListButtons" TargetType="ContentControl">
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <Button Style="{StaticResource SmallButton}" Command="{Binding ExportOrderCommand}" Content="EXPORT ORDER"
-                    ToolTip="Save the load order of this profile to a text file: a backup, for another PC, or to edit by hand" />
-            <!-- greyed out in Mods off, as other order changes are; the tooltip says why -->
-            <Button Style="{StaticResource SmallButton}" Command="{Binding ImportOrderCommand}" Content="IMPORT ORDER"
-                    IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}"
-                    ToolTip="{Binding ImportOrderTip}" ToolTipService.ShowOnDisabled="True" />
-        </StackPanel>
-    </ControlTemplate>
-
+    <!-- Load list: the preview of an import. EXPORT ORDER and IMPORT ORDER are in the LIST & ORDER menu (ToolsMenu.xaml). -->
     <DataTemplate DataType="{x:Type vm:LoadListPreviewVm}">
         <StackPanel Width="640">
             <TextBlock Style="{StaticResource Mono}" FontSize="12" Foreground="{StaticResource T2}" Text="{Binding Subtitle}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Subtitle}" />

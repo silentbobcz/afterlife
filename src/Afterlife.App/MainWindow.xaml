@@ -29,6 +29,7 @@
                 <ResourceDictionary Source="Views/FilterPanel.xaml" />
                 <ResourceDictionary Source="Views/LoadOrder.xaml" />
                 <ResourceDictionary Source="Views/LoadList.xaml" />
+                <ResourceDictionary Source="Views/ToolsMenu.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type vm:CollectionChapterVm}">
@@ -912,34 +913,9 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Bulk actions -->
-                        <Grid Grid.Row="6" Margin="0,12,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource Body}" FontSize="13">
-                                    <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=" mods selected" />
-                                </TextBlock>
-                                <Button HorizontalAlignment="Left" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear selection" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <!-- checked mods into a category (or back to MODS) -->
-                                <Button Style="{StaticResource AccentButton}" Command="{Binding BulkMoveToCategoryCommand}" Content="MOVE TO CATEGORY" Margin="0,0,10,0"
-                                        BorderBrush="{StaticResource V}" Foreground="{StaticResource V}" Background="{StaticResource VTint}"
-                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Put the checked mods into a category inside MODS; their load order moves with it" />
-                                <Button Style="{StaticResource AccentButton}" Command="{Binding BulkActivateCommand}" Content="ACTIVATE" Margin="0,0,10,0"
-                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch on in the selected profile" />
-                                <Button Style="{StaticResource WarnButton}" Command="{Binding BulkDeactivateCommand}" Content="DEACTIVATE" Margin="0,0,10,0"
-                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch off in the selected profile" />
-                                <Button Style="{StaticResource DangerButton}" Command="{Binding BulkDeleteCommand}" Content="DELETE EVERYWHERE"
-                                        ToolTip="Out of every profile, out of the game and out of the library" />
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Apply bar: status left, small bevelled tools, APPLY on the right; the legend moved to the GUIDE tab -->
-                        <Grid Grid.Row="6" Margin="0,12,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource InverseBoolToVis}}">
+                        <!-- Apply bar: status left, small bevelled tools, APPLY on the right; the legend moved to the GUIDE tab.
+                             While mods are checked only the row of tools gives way to the bulk actions: the status and APPLY stay. -->
+                        <Grid Grid.Row="6" Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -965,7 +941,27 @@
                                             ToolTip="Scroll to the mod this concerns and select it" />
                                     <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource M}" Text="{Binding ApplyBlockedReason}" TextWrapping="Wrap" />
                                 </DockPanel>
-                                <WrapPanel Margin="0,7,0,0">
+                                <!-- bulk actions for the checked mods, in place of the tools -->
+                                <WrapPanel Margin="0,7,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Style="{StaticResource Body}" FontSize="13" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="{Binding HiddenCheckedTip}">
+                                        <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=" checked" /><Run Text="{Binding HiddenCheckedNote, Mode=OneWay}" Foreground="{StaticResource T2}" />
+                                    </TextBlock>
+                                    <!-- checked mods into a category (or back to MODS) -->
+                                    <Button Style="{StaticResource SmallButton}" Command="{Binding BulkMoveToCategoryCommand}" Content="MOVE TO CATEGORY"
+                                            BorderBrush="{StaticResource V}" Foreground="{StaticResource V}" Background="{StaticResource VTint}"
+                                            IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Put the checked mods into a category inside MODS; their load order moves with it" />
+                                    <Button Style="{StaticResource SmallAccentButton}" Command="{Binding BulkActivateCommand}" Content="ACTIVATE"
+                                            IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch on in the selected profile" />
+                                    <Button Style="{StaticResource SmallButton}" Command="{Binding BulkDeactivateCommand}" Content="DEACTIVATE"
+                                            BorderBrush="{StaticResource O}" Foreground="{StaticResource O}" Background="{StaticResource OTint}"
+                                            IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch off in the selected profile" />
+                                    <Button Style="{StaticResource SmallButton}" Command="{Binding BulkDeleteCommand}" Content="DELETE EVERYWHERE"
+                                            BorderBrush="{StaticResource M}" Foreground="{StaticResource M}" Background="{StaticResource MTint}"
+                                            ToolTip="Out of every profile, out of the game and out of the library" />
+                                    <Button VerticalAlignment="Center" Margin="4,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear (Esc)"
+                                            ToolTip="Uncheck every mod and bring the tools back" />
+                                </WrapPanel>
+                                <WrapPanel Margin="0,7,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource InverseBoolToVis}}">
                                 <!-- always visible -->
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding RefreshLibraryCommand}" Content="REFRESH"
                                         ToolTip="Read the game folder and the library again (F5)" />
@@ -979,11 +975,8 @@
                                 <!-- Premium downloads directly; other accounts get the download pages one after another -->
                                 <Button Style="{StaticResource SmallAccentButton}" Command="{Binding UpdateAllCommand}" Content="{Binding UpdateAllLabel}"
                                         Visibility="{Binding CanUpdateAll, Converter={StaticResource BoolToVis}}" ToolTip="Put every newer version in the profile instead of the old one: Premium downloads directly, other accounts get the download pages one after another" />
-                                <Button Style="{StaticResource SmallButton}" Command="{Binding ExportListCommand}" Content="EXPORT LIST"
-                                        ToolTip="Active mods with versions, for a bug report or a forum post (not loadable)" />
-                                <ContentControl Template="{StaticResource LoadListButtons}" Focusable="False" IsTabStop="False" />
-                                <Button Style="{StaticResource SmallButton}" Command="{Binding ResetOrderCommand}" Content="RESET ORDER"
-                                        Visibility="{Binding OrderIsCustom, Converter={StaticResource BoolToVis}}" ToolTip="Back to the game's alphabetical order" />
+                                <!-- EXPORT LIST, EXPORT ORDER, IMPORT ORDER and RESET ORDER live in one menu (Views/ToolsMenu.xaml) -->
+                                <ContentControl Template="{StaticResource ToolsMenu}" Focusable="False" IsTabStop="False" />
                                 </WrapPanel>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
