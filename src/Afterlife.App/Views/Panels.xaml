@@ -125,6 +125,12 @@
     <DataTemplate DataType="{x:Type vm:GuideVm}">
         <ScrollViewer MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource GrowWithWindow}, ConverterParameter=560}" VerticalScrollBarVisibility="Auto" Focusable="False">
         <StackPanel Width="680" Margin="0,0,10,0">
+            <!-- the full guide first, in plain sight -->
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
+                <TextBlock Style="{StaticResource Body}" FontSize="12.5" VerticalAlignment="Center" Text="This is the short version; every feature is explained on the web." />
+                <Button Margin="10,0,0,0" Style="{StaticResource LinkButton}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
+                        Command="{Binding OpenWebGuideCommand}" Content="Full guide on the web ↗" />
+            </StackPanel>
             <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="THE LIST" />
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
@@ -349,7 +355,7 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="RESET ORDER" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Back to the game's alphabetical order." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Back to the game's alphabetical order. In the LIST &amp; ORDER menu below the list." />
             </Grid>
             <TextBlock Margin="0,10,0,8" Style="{StaticResource MonoLabel}" Foreground="{StaticResource C}" FontWeight="Bold" Text="SELECTING AND MOVING" />
             <Grid Margin="0,0,0,8">
@@ -453,7 +459,27 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="EXPORT LIST" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Active mods with versions, handy when you look for a problem mod." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Active mods with versions, handy when you look for a problem mod. In the LIST &amp; ORDER menu below the list." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="EXPORT / IMPORT ORDER" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Saves the load order of the profile to a text file you can edit in Notepad, and loads it back here or on another PC. The import shows first what changes and keeps a backup of the previous order." />
+            </Grid>
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Focusable="False" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="LOAD BEFORE" />
+                </ContentControl>
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="In the Conflicts tab of a mod: puts it just before the mod that wins a conflicting .archive file, so it wins that file instead." />
             </Grid>
             <Grid Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
@@ -463,12 +489,11 @@
                 <ContentControl Focusable="False" VerticalAlignment="Center">
                     <TextBlock Style="{StaticResource Mono}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource T}" Text="KEYS" />
                 </ContentControl>
-                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A select all · Esc closes a panel." />
+                <TextBlock Grid.Column="1" Style="{StaticResource Body}" FontSize="12.5" TextWrapping="Wrap" VerticalAlignment="Center" Text="Ctrl+O add mod · F5 refresh · Ctrl+A select all · Ctrl+Up / Ctrl+Down move the checked mods one place, Ctrl+Home / Ctrl+End to the start or end of their section · Esc closes a panel." />
             </Grid>
             </StackPanel>
             <WrapPanel Margin="0,8,0,0">
                 <Button Style="{StaticResource SmallAccentButton}" Command="{Binding ToggleAllCommand}" Content="{Binding ToggleLabel}" Margin="0,0,14,0" />
-                <Button Style="{StaticResource LinkButton}" FontSize="12" VerticalAlignment="Center" Command="{Binding OpenWebGuideCommand}" Content="Full guide on the web ↗" />
             </WrapPanel>
         </StackPanel>
         </ScrollViewer>

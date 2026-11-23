@@ -1,9 +1,10 @@
 # AFTERLIFE user guide
 
-This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run to removing it again.
+This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run to removing it again. It is also on the web at [afterlife.silentbob.cz](https://afterlife.silentbob.cz); **Guide & website ↗** in the footer of the window opens it.
 
 - [1. Before you start](#1-before-you-start)
 - [2. First run](#2-first-run)
+  - [Updating AFTERLIFE](#updating-afterlife)
 - [3. The window](#3-the-window)
 - [4. Adding mods](#4-adding-mods)
 - [5. Profiles](#5-profiles)
@@ -38,21 +39,40 @@ This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run 
 
 AFTERLIFE comes in two editions built from the same code:
 
-- **AFTERLIFE Offline** is the one you download today, on Nexus Mods and on GitHub. It never reads an API key and never connects to Nexus Mods. Everything that works with files on your disk is there: the library, profiles, apply, conflicts, load order, FOMOD, REDmod, scan of manual mods, export.
-- **The full edition** adds what needs Nexus Mods: Mod Manager Download, pictures and descriptions, requirements from the mod page, update checks and collections. It is published once Nexus Mods has registered AFTERLIFE as an application.
+- **The full edition** is on [GitHub Releases](https://github.com/silentbobcz/afterlife/releases), as an installer or a zip. With your Nexus Mods key it adds what needs Nexus Mods: Mod Manager Download, pictures and descriptions, requirements from the mod page, update checks and collections.
+- **AFTERLIFE Offline** is the edition on Nexus Mods (the same zip is also on GitHub). It never reads an API key and never connects to Nexus Mods. Everything that works with files on your disk is there: the library, profiles, apply, conflicts, load order, FOMOD, REDmod, scan of manual mods, export. It is the only edition on Nexus Mods until Nexus Mods has registered AFTERLIFE as an application.
+
+Both editions use the same library and the same settings, so you can switch from one to the other without losing anything.
 
 In AFTERLIFE Offline the features of the full edition stay visible with a **lock**. A click on one opens *WAITING FOR NEXUS MODS*, which says what is waiting and what works now, with links to the pages of every core mod. In this guide, sections 11 and 12 and everything that mentions a Nexus key describe the full edition.
 
 ## 2. First run
 
-1. Unzip the whole folder `AFTERLIFE` from the zip to any place you like, for example `C:\Tools\AFTERLIFE`. Keep its files together and do not put it inside the game folder.
-2. Start `AFTERLIFE.exe` in that folder. Windows may show *Windows protected your PC* because the file is not code-signed yet: click **More info → Run anyway**.
+1. Put AFTERLIFE on your PC in one of two ways. Do not put it inside the game folder.
+   - **Installer** (`…-Setup.exe`, full edition, on GitHub only): installs for your Windows user into `%LOCALAPPDATA%\Programs\AFTERLIFE` without admin rights, with a Start menu shortcut (a desktop shortcut if you tick it) and an entry in Windows *Installed apps*.
+   - **Zip** (both editions): unzip the whole folder `AFTERLIFE` to any place you like, for example `C:\Tools\AFTERLIFE`, and keep its files together.
+2. Start AFTERLIFE from the Start menu, or `AFTERLIFE.exe` in that folder. Windows may show *Windows protected your PC* because the file is not code-signed yet: click **More info → Run anyway**.
 3. **Game folder**: AFTERLIFE suggests the usual Steam, GOG and Epic locations. If yours is elsewhere, **BROWSE** to the folder that contains `bin\x64\Cyberpunk2077.exe`.
-4. **Library folder**: where AFTERLIFE keeps its copy of every mod. Pick a drive with free space; the library holds every version you ever imported, so it grows. It must not be inside the game folder.
+4. **Library folder**: where AFTERLIFE keeps its copy of every mod. Pick a drive with free space; the library holds every version you ever imported, so it grows. It must not be inside the game folder. A copy from the zip suggests `AFTERLIFE Library` next to `AFTERLIFE.exe`; an installed copy suggests `%LOCALAPPDATA%\AFTERLIFE\Library`. Remember where it is: it holds all your mods.
 5. **Nexus Mods key** (full edition only; optional, you can add it later): see [section 11](#11-nexus-mods-key-downloads-updates).
 6. **START AFTERLIFE**.
 
 If the game already contains mods installed by hand, the *Scan manual mods* card shows how many it found. They keep working; AFTERLIFE does not touch them until you ask (see [section 14](#14-scan-manual-mods)).
+
+### Updating AFTERLIFE
+
+A newer version reads the same settings and the same library, so your mods, profiles, load order, categories and Nexus key stay. AFTERLIFE has no self-updater: you get the new version yourself.
+
+**First look where your library is**: **Settings → 01 · Game & library** shows the folder, with **Open in Explorer**. With a copy from a zip it is usually the folder `AFTERLIFE Library` inside the AFTERLIFE folder itself.
+
+> **Do not delete the old AFTERLIFE folder while your library is inside it.** Deleting it deletes every mod you imported. Delete an old folder only when Settings shows the library somewhere else.
+
+- **Zip over zip**: close AFTERLIFE and unzip the new zip over the old folder, replacing the files. The app is replaced, `AFTERLIFE Library` stays. You can also unzip the new version to another place: it finds the library in the old folder, which then has to stay.
+- **Installer over installer**: close AFTERLIFE and run the newer installer. It replaces the app in place.
+- **From the zip to the installer**: run the installer. The installed AFTERLIFE keeps using the library where it is, also when that is inside the old zip folder, so keep that folder. AFTERLIFE cannot move a library to another place.
+- **Between AFTERLIFE Offline and the full edition**: nothing to do, both read the same settings and library.
+
+To be extra safe, save the load order of each profile with **EXPORT ORDER** before you update ([section 10](#10-conflicts-and-load-order)).
 
 ## 3. The window
 
@@ -92,11 +112,11 @@ The **search** box above the list filters by name and tag; **✕** or Esc clears
 
 **Sorting for viewing.** The **SORT** button next to FILTERS walks through **LOAD ORDER**, **NAME**, **NEWEST**, **STATE** and **SIZE**. Sorting stays inside each block and core mods keep their place. It changes only what you see: a line above the list says that the load order is unchanged, dragging mods is off while the list is sorted, and **Back to load order** returns.
 
-When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them.
+When several mods are selected, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them. While any mod is checked, these buttons take the place of the small tools (REFRESH, CHECK UPDATES and the others); the status line, PREVIEW and APPLY CHANGES stay. The row also says how many checked mods the search, a filter or a folded section hides. Press **Esc** or **Clear (Esc)** to uncheck everything.
 
 The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or select them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category you set the order yourself: drag a row up or down (local edits stay right below their mod), and **A→Z** in the header sorts that section by name once; collections keep the curator's order. Profiles are sorted by name, with *Mods off* first.
 
-Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **RESET ORDER**, **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
+Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), the **LIST & ORDER** menu with **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **EXPORT ORDER**, **IMPORT ORDER** and **RESET ORDER**, then **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
 ## 4. Adding mods
 
@@ -213,7 +233,7 @@ Inside an unlocked collection you can drag rows the same way ([section 12](#12-c
 
 ### Save and load the order (EXPORT ORDER, IMPORT ORDER)
 
-**EXPORT ORDER** (above the list, next to EXPORT LIST) saves the load order of the selected profile to a text file, `afterlife-order-<profile>-<date>.txt`: a backup, a way to move the order to another PC, to share it, or to edit it in Notepad. Every mod of the list is written, switched on or off, with CORE MODS, every collection, MODS and every category in load order. A mod's local edits are written as notes only: they exist just in the library they were made in.
+**EXPORT ORDER** (in the **LIST & ORDER** menu below the list) saves the load order of the selected profile to a text file, `afterlife-order-<profile>-<date>.txt`: a backup, a way to move the order to another PC, to share it, or to edit it in Notepad. Every mod of the list is written, switched on or off, with CORE MODS, every collection, MODS and every category in load order. A mod's local edits are written as notes only: they exist just in the library they were made in.
 
 The file is plain text. The first line is `AFTERLIFE LOAD LIST 1`; lines starting with `#` are notes. `@core`, `@collection <name>`, `@mods` and `@category <name>` start a section, `+ <name>` is a mod switched on and `- <name>` one switched off. After the name a line can have the version and fields separated by ` | ` (`nexus=`, `file=`, `md5=`); a hand-written `+ Better Lighting` is enough. Top loads first and wins, as in the window. You can move lines, change `+` and `-` and add `@category` lines.
 
@@ -335,7 +355,7 @@ Files a core mod rewrites by design every time the game runs (Input Loader's `r6
 
 ## 16. Export the mod list
 
-**Export list** (above the list) gives the active mods with their versions and Nexus links:
+**EXPORT LIST** (in the **LIST & ORDER** menu below the list) gives the active mods with their versions and Nexus links:
 
 - **In game now** or **Selected profile after apply**,
 - **Copy** to the clipboard, or save as **.txt** or **.csv**.
@@ -381,7 +401,7 @@ More in the [FAQ](FAQ.md).
 | What | Where |
 |---|---|
 | Settings | `%APPDATA%\AFTERLIFE` |
-| Library (default) | `%LOCALAPPDATA%\AFTERLIFE\Library`, or the folder you chose. A folder named `AFTERLIFE Library` next to `AFTERLIFE.exe` is used automatically (portable use). |
+| Library (default) | `%LOCALAPPDATA%\AFTERLIFE\Library`, or the folder you chose. A folder named `AFTERLIFE Library` next to `AFTERLIFE.exe` is used automatically (portable use); a copy from the zip suggests that place on first run, an installed copy the default. |
 | Inside the library | `afterlife.db` (database), `packages` (mods), `downloads`, `removed`, `staging`, `backups`, `locks`, `cache/images`, `exports` (the order saved before each IMPORT ORDER), and `fixer` once the FIXER drop box was switched on |
 | Logs | `%LOCALAPPDATA%\AFTERLIFE\logs` |
 | Nexus key | encrypted with Windows DPAPI for your user, in the settings folder |
@@ -390,7 +410,7 @@ More in the [FAQ](FAQ.md).
 
 1. Apply **Mods off** if you want the game without AFTERLIFE's mods.
 2. **Settings → Remove AFTERLIFE from this PC…**: gives `nxm://` links back to the previous app, deletes the saved key and the settings, and the library too if you tick it.
-3. Delete the folder `AFTERLIFE`.
+3. Delete the folder `AFTERLIFE`, or, if you used the installer, uninstall AFTERLIFE in Windows *Settings → Apps → Installed apps*. The uninstaller removes only the app's own files; the library and the settings stay until step 2 removes them.
 
 ## 22. Keyboard and mouse
 

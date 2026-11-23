@@ -1,0 +1,130 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Afterlife.App.Controls">
+    <!-- LIST & ORDER: the tools used now and then (EXPORT LIST, EXPORT ORDER, IMPORT ORDER, RESET ORDER) in one menu
+         under the mod list, so the row keeps only the daily buttons. The main window hosts it with one ContentControl. -->
+
+    <!-- looks like SmallButton; lit while the menu is open -->
+    <Style x:Key="SmallMenuToggle" TargetType="ToggleButton">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Foreground" Value="{StaticResource T2}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource Line2}" />
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="Padding" Value="11,0" />
+        <Setter Property="Margin" Value="0,0,6,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <c:CutBorder x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" Cut="6"
+                                 CutTopLeft="True" CutTopRight="False" CutBottomRight="True" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter x:Name="Text" HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </c:CutBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource C}" />
+                            <Setter TargetName="Frame" Property="Background" Value="{StaticResource CTint}" />
+                            <Setter TargetName="Text" Property="TextElement.Foreground" Value="{StaticResource C}" />
+                        </Trigger>
+                        <!-- an open menu closes on any click outside it; without this a click on the button would open it again -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource C}" />
+                            <Setter TargetName="Frame" Property="Background" Value="{StaticResource CTint}" />
+                            <Setter TargetName="Text" Property="TextElement.Foreground" Value="{StaticResource C}" />
+                            <Setter Property="IsHitTestVisible" Value="False" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- one line of the menu: a name and a sentence below it -->
+    <Style x:Key="ToolsMenuItem" TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Frame" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter x:Name="Text" HorizontalAlignment="Left" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Frame" Property="Background" Value="{StaticResource Sel}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Frame" Property="Background" Value="{StaticResource Sel}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Text" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ToolsMenuName" TargetType="TextBlock" BasedOn="{StaticResource Mono}">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource T}" />
+    </Style>
+
+    <ControlTemplate x:Key="ToolsMenu" TargetType="ContentControl">
+        <Grid VerticalAlignment="Center">
+            <ToggleButton x:Name="Toggle" Style="{StaticResource SmallMenuToggle}" IsChecked="{Binding ToolsMenuOpen, Mode=TwoWay}" Content="LIST &amp; ORDER ▾"
+                          ToolTip="Export the mod list, save or load the load order, reset the order"
+                          AutomationProperties.Name="List and order tools" />
+            <!-- opens upwards, over the end of the list; every line closes it and runs its tool (RunToolCommand) -->
+            <Popup PlacementTarget="{Binding ElementName=Toggle}" Placement="Top" VerticalOffset="-4" StaysOpen="False" AllowsTransparency="True"
+                   IsOpen="{Binding ToolsMenuOpen, Mode=TwoWay}">
+                <Border Width="380" Background="{StaticResource Bg3}" BorderBrush="{StaticResource Line2}" BorderThickness="1" Padding="0,4">
+                    <StackPanel>
+                        <Button Style="{StaticResource ToolsMenuItem}" Command="{Binding RunToolCommand}" CommandParameter="{Binding ExportListCommand}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource ToolsMenuName}" Text="EXPORT LIST" />
+                                <TextBlock Style="{StaticResource Meta}" Text="Active mods with versions, for a bug report or a forum post" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                        <Border Height="1" Margin="0,4" Background="{StaticResource Line2}" />
+                        <Button Style="{StaticResource ToolsMenuItem}" Command="{Binding RunToolCommand}" CommandParameter="{Binding ExportOrderCommand}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource ToolsMenuName}" Text="EXPORT ORDER" />
+                                <TextBlock Style="{StaticResource Meta}" Text="Save the load order of this profile to a text file" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                        <!-- greyed out in Mods off, as other order changes are; the tooltip says why -->
+                        <Button Style="{StaticResource ToolsMenuItem}" Command="{Binding RunToolCommand}" CommandParameter="{Binding ImportOrderCommand}"
+                                IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="{Binding ImportOrderTip}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource ToolsMenuName}" Text="IMPORT ORDER" />
+                                <TextBlock Style="{StaticResource Meta}" Text="Load an order from a file; you see what changes first" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                        <Border Height="1" Margin="0,4" Background="{StaticResource Line2}" />
+                        <!-- nothing to reset while the profile is in the game's default order -->
+                        <Button Style="{StaticResource ToolsMenuItem}" Command="{Binding RunToolCommand}" CommandParameter="{Binding ResetOrderCommand}"
+                                IsEnabled="{Binding OrderIsCustom}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource ToolsMenuName}" Foreground="{StaticResource O}" Text="RESET ORDER" />
+                                <TextBlock Style="{StaticResource Meta}" Text="Back to the game's alphabetical order; nothing changes in the game before you apply" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </ControlTemplate>
+</ResourceDictionary>

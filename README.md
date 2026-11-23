@@ -4,7 +4,7 @@
 
 <p align="center">
   <b>AFTERLIFE</b> · a safe, open-source mod manager for <b>Cyberpunk 2077</b> on Windows<br>
-  <a href="https://afterlife-13h.pages.dev">Website</a> ·
+  <a href="https://afterlife.silentbob.cz">Website</a> ·
   <a href="docs/USER-GUIDE.md">User guide</a> ·
   <a href="docs/FAQ.md">FAQ</a> ·
   <a href="docs/HOW-IT-WORKS.md">How it works</a> ·
@@ -46,22 +46,26 @@ The executable is not code-signed yet, so Windows SmartScreen shows a warning th
 
 Get the latest release from **[Releases](https://github.com/silentbobcz/afterlife/releases)** or from **[Nexus Mods](https://www.nexusmods.com/cyberpunk2077/mods/36204)**:
 
-- `AFTERLIFE-Offline-<version>-win-x64.zip` · a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries, .NET included, no installer.
+| Where | File | What it is |
+|---|---|---|
+| GitHub | `AFTERLIFE-<version>-win-x64-Setup.exe` | **The full edition, installer** (recommended): installs for your Windows user without admin rights, with a Start menu shortcut and an uninstaller. Neither the installer nor the uninstaller touches your library or settings. |
+| GitHub | `AFTERLIFE-<version>-win-x64.zip` | **The full edition, zip**: a folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries, .NET included. Unzip it anywhere. |
+| GitHub and Nexus Mods | `AFTERLIFE-Offline-<version>-win-x64.zip` | **AFTERLIFE Offline**: the same app without the connection to Nexus Mods, as a folder in a zip. |
 
-This is **AFTERLIFE Offline**: the same app without the connection to Nexus Mods. It never reads an API key and never goes online; the features that need Nexus Mods (rows marked *full edition* above) are visible with a lock. The full edition is published once Nexus Mods has registered AFTERLIFE as an application.
+With your Nexus Mods key the **full edition** downloads, updates and adds collections (rows marked *full edition* above). **AFTERLIFE Offline** never reads an API key and never goes online; those features are visible with a lock. It is the only edition on Nexus Mods until Nexus Mods has registered AFTERLIFE as an application. Both editions use the same library and settings, so you can switch between them.
 
 Requirements: Windows 10 or 11 (64-bit), Cyberpunk 2077 2.x (Steam, GOG or Epic). No admin rights needed.
 
 ## Quick start
 
-1. Unzip the folder `AFTERLIFE` anywhere you like (not inside the game folder), keep its files together and run `AFTERLIFE.exe` in it.
+1. Run the installer and start AFTERLIFE from the Start menu, or unzip the folder `AFTERLIFE` anywhere you like (not inside the game folder), keep its files together and run `AFTERLIFE.exe` in it. Coming from an older version? Read [Updating AFTERLIFE](docs/USER-GUIDE.md#updating-afterlife) first: your mods may live inside the old folder.
 2. Pick the game folder (the one with `bin\x64\Cyberpunk2077.exe`) and a library folder.
 3. Optional, full edition: in **Settings → Nexus Mods**, paste your Nexus Mods personal API key and turn on *Open Mod Manager Download links in AFTERLIFE*.
 4. Drop archives into the window or use **+ ADD MOD** (in the full edition also *Mod Manager Download* on a Nexus mod page).
 5. Press **APPLY CHANGES**, check the list, **LOAD TO DECK**.
 6. **JACK IN** starts the game.
 
-Full walkthrough: **[User guide](docs/USER-GUIDE.md)**, also on the web at **[afterlife-13h.pages.dev](https://afterlife-13h.pages.dev/guide.html)**.
+Full walkthrough: **[User guide](docs/USER-GUIDE.md)**, also on the web at **[afterlife.silentbob.cz](https://afterlife.silentbob.cz/guide.html)**.
 
 ## Privacy in one paragraph
 

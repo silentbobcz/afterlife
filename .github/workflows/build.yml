@@ -29,8 +29,12 @@ jobs:
       - name: Test (fake game install, crash injection at every step)
         run: dotnet test tests/Afterlife.Tests -c Release --no-build --logger "trx;LogFileName=results.trx"
 
-      # only AFTERLIFE Offline is released while Nexus Mods has not registered AFTERLIFE (AppEdition.cs).
-      # A plain folder, not a single-file bundle: Nexus Mods sends self-extracting executables to manual review.
+      # A release on GitHub carries the full edition (zip and installer) and the AFTERLIFE Offline zip. Nexus Mods gets
+      # only the Offline zip while it has not registered AFTERLIFE (AppEdition.cs).
+      # Plain folders, not single-file bundles: Nexus Mods sends self-extracting executables to manual review.
+      - name: Publish the full edition
+        run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -o publish/full
+
       - name: Publish AFTERLIFE Offline
         run: dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:Edition=Offline -o publish/offline
 
@@ -42,18 +46,41 @@ jobs:
           $v = if ($pg.VersionSuffix) { "$($pg.VersionPrefix)-$($pg.VersionSuffix)" } else { "$($pg.VersionPrefix)" }
           # a tag must match the version in Directory.Build.props (v1.0.0-alpha <-> 1.0.0-alpha)
           if ($env:GITHUB_REF -like 'refs/tags/v*' -and $env:GITHUB_REF_NAME -ne "v$v") { throw "Tag $env:GITHUB_REF_NAME does not match version $v in Directory.Build.props" }
-          if (-not (Test-Path publish/offline/AFTERLIFE.exe)) { throw "AFTERLIFE.exe missing in publish/offline" }
-          # the zip holds one folder AFTERLIFE with the app and its libraries side by side
-          $dir = "dist/AFTERLIFE"
-          New-Item -ItemType Directory -Force $dir | Out-Null
-          Copy-Item publish/offline/* $dir -Recurse
-          Get-ChildItem $dir -Filter *.pdb -Recurse | Remove-Item
-          Copy-Item README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
-          $zip = "dist/AFTERLIFE-Offline-$v-win-x64.zip"
-          Compress-Archive -Path $dir -DestinationPath $zip
-          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-          "$hash  $(Split-Path $zip -Leaf)" | Out-File -Encoding ascii "$zip.sha256"
-          Write-Host "$((Get-ChildItem $dir -Recurse -File).Count) files in $zip"
+          if ((Get-FileHash publish/full/AFTERLIFE.dll).Hash -eq (Get-FileHash publish/offline/AFTERLIFE.dll).Hash) { throw "The full build is identical to AFTERLIFE Offline" }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          # each zip holds one folder AFTERLIFE with the app and its libraries side by side
+          foreach ($e in @(@{ From = 'full'; Zip = "AFTERLIFE-$v-win-x64.zip" }, @{ From = 'offline'; Zip = "AFTERLIFE-Offline-$v-win-x64.zip" })) {
+            if (-not (Test-Path "publish/$($e.From)/AFTERLIFE.exe")) { throw "AFTERLIFE.exe missing in publish/$($e.From)" }
+            $dir = "stage/$($e.From)/AFTERLIFE"
+            New-Item -ItemType Directory -Force $dir | Out-Null
+            Copy-Item "publish/$($e.From)/*" $dir -Recurse
+            Get-ChildItem $dir -Filter *.pdb -Recurse | Remove-Item
+            Copy-Item README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
+            $zip = "dist/$($e.Zip)"
+            Compress-Archive -Path $dir -DestinationPath $zip
+            $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($e.Zip)" | Out-File -Encoding ascii "$zip.sha256"
+            Write-Host "$((Get-ChildItem $dir -Recurse -File).Count) files in $zip"
+          }
+          "AFTERLIFE_VERSION=$v" | Out-File -Encoding utf8 -Append $env:GITHUB_ENV
+
+      # a per-user installer of the full edition, built from the same folder as its zip; on GitHub only, never on Nexus Mods
+      - name: Installer
+        shell: pwsh
+        run: |
+          # Inno Setup 6 may be preinstalled on GitHub's Windows runners; install it only when it is missing
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; if ($LASTEXITCODE -ne 0) { throw "Inno Setup could not be installed" } }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found at $iscc" }
+          $v = $env:AFTERLIFE_VERSION
+          $name = "AFTERLIFE-$v-win-x64-Setup"
+          & $iscc /Q "/DAppVersion=$v" "/DDistDir=$((Resolve-Path stage/full/AFTERLIFE).Path)" "/O$((Resolve-Path dist).Path)" "/F$name" installer/AFTERLIFE.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          $setup = "dist/$name.exe"
+          if (-not (Test-Path $setup)) { throw "$setup missing" }
+          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.exe" | Out-File -Encoding ascii "$setup.sha256"
+          Write-Host "$setup $((Get-Item $setup).Length) bytes"
 
       # a test build of the full edition for the owner, only when the workflow is started by hand;
       # it is an artifact of the run and never part of a release
@@ -61,26 +88,23 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         shell: pwsh
         run: |
-          dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -o publish/full
-          if ((Get-FileHash publish/full/AFTERLIFE.dll).Hash -eq (Get-FileHash publish/offline/AFTERLIFE.dll).Hash) { throw "The full build is identical to AFTERLIFE Offline" }
-          $dir = "test/AFTERLIFE"
-          New-Item -ItemType Directory -Force $dir | Out-Null
-          Copy-Item publish/full/* $dir -Recurse
-          Get-ChildItem $dir -Filter *.pdb -Recurse | Remove-Item
-          Copy-Item README.md, LICENSE, THIRD-PARTY-NOTICES.txt $dir
-          Compress-Archive -Path $dir -DestinationPath "test/AFTERLIFE-test-$($env:GITHUB_SHA.Substring(0,7))-win-x64.zip"
+          $sha = $env:GITHUB_SHA.Substring(0,7)
+          New-Item -ItemType Directory -Force test | Out-Null
+          Copy-Item "dist/AFTERLIFE-$env:AFTERLIFE_VERSION-win-x64.zip" "test/AFTERLIFE-test-$sha-win-x64.zip"
+          Copy-Item "dist/AFTERLIFE-$env:AFTERLIFE_VERSION-win-x64-Setup.exe" "test/AFTERLIFE-test-$sha-win-x64-Setup.exe"
 
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'workflow_dispatch'
         with:
           name: AFTERLIFE-full-test
-          path: test/*.zip
+          path: test/*
 
       - uses: actions/upload-artifact@v4
         with:
           name: AFTERLIFE-win-x64
           path: |
             dist/*.zip
+            dist/*.exe
             dist/*.sha256
 
       - uses: actions/upload-artifact@v4
@@ -90,7 +114,7 @@ jobs:
           path: tests/Afterlife.Tests/TestResults
 
   release:
-    # a pushed tag vX.Y.Z[-suffix] publishes the next GitHub release with the zip, its SHA-256
+    # a pushed tag vX.Y.Z[-suffix] publishes the next GitHub release with the two zips, the installer, their SHA-256
     # and the matching section of CHANGELOG.md; a suffix (alpha, beta, rc) makes it a pre-release
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
@@ -116,9 +140,13 @@ jobs:
           {
             echo
             echo "---"
-            echo "**Download:** \`AFTERLIFE-Offline-$v-win-x64.zip\` below, unzip anywhere outside the game folder and run \`AFTERLIFE.exe\` in the folder AFTERLIFE (Windows 10/11 64-bit, .NET included). Keep the whole folder together."
-            echo "This is AFTERLIFE Offline, the edition published on Nexus Mods: no API key and no connection to Nexus Mods until Nexus Mods registers AFTERLIFE."
-            echo "Not code-signed yet: on the SmartScreen warning click *More info* → *Run anyway*. Check the download with the \`.sha256\` file."
+            echo "**Download** (Windows 10/11 64-bit, .NET included):"
+            echo "- \`AFTERLIFE-$v-win-x64-Setup.exe\` · recommended. The installer of the full edition: installs for your Windows user only (no admin rights) with a Start menu shortcut and an uninstaller. Neither the installer nor the uninstaller ever deletes your library or settings."
+            echo "- \`AFTERLIFE-$v-win-x64.zip\` · the same full edition as a folder: unzip anywhere outside the game folder and run \`AFTERLIFE.exe\` in the folder AFTERLIFE. Keep the whole folder together."
+            echo "- \`AFTERLIFE-Offline-$v-win-x64.zip\` · AFTERLIFE Offline, the edition published on Nexus Mods: the same app without any connection to Nexus Mods (no API key, no downloads, updates or collections) until Nexus Mods registers AFTERLIFE."
+            echo
+            echo "Updating from an older version: your library and settings stay. If your library is inside the old AFTERLIFE folder, do not delete that folder; see *Updating AFTERLIFE* in the user guide."
+            echo "Not code-signed yet: on the SmartScreen warning click *More info* → *Run anyway*. Check a download with its \`.sha256\` file."
           } >> notes.md
           case "$v" in *-*) echo "PRERELEASE=true" >> "$GITHUB_ENV";; *) echo "PRERELEASE=false" >> "$GITHUB_ENV";; esac
 
@@ -132,4 +160,5 @@ jobs:
           make_latest: true
           files: |
             dist/*.zip
+            dist/*.exe
             dist/*.sha256

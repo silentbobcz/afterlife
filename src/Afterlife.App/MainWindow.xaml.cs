@@ -388,6 +388,13 @@ public partial class MainWindow : Window
             _vm.SearchText = "";
             e.Handled = true;
         }
+        // then Esc unchecks everything so the small tools come back; not while typing or in an open list or menu
+        else if (e.Key == Key.Escape && Keyboard.Modifiers == ModifierKeys.None
+                 && Keyboard.FocusedElement is not (TextBox or ComboBoxItem or MenuItem or ComboBox { IsDropDownOpen: true })
+                 && _vm.ClearSelectionByEscape())
+        {
+            e.Handled = true;
+        }
         else if (e.Key == Key.A && Keyboard.Modifiers == ModifierKeys.Control && _vm.Overlay is null && Keyboard.FocusedElement is not TextBox)
         {
             _vm.SetAllChecked(!_vm.AllChecked);

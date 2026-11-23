@@ -2,6 +2,7 @@
 
 - [Windows says it protected my PC](#windows-says-it-protected-my-pc)
 - [What is AFTERLIFE Offline and why do some buttons have a lock?](#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock)
+- [How do I update AFTERLIFE without losing my mods?](#how-do-i-update-afterlife-without-losing-my-mods)
 - [Why is the download a folder and not one exe?](#why-is-the-download-a-folder-and-not-one-exe)
 - [How do I load one mod before another?](#how-do-i-load-one-mod-before-another)
 - [How do I move my load order to another PC?](#how-do-i-move-my-load-order-to-another-pc)
@@ -29,13 +30,17 @@
 
 ## What is AFTERLIFE Offline and why do some buttons have a lock?
 
-AFTERLIFE Offline is the edition published on Nexus Mods and on GitHub right now. It is the same app, but it never reads an API key and never connects to Nexus Mods. A program that uses the Nexus Mods API for the public has to be registered by Nexus Mods first, and that registration is still open; until then the public download is the edition that does not use the API at all.
+AFTERLIFE Offline is the edition published on Nexus Mods. It is the same app, but it never reads an API key and never connects to Nexus Mods. A program that uses the Nexus Mods API has to be registered by Nexus Mods first, and that registration is still open; until then the download on Nexus Mods is the edition that does not use the API at all. The full edition, which downloads, updates and adds collections with your Nexus key, is on [GitHub Releases](https://github.com/silentbobcz/afterlife/releases) as an installer or a zip. Both editions use the same library and settings.
 
-Everything that works with files on your disk is there. What needs Nexus Mods (Mod Manager Download, pictures and descriptions, updates, collections, download history) stays visible with a lock; a click explains what is waiting and what works, with links to the pages of every core mod. The full edition will be published as soon as the registration is done.
+Everything that works with files on your disk is there. What needs Nexus Mods (Mod Manager Download, pictures and descriptions, updates, collections, download history) stays visible with a lock; a click explains what is waiting and what works, with links to the pages of every core mod.
+
+## How do I update AFTERLIFE without losing my mods?
+
+Your mods are in the library, and with a copy from a zip the library is usually the folder `AFTERLIFE Library` inside the AFTERLIFE folder. So do not delete the old folder: close AFTERLIFE and unzip the new version over it, or run the installer. Settings, profiles, load order and the Nexus key stay. The steps for every case are in [Updating AFTERLIFE](USER-GUIDE.md#updating-afterlife) in the guide.
 
 ## Why is the download a folder and not one exe?
 
-Until 1.0.0-alpha.8 AFTERLIFE shipped as one executable with the whole app packed inside. Nexus Mods sends self-extracting executables to manual review and held one upload back for it, although no antivirus found anything. Since 1.0.0-alpha.9 the zip holds a plain folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side. Unzip the whole folder, keep the files together and run `AFTERLIFE.exe` from it.
+Until 1.0.0-alpha.8 AFTERLIFE shipped as one executable with the whole app packed inside. Nexus Mods sends self-extracting executables to manual review and held one upload back for it, although no antivirus found anything. Since 1.0.0-alpha.9 the zip holds a plain folder `AFTERLIFE` with `AFTERLIFE.exe` and its libraries side by side. Unzip the whole folder, keep the files together and run `AFTERLIFE.exe` from it. The full edition on GitHub also comes as a classic installer; Nexus Mods gets only the zip.
 
 ## How do I load one mod before another?
 
@@ -43,7 +48,7 @@ Only archive mods (`.archive`) have a load order; the top of the list loads firs
 
 ## How do I move my load order to another PC?
 
-**EXPORT ORDER** (above the list) saves the load order of the selected profile to a text file. On the other PC, with the mods in its library, select a profile and press **IMPORT ORDER**: a preview shows what changes before anything is written, including mods the other library does not have and mods found only by their name. Categories are shared by all profiles, so categories the list creates appear in every profile there. Nothing changes in the game until **APPLY CHANGES**. The file is plain text you can also edit in Notepad; the format is in the [user guide, section 10](USER-GUIDE.md#save-and-load-the-order-export-order-import-order). EXPORT LIST is a report for bug reports and cannot be loaded back.
+**EXPORT ORDER** (in the **LIST & ORDER** menu below the list) saves the load order of the selected profile to a text file. On the other PC, with the mods in its library, select a profile and press **IMPORT ORDER**: a preview shows what changes before anything is written, including mods the other library does not have and mods found only by their name. Categories are shared by all profiles, so categories the list creates appear in every profile there. Nothing changes in the game until **APPLY CHANGES**. The file is plain text you can also edit in Notepad; the format is in the [user guide, section 10](USER-GUIDE.md#save-and-load-the-order-export-order-import-order). EXPORT LIST is a report for bug reports and cannot be loaded back.
 
 ## AFTERLIFE says the request limit of Nexus Mods is reached
 

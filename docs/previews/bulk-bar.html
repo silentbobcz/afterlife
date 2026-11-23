@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bulk actions next to APPLY</title>
+<!-- Static preview, no code behind it: the bar under the mod list keeps APPLY CHANGES in place while mods are checked.
+     Colours are the tokens of src/Afterlife.App/App.xaml; fonts fall back to system fonts, nothing is loaded from the net. -->
+<style>
+:root {
+  --bg: #050508; --bg2: #0A0C12; --bg3: #11141D; --sel: #151925;
+  --y: #FCEE0A; --c: #00F0FF; --m: #FF2A6D; --g: #39FF8A; --o: #FF9F1C; --v: #B98CFF;
+  --t: #E8E6D9; --t2: #8B8F9C; --t3: #80869A; --line: #1D2230; --line2: #2A3142;
+  --ctint: rgba(0,240,255,.08); --mtint: rgba(255,42,109,.08); --otint: rgba(255,159,28,.08); --vtint: rgba(185,140,255,.10);
+  --disp: "Chakra Petch", Bahnschrift, "Segoe UI", sans-serif;
+  --body: "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--t); font-family: var(--body); }
+body { padding: 16px; max-width: 1180px; margin: 0 auto; }
+h1 { margin: 0 0 6px; font: 700 18px var(--disp); letter-spacing: .12em; color: var(--y); }
+h2 { margin: 28px 0 8px; font: 700 13px var(--disp); letter-spacing: .1em; color: var(--c); }
+p, li { color: var(--t2); font-size: 13px; line-height: 1.55; margin: 0 0 6px; }
+b { color: var(--t); }
+.row-note { font: 11px var(--mono); color: var(--t3); margin: 14px 0 4px; letter-spacing: .06em; }
+
+/* the library panel: the last rows of the list, the drop zone hint and the bar */
+.panel { background: var(--bg2); border: 1px solid var(--line2); padding: 10px 14px 12px; }
+.w640 { max-width: 640px; }
+.list { border-top: 1px solid var(--line); }
+.mod { display: flex; align-items: center; gap: 10px; height: 30px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--t); }
+.mod.sel { background: var(--sel); }
+.box { width: 14px; height: 14px; border: 1px solid var(--line2); flex: none; display: inline-flex; align-items: center; justify-content: center; font: 700 10px var(--mono); color: var(--bg); }
+.box.on { background: var(--c); border-color: var(--c); }
+.num { font: 11px var(--mono); color: var(--t3); width: 28px; flex: none; }
+.name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip { font: 700 10.5px var(--mono); padding: 2px 7px; border: 1px solid; flex: none; }
+.chip.on { color: var(--g); border-color: var(--g); } .chip.off { color: var(--t3); border-color: var(--line2); } .chip.wait { color: var(--y); border-color: var(--y); }
+
+.bar { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.left { flex: 1; min-width: 0; }
+.status { font-size: 13px; color: var(--g); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status.changes { color: var(--t); }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 7px; }
+.right { display: flex; align-items: center; gap: 10px; flex: none; }
+
+/* SmallButton: mono 10.5 bold, 26 px high */
+.sm { font: 700 10.5px var(--mono); color: var(--t2); border: 1px solid var(--line2); background: transparent; height: 26px; padding: 0 11px; display: inline-flex; align-items: center; white-space: nowrap;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.sm.c { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.sm.v { color: var(--v); border-color: var(--v); background: var(--vtint); }
+.sm.o { color: var(--o); border-color: var(--o); background: var(--otint); }
+.sm.m { color: var(--m); border-color: var(--m); background: var(--mtint); }
+/* AccentButton family: display font 12.5, 32 px high */
+.big { font: 600 12.5px var(--disp); height: 32px; padding: 0 16px; display: inline-flex; align-items: center; white-space: nowrap; border: 1px solid; letter-spacing: .04em;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.big.c { color: var(--c); border-color: var(--c); background: var(--ctint); }
+.big.v { color: var(--v); border-color: var(--v); background: var(--vtint); }
+.big.o { color: var(--o); border-color: var(--o); background: var(--otint); }
+.big.m { color: var(--m); border-color: var(--m); background: var(--mtint); }
+.apply { font: 600 14px var(--disp); color: var(--bg); background: var(--y); height: 38px; min-width: 170px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; letter-spacing: .04em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+
+.count { font-size: 13px; color: var(--t); margin-right: 4px; white-space: nowrap; }
+.count b { font-weight: 600; }
+.count .hid { color: var(--t2); border-bottom: 1px dotted var(--t3); cursor: help; }
+.link { font-size: 12px; color: var(--t2); text-decoration: underline; white-space: nowrap; margin-left: 4px; }
+.tip { display: inline-block; margin: 6px 0 0 0; background: var(--bg3); border: 1px solid var(--line2); color: var(--t); font-size: 12px; padding: 6px 9px; max-width: 520px; }
+.gone { border: 1px dashed var(--m); color: var(--m); font: 11px var(--mono); padding: 6px 10px; margin-top: 8px; display: inline-block; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; margin-top: 6px; }
+td, th { border: 1px solid var(--line2); padding: 5px 8px; text-align: left; color: var(--t2); vertical-align: top; }
+th { color: var(--t); font: 700 11px var(--mono); }
+</style>
+</head>
+<body>
+<h1>Bulk actions next to APPLY</h1>
+<p>Today, as soon as one mod is checked, the whole bar under the list is replaced by the bulk actions and <b>APPLY CHANGES</b> is gone. A user who checked a mod by accident (Ctrl+click, Shift+click, Ctrl+A) cannot apply, and <b>JACK IN</b> in the left panel stays locked because the changes are not applied. The proposal: the bar keeps its shape and <b>only the row of small tools changes</b>. The status line and APPLY stay where they are.</p>
+
+<h2>Today, for comparison</h2>
+<div class="row-note">TWO MODS CHECKED · CHANGES WAIT · APPLY IS NOT ON THE SCREEN</div>
+<div class="panel">
+  <div class="list">
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#41</span><span class="name">Appearance Menu Mod</span><span class="chip on">ON</span></div>
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#42</span><span class="name">Arasaka Cyberarms</span><span class="chip wait">NOT APPLIED</span></div>
+    <div class="mod"><span class="box"></span><span class="num">#43</span><span class="name">Better Vehicle Handling</span><span class="chip off">OFF</span></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="count"><b>2</b> mods selected</div><span class="link" style="margin-left:0">Clear selection</span></div>
+    <div class="right"><span class="big v">MOVE TO CATEGORY</span><span class="big c">ACTIVATE</span><span class="big o">DEACTIVATE</span><span class="big m">DELETE EVERYWHERE</span></div>
+  </div>
+</div>
+<span class="gone">PREVIEW and APPLY CHANGES are hidden until nothing is checked</span>
+
+<h2>Proposal</h2>
+<div class="row-note">1 · NOTHING CHECKED · CHANGES WAIT (as today, nothing moves)</div>
+<div class="panel">
+  <div class="list">
+    <div class="mod"><span class="box"></span><span class="num">#41</span><span class="name">Appearance Menu Mod</span><span class="chip on">ON</span></div>
+    <div class="mod"><span class="box"></span><span class="num">#42</span><span class="name">Arasaka Cyberarms</span><span class="chip wait">NOT APPLIED</span></div>
+    <div class="mod"><span class="box"></span><span class="num">#43</span><span class="name">Better Vehicle Handling</span><span class="chip off">OFF</span></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="status changes">1 change waits: 1 mod goes on</div>
+      <div class="tools"><span class="sm">REFRESH</span><span class="sm">CHECK UPDATES</span><span class="sm">EXPORT LIST</span><span class="sm">EXPORT ORDER</span><span class="sm">IMPORT ORDER</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<div class="row-note">2 · TWO MODS CHECKED · the small tools give way to the bulk actions, APPLY stays</div>
+<div class="panel">
+  <div class="list">
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#41</span><span class="name">Appearance Menu Mod</span><span class="chip on">ON</span></div>
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#42</span><span class="name">Arasaka Cyberarms</span><span class="chip wait">NOT APPLIED</span></div>
+    <div class="mod"><span class="box"></span><span class="num">#43</span><span class="name">Better Vehicle Handling</span><span class="chip off">OFF</span></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="status changes">1 change waits: 1 mod goes on</div>
+      <div class="tools"><span class="count"><b>2</b> checked</span><span class="sm v">MOVE TO CATEGORY</span><span class="sm c">ACTIVATE</span><span class="sm o">DEACTIVATE</span><span class="sm m">DELETE EVERYWHERE</span><span class="link">Clear (Esc)</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<div class="row-note">3 · FIVE CHECKED, TWO OF THEM HIDDEN by a filter, the search or a folded section · nothing to apply</div>
+<div class="panel">
+  <div class="list">
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#41</span><span class="name">Appearance Menu Mod</span><span class="chip on">ON</span></div>
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#44</span><span class="name">Arasaka Cyberarms</span><span class="chip on">ON</span></div>
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#47</span><span class="name">Cyber Engine Tweaks addons</span><span class="chip on">ON</span></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="status">Everything is applied · 212 mods on</div>
+      <div class="tools"><span class="count"><b>5</b> checked <span class="hid">(2 not visible)</span></span><span class="sm v">MOVE TO CATEGORY</span><span class="sm c">ACTIVATE</span><span class="sm o">DEACTIVATE</span><span class="sm m">DELETE EVERYWHERE</span><span class="link">Clear (Esc)</span></div>
+      <span class="tip">2 checked mods are not visible: 2 hidden by the filters. The bulk actions still include them.</span></div>
+    <div class="right"></div>
+  </div>
+</div>
+<p style="margin-top:6px">The grey box is the tooltip of “(2 not visible)”. With nothing to apply the right side is empty, exactly as today.</p>
+
+<div class="row-note">4 · NARROW WINDOW (640 px) · the row wraps, APPLY keeps its place</div>
+<div class="panel w640">
+  <div class="list">
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#41</span><span class="name">Appearance Menu Mod</span><span class="chip on">ON</span></div>
+    <div class="mod sel"><span class="box on">✓</span><span class="num">#42</span><span class="name">Arasaka Cyberarms</span><span class="chip wait">NOT APPLIED</span></div>
+  </div>
+  <div class="bar">
+    <div class="left"><div class="status changes">1 change waits: 1 mod goes on</div>
+      <div class="tools"><span class="count"><b>2</b> checked</span><span class="sm v">MOVE TO CATEGORY</span><span class="sm c">ACTIVATE</span><span class="sm o">DEACTIVATE</span><span class="sm m">DELETE EVERYWHERE</span><span class="link">Clear (Esc)</span></div></div>
+    <div class="right"><span class="sm c">PREVIEW</span><span class="apply">APPLY CHANGES</span></div>
+  </div>
+</div>
+
+<h2>What changes and what does not</h2>
+<table>
+  <tr><th>Part of the bar</th><th>Nothing checked</th><th>Something checked</th></tr>
+  <tr><td>Status line</td><td>as today</td><td>stays (today it disappears)</td></tr>
+  <tr><td>Row of small buttons</td><td>REFRESH, CHECK UPDATES, UPDATE ALL, EXPORT LIST, EXPORT ORDER, IMPORT ORDER, RESET ORDER</td><td>“N checked (K not visible)”, MOVE TO CATEGORY, ACTIVATE, DEACTIVATE, DELETE EVERYWHERE, Clear (Esc)</td></tr>
+  <tr><td>PREVIEW, APPLY CHANGES</td><td>as today</td><td>stay (today they disappear)</td></tr>
+</table>
+<ul style="margin-top:10px">
+  <li>The four bulk actions keep their colours but become small buttons (26 px instead of 32 px), so the row fits next to APPLY.</li>
+  <li>REFRESH and the other tools are away while mods are checked; F5 still refreshes. Esc or <b>Clear (Esc)</b> brings them back.</li>
+  <li>No sentence explaining where APPLY went: it never leaves.</li>
+  <li>The height of the bar does not change, so the list does not jump when the first mod is checked.</li>
+</ul>
+</body>
+</html>

@@ -2,9 +2,20 @@
 
 AFTERLIFE keeps your mods in its own library and puts into the game only what you apply. Every write is journaled and checked, so a crash or a power cut in the middle can be finished or rolled back. Free and open source (MIT), no telemetry.
 
+<div class="editions">
+<div class="edition">
+<div class="kicker">ON GITHUB</div>
+<b>AFTERLIFE, the full edition.</b> With your Nexus Mods key it downloads mods, updates them and adds whole collections. An installer (recommended) or a zip.
+</div>
+<div class="edition offline">
+<div class="kicker">ON NEXUS MODS</div>
+<b>AFTERLIFE Offline.</b> The same app, but it never connects to Nexus Mods: a program may use the Nexus Mods API only after Nexus Mods has registered it, and that is still open. <a href="faq.html#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock">More in the FAQ</a>.
+</div>
+</div>
+
 <div class="cta">
-<a class="btn primary" href="https://www.nexusmods.com/cyberpunk2077/mods/36204">Download on Nexus Mods</a>
-<a class="btn" href="https://github.com/silentbobcz/afterlife/releases">GitHub releases</a>
+<a class="btn primary" href="https://github.com/silentbobcz/afterlife/releases">Full edition on GitHub</a>
+<a class="btn" href="https://www.nexusmods.com/cyberpunk2077/mods/36204">Offline on Nexus Mods</a>
 <a class="btn" href="guide.html">Read the guide</a>
 </div>
 
@@ -60,13 +71,13 @@ AFTERLIFE works with a free Nexus Mods account, and it is at its best with **Pre
 
 With a few hundred mods that is one click instead of a few hundred. Premium also supports the mod authors and the site that hosts their work. Get it on [nexusmods.com](https://www.nexusmods.com/). AFTERLIFE itself stays free either way.
 
-<p class="note">These features belong to the full edition, which is published once Nexus Mods has registered AFTERLIFE as an application. The download today is <b>AFTERLIFE Offline</b>: the same app without the connection to Nexus Mods. <a href="faq.html#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock">More in the FAQ</a>.</p>
+<p class="note">These features belong to the full edition from GitHub. In AFTERLIFE Offline from Nexus Mods they are visible with a lock.</p>
 
 ## Start here
 
 <div class="steps">
 
-1. Download the zip, unzip the folder `AFTERLIFE` anywhere outside the game folder and run `AFTERLIFE.exe`.
+1. Run the installer, or unzip the folder `AFTERLIFE` anywhere outside the game folder and run `AFTERLIFE.exe`. Updating from an older version? [Keep the old folder](guide.html#updating-afterlife): your mods may be inside it.
 2. Pick the game folder and a library folder.
 3. Drop mod archives into the window, press **APPLY CHANGES**, then **JACK IN**.
 

@@ -32,7 +32,7 @@ dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -o publi
 dotnet publish src/Afterlife.App -c Release -r win-x64 --self-contained -p:Edition=Offline -o publish/offline
 ```
 
-The first line makes the full edition, the second AFTERLIFE Offline, the edition that is released (see `AppEdition.cs`). The result is a plain folder with `AFTERLIFE.exe`, its libraries and .NET side by side; it is not bundled into one self-extracting file, because Nexus Mods sends those to manual review. Release zips hold that folder as `AFTERLIFE` and also contain `README.md`, `LICENSE`, `THIRD-PARTY-NOTICES.txt` and the font licenses from `src/Afterlife.App/Assets/Fonts`.
+The first line makes the full edition, the second AFTERLIFE Offline, the edition for Nexus Mods (see `AppEdition.cs`). A release on GitHub carries both. The result is a plain folder with `AFTERLIFE.exe`, its libraries and .NET side by side; it is not bundled into one self-extracting file, because Nexus Mods sends those to manual review. Release zips hold that folder as `AFTERLIFE` and also contain `README.md`, `LICENSE`, `THIRD-PARTY-NOTICES.txt` and the font licenses from `src/Afterlife.App/Assets/Fonts`.
 
 ## Version
 
@@ -40,7 +40,7 @@ The version lives in `Directory.Build.props` (`<Version>`). It is shown in About
 
 ## Continuous integration
 
-`.github/workflows/build.yml` builds, tests and publishes AFTERLIFE Offline on every push to `main` and every pull request. A run started by hand also makes a test build of the full edition as the artifact `AFTERLIFE-full-test`. Pushing a tag `v*` (for example `v1.0.0-alpha.2`) also publishes a GitHub release with the zip, its SHA-256 and the matching `## <version>` section of `CHANGELOG.md` as notes; a suffix (alpha, beta, rc) makes it a pre-release. The tag must match the version in `Directory.Build.props`.
+`.github/workflows/build.yml` builds, tests and packages both editions on every push to `main` and every pull request: the zip of the full edition, its per-user installer (Inno Setup, `installer/AFTERLIFE.iss`, version passed as `/DAppVersion=`) and the AFTERLIFE Offline zip. A run started by hand also offers the full edition (zip and installer) as the artifact `AFTERLIFE-full-test`. Pushing a tag `v*` (for example `v1.0.0-beta.1`) also publishes a GitHub release with those three files, their SHA-256 and the matching `## <version>` section of `CHANGELOG.md` as notes; a suffix (alpha, beta, rc) makes it a pre-release. The tag must match the version in `Directory.Build.props`.
 
 ## Project layout
 
@@ -52,5 +52,6 @@ The version lives in `Directory.Build.props` (`<Version>`). It is shown in About
 | `tests/Afterlife.Tests` | xUnit tests with a fake game install and crash injection |
 | `branding` | Logo and promo image generator (`gen_branding.py`, needs Python, cairosvg and the fonts) and the generated images |
 | `docs` | User guide, FAQ, internals |
+| `installer` | Inno Setup script of the per-user installer of the full edition, built by the workflow |
 
 More about the internals: [HOW-IT-WORKS.md](HOW-IT-WORKS.md).
