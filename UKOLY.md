@@ -1,9 +1,9 @@
 # AFTERLIFE: co čeká na tebe
 
-Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
-Další volná čísla: A29 B12 C12 D6 · balíky S2 O29 F6
+Naposledy upraveno: 24. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
+Další volná čísla: A29 B12 C12 D7 · balíky S2 O29 F6
 
-**Stav (23. 11.):** verze **1.0.0-beta.1 je vydaná** na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.1>): instalátor a zip plné edice a Offline zip, každý se `.sha256`. Všechno je v `main`, žádná pracovní větev nezůstala.
+**Stav (24. 11.):** verze **1.0.0-beta.2 je vydaná** na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.2>): instalátor a zip plné edice a Offline zip, každý se `.sha256`. Na Nexus Mods je zatím beta.1 (D6). Všechno je v `main`, žádná pracovní větev nezůstala.
 
 **Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), 5. dávka: O28 (odkaz nxm otevíral další okna) je hotový a v `main`, čeká na vyzkoušení A28. Čtvrtá dávka je v `archiv/FRONTA-4-davka.md`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A28. Odložené: z revize S5 (úklid osiřelých složek v knihovně), E10 (přesun do Removed přejmenováním) a rozdělení dvou dlouhých metod; čtyři hlášky s „(s)“ v souborech nasazení; D4 (skutečný log redscriptu) by zpřesnil rozbor chyby.
 
@@ -18,6 +18,7 @@ Další volná čísla: A29 B12 C12 D6 · balíky S2 O29 F6
 
 | # | Co | Kde to vezmu | Stav |
 |---|---|---|---|
+| D6 | Nahrát Offline zip 1.0.0-beta.2 na Nexus Mods | `AFTERLIFE-Offline-1.0.0-beta.2-win-x64.zip` z vydání na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.2>); text změn pro Nexus jsi dostal ve vlákně, které vydání dělalo. | ☐ čeká |
 | D1 | Odpověď pisatele komentáře | Komentáře u AFTERLIFE na Nexus Mods: snímek maximalizovaného okna, rozlišení a měřítko, příklad vypnutého modu, názvy ZIPů, pohledy, které chce. Vlož ji do vlákna, které na AFTERLIFE pracuje. | ☐ čeká |
 | D4 | Log s chybou redscriptu (nepovinné, zpřesní balík O22) | `<složka hry>/r6/logs/redscript_rCURRENT.log` z doby, kdy skripty nefungovaly (hra ho při dalším spuštění přepíše). Vlož text do vlákna, které frontu vyrábí; cesty se jménem uživatele se před uložením do repozitáře odstraní. | ☐ čeká |
 | D5 | Odpověď pisatele o „30 oknech“ (nepovinné, zpřesní O28) | Nexus Mods, komentář o oknech při stahování: běží AFTERLIFE jako správce? A poslední záznam z `%LOCALAPPDATA%\AFTERLIFE\logs\error-….log`, pokud existuje. Vlož do vlákna s O28. | ☐ čeká |
@@ -29,6 +30,7 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 
 | Kdy | Co |
 |---|---|
+| 24. 11. | **1.0.0-beta.2 vydána**: tag `v1.0.0-beta.2`, vydání má instalátor a zip plné edice a Offline zip. Proti beta.1 přibyl blok NEW, okno chyby redscriptu, přesun knihovny, jedno okno při Mod Manager Download (O28, na Windows nevyzkoušeno, A28) a oprava kontroly aktualizací při startu (prázdná odpověď Nexusu na požadavky modu ji dřív zastavila). |
 | 23. 11. | A23 uzavřeno bez zkoušky (rozhodnutí uživatele): přesun knihovny (MOVE… v Nastavení) zůstává v aplikaci, kryjí ho testy, v okně a na skutečné knihovně ověřen není. |
 | 23. 11. | Vyzkoušeno na zkušebním sestavení `380579e`: A22 (RedFileSystem už nehlásí chybějící RedData), A25 (nové popisky a hlášky), A26 (okno chyby redscriptu) a A27 (blok NEW) v pořádku. |
 | 23. 11. | Čtvrtá dávka uzavřena a celá v `main`: přibylo okno chyby redscriptu (O24, zkouší se v A26) a blok NEW (O27, zkouší se v A27). Fronta je v archivu. |
