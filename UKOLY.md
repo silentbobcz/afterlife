@@ -9,6 +9,8 @@ Další volná čísla: A22 B10 C12 D4 · balíky S1 O22 F4
 
 **Námět (23. 11., od uživatele): analýza chyby redscriptu.** Spadne-li překlad redscriptu, přestanou fungovat **všechny** skriptové mody, ale AFTERLIFE o tom neví a uživatel vidí jen poruchu nějakého jiného modu. Chyba je přitom čitelná: `<hra>/r6/logs/redscript_rCURRENT.log` končí oddílem `REDScript compilation has failed` a jmenovitým seznamem „caused by“ modů. Námět: po spuštění hry (nebo tlačítkem ANALYZE REDSCRIPT ERROR) log přečíst, viníka najít v knihovně a nabídnout vypnutí; co model nerozluští sám, vypsat jako hotový dotaz pro AI, který si uživatel zkopíruje. Nedělat to záplatou v `FrameworkCatalog.InferFromContent` (pravidlo na jeden typ v textu skriptu) — to řeší jeden mod, ne třídu problému.
 
+**Námět (23. 11., od uživatele): kategorie NEW pro nově nainstalované mody.** Dnes nový mod padá na konec volného bloku MODS a mezi stovkami modů se ztratí. Námět: každý nově nainstalovaný mod spadne do kategorie NEW, která je ve výchozím stavu úplně nahoře; uživatel ji může posunout jako jinou kategorii a mody z ní přetahuje, kam patří. Prázdná NEW se schová, pozici si pamatuje a s dalším novým modem se objeví na stejném místě (rozhodnuto 23. 11.). Před návrhem ověřit: jak NEW ovlivní pořadí načítání (kategorie nese pořadí, NEW nahoře nesmí potichu přeskládat načítání), co s mody z importu load listu, aktualizací existujícího modu (ta do NEW nepatří) a s instalací více modů najednou (kolekce).
+
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
