@@ -210,6 +210,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         LogPrivacy.LibraryRoot = AppSettings.ResolveLibrary(null);
         ActivityLog.Enabled = AppSettings.Load().ActivityLog;
         ActivityLog.Write("app", $"start · AFTERLIFE {AppVersion}");
+        await RecoverLibraryMoveAsync();
+        LogPrivacy.LibraryRoot = AppSettings.ResolveLibrary(null);
         var lib = AppSettings.ResolveLibrary(null);
         if (!AppSettings.IsInitialized(lib))
         {

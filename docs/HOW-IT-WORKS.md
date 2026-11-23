@@ -37,6 +37,10 @@ The requirements of a package are derived from its scripts once per `FrameworkCa
 
 `dotnet publish -p:Edition=Offline` builds **AFTERLIFE Offline** (`AppEdition.Offline`, compile symbol `OFFLINE`): `NexusKeyStore.Load` always returns nothing, nxm:// is never registered, mod pictures are never downloaded, and every entry point that needs the Nexus Mods API calls `LockedOffline` first, which explains the lock (`OfflineInfoVm`). The workflow builds both editions and fails when the two executables are identical. A release carries three files: the zip and the installer of the full edition (`installer/AFTERLIFE.iss`, per user, GitHub only) and the Offline zip for Nexus Mods. A copy with an uninstaller next to it never suggests a library inside its own folder (`AppSettings.SuggestLibrary`).
 
+## Moving the library
+
+`LibraryMover` (`LibraryMove.cs`) moves the whole library folder while no coordinator has it open (`CoordinatorHost.MoveLibraryAsync` closes it, moves, opens it where it is afterwards). Nothing in the game depends on where the library is (deployed files are copies, the ledger holds game paths), so mods may be deployed during a move. Same drive: one rename. Another drive: copy under a temporary name, size check, hash check of the database, then `settings.json` switches and only then the old files go (exactly those found in the new folder). `%APPDATA%AFTERLIFEibrary-move.json` records the move; at start `RecoverLibraryMoveAsync` (`MainViewModel.LibraryMove.cs`) finishes a move that only missed its last step and asks about a copy cut off half-way (continue or undo). `FolderRules.Overlap` is the one check that the game and the library do not lie in each other.
+
 ## The FIXER drop box
 
 FIXER (a quest editor) hands its quests to AFTERLIFE through a folder in the library instead of copying them into the game. `FixerService` (`Fixer.cs`) owns it; it is off until switched on in Settings (`fixer.enabled` in the meta table) and a library that never used it gets no folder.
