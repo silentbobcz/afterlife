@@ -26,7 +26,7 @@ Skilly: alt, ukoly-a-fronty, kohn, afterlife, u náhledů grafika-cyberpunk (zdr
 | F5 | Fable | Přesun knihovny do jiné složky z aplikace | ✅ hotovo (testy a uživatel: A23) |
 | O22 | sub-Opus | Chyba redscriptu: čtení logu a nalezení viníka (bez okna) | ✅ zkontrolováno |
 | O23 | sub-Opus | Chyba redscriptu: náhled okna a texty (návrh, bez kódu) | ✅ hotovo, čeká na B11 |
-| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ☐ čeká na O22 a B11 |
+| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ☐ čeká na B11 |
 | O25 | sub-Opus | Import load listu: fronta stránek pro účty zdarma | ✅ zkontrolováno (A24) |
 | O26 | sub-Opus | Drobné opravy z revize: počítadlo „pracuji“, jeden klient HTTP | ✅ zkontrolováno |
 | S1 | sub-Sonnet | Texty: „mod(s)“ ve hláškách, „selected“ a „checked“ v návodu | ✅ zkontrolováno (A25) |

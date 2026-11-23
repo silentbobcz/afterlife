@@ -44,7 +44,7 @@ Zadání a spouštěcí věty jsou ve [FRONTA.md](FRONTA.md).
 | F5 | Fable | Přesun knihovny do jiné složky | ✅ hotovo, zkouší se v A23 |
 | O22 | Opus | Chyba redscriptu: čtení logu a viník | ✅ zkontrolováno |
 | O23 | Opus | Chyba redscriptu: náhled okna a texty | ✅ hotovo, čeká na B11 |
-| O24 | Opus | Chyba redscriptu: okno v aplikaci | ☐ čeká na O22 a B11 |
+| O24 | Opus | Chyba redscriptu: okno v aplikaci | ☐ čeká na B11 |
 | O25 | Opus | Import load listu: fronta stránek pro účty zdarma | ✅ zkontrolováno, zkouší se v A24 |
 | O26 | Opus | Opravy z revize: počítadlo „pracuji“, jeden klient HTTP | ✅ zkontrolováno |
 | S1 | Sonnet | Texty: „mod(s)“, „selected“ a „checked“ | ✅ zkontrolováno, zkouší se v A25 |
