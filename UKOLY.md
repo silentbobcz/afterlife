@@ -11,18 +11,11 @@ Další volná čísla: A22 B10 C12 D4 · balíky S1 O22 F4
 
 **Námět (23. 11., od uživatele): kategorie NEW pro nově nainstalované mody.** Dnes nový mod padá na konec volného bloku MODS a mezi stovkami modů se ztratí. Námět: každý nově nainstalovaný mod spadne do kategorie NEW, která je ve výchozím stavu úplně nahoře; uživatel ji může posunout jako jinou kategorii a mody z ní přetahuje, kam patří. Prázdná NEW se schová, pozici si pamatuje a s dalším novým modem se objeví na stejném místě (rozhodnuto 23. 11.). Před návrhem ověřit: jak NEW ovlivní pořadí načítání (kategorie nese pořadí, NEW nahoře nesmí potichu přeskládat načítání), co s mody z importu load listu, aktualizací existujícího modu (ta do NEW nepatří) a s instalací více modů najednou (kolekce).
 
-## A. Vyzkoušet
-
-| # | Co | Kde to najdu | Co mám udělat | Stav |
-|---|---|---|---|---|
-| A21 | Web: dvě edice na úvodní stránce a návod k přechodu na novou verzi (O18, O19) | <https://afterlife.silentbob.cz> (obnoví se sám) a <https://afterlife.silentbob.cz/guide.html#updating-afterlife> | 1. Úvodní stránka: nad tlačítky dva rámečky (ON GITHUB plná edice, ON NEXUS MODS Offline), první tlačítko vede na GitHub. Vypadá to dobře i na telefonu? 2. Přečti oddíl Updating AFTERLIFE v návodu: je z něj jasné, že stará složka se nemaže, když je v ní knihovna? Neověřeno: vzhled rámečků pohledem (web se sestavil bez chyb). | ☐ čeká na tebe |
-
 ## D. Dodat
 
 | # | Co | Kde to vezmu | Stav |
 |---|---|---|---|
 | D1 | Odpověď pisatele komentáře | Komentáře u AFTERLIFE na Nexus Mods: snímek maximalizovaného okna, rozlišení a měřítko, příklad vypnutého modu, názvy ZIPů, pohledy, které chce. Vlož ji do vlákna, které na AFTERLIFE pracuje. | ☐ čeká |
-| D3 | Offline zip a nový popis na Nexus Mods | Složka `D:/_AI/afterlife/AFTERLIFE-1.0.0-beta.1-Nexus`: postup je v `POSTUP.md`, zip k nahrání, popis stránky, shrnutí, changelog a připnutý příspěvek jsou připravené. Na Nexus jen zip, nikdy exe. | ☐ čeká |
 
 ## Hotovo
 
@@ -30,6 +23,8 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | A21 schváleno: úvodní stránka webu se dvěma edicemi a oddíl Updating AFTERLIFE v návodu. D3 hotovo: Offline zip 1.0.0-beta.1 a nový popis jsou na Nexus Mods. |
+| 23. 11. | Opraveno v `main` (`2317e5b`): volitelný požadavek z Nexusu se pozná podle slova „optional“ kdekoli v poznámce, RedFileSystem už nehlásí „missing: RedData“. Ve hře neověřeno, přijde s dalším sestavením. |
 | 23. 11. | **1.0.0-beta.1 vydána** (C8, C11): sloučeno vše včetně lišty se zaškrtnutými mody a nabídky LIST & ORDER, tag `v1.0.0-beta.1`, vydání má instalátor a zip plné edice a Offline zip. Třetí dávka fronty je uzavřená a v archivu. |
 | 23. 11. | A18 (lišta APPLY při zaškrtnutých modech), A19 (nabídka LIST & ORDER) a A20 (instalátor) zkontrolovány a schváleny. Instalátor ani odinstalátor nemažou knihovnu ani nastavení; ověřeno i zkušební instalací a odinstalací. |
 | 23. 11. | A15 (dialog při vypnutí modu), A16 (export a import load listu) a A17 (odkaz na web v patičce, doplněný rychlý návod) schváleny. A15 a A16 jsou v `main`, A17 ve větvi vydání. |
