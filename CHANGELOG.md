@@ -6,6 +6,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 
 The first beta: the features are together and from here on they are mostly tuned. Everything below is new since alpha.9.
 
+- **Checked mods no longer hide APPLY by surprise**: the bulk bar now reads *N mods checked*, says that APPLY and JACK IN come back when nothing is checked, shows how many checked mods the search, the filters or a folded section hide (with the reason in a tooltip), and **Esc** or **Clear selection (Esc)** unchecks everything.
 - **EXPORT ORDER and IMPORT ORDER**: save the load order of a profile to a text file you can read and edit in Notepad (CORE MODS, collections, MODS and categories, each mod on or off) and load it back, on this PC or another. The import shows first what changes (moved, switched on and off, new categories, other versions, missing mods, mods found only by name), keeps locked collections in the curator's order unless you unlock them, and saves the previous order into the library. Categories are shared by all profiles. EXPORT LIST stays the report for bug reports.
 - **Guide on the web**: the user guide, FAQ, changelog and privacy notes are now also a website at [afterlife-13h.pages.dev](https://afterlife-13h.pages.dev). **About** has a **WEBSITE** button and the quick guide links to the full guide on the web.
 - **FILTERS and SORT buttons**: violet instead of cyan so they no longer pass for links, lit when a filter is on or the list is sorted; the sort button now reads **SORT · LOAD ORDER**, **SORT · NAME** and so on.

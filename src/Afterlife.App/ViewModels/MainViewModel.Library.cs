@@ -238,6 +238,7 @@ public sealed partial class MainViewModel
         HasMultiSelection = _multi.Count > 0;
         var visible = Mods.Where(Visible).ToList();
         AllChecked = visible.Count > 0 && visible.All(m => m.IsChecked);
+        UpdateHiddenChecked(); // MainViewModel.Selection.cs
     }
 
     /// <summary>The row passes the search filter, so "select all" (list header, chapter header, Ctrl+A) takes it.</summary>

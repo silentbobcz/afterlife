@@ -919,10 +919,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource Body}" FontSize="13">
-                                    <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=" mods selected" />
+                                <TextBlock Style="{StaticResource Body}" FontSize="13" ToolTip="{Binding HiddenCheckedTip}">
+                                    <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="{Binding CheckedLabel, Mode=OneWay}" /><Run Text="{Binding HiddenCheckedNote, Mode=OneWay}" Foreground="{StaticResource T2}" />
                                 </TextBlock>
-                                <Button HorizontalAlignment="Left" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear selection" />
+                                <TextBlock Style="{StaticResource Meta}" Text="APPLY and JACK IN come back when nothing is checked" />
+                                <Button HorizontalAlignment="Left" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear selection (Esc)" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <!-- checked mods into a category (or back to MODS) -->
