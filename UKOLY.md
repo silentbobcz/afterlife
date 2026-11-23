@@ -7,6 +7,8 @@ Další volná čísla: A22 B10 C12 D4 · balíky S1 O22 F4
 
 **Fronta modelů:** třetí dávka je uzavřená a v `archiv/FRONTA-3-davka.md`; nová dávka zatím není (soubor `FRONTA.md` vznikne s ní). Odložené náměty: přesun knihovny do jiné složky z aplikace, sjednocení „selected“ a „checked“ v návodu, hlášky s „mod(s)“, fronta stránek pro účty zdarma u chybějících modů z load listu.
 
+**Námět (23. 11., od uživatele): analýza chyby redscriptu.** Spadne-li překlad redscriptu, přestanou fungovat **všechny** skriptové mody, ale AFTERLIFE o tom neví a uživatel vidí jen poruchu nějakého jiného modu. Chyba je přitom čitelná: `<hra>/r6/logs/redscript_rCURRENT.log` končí oddílem `REDScript compilation has failed` a jmenovitým seznamem „caused by“ modů. Námět: po spuštění hry (nebo tlačítkem ANALYZE REDSCRIPT ERROR) log přečíst, viníka najít v knihovně a nabídnout vypnutí; co model nerozluští sám, vypsat jako hotový dotaz pro AI, který si uživatel zkopíruje. Nedělat to záplatou v `FrameworkCatalog.InferFromContent` (pravidlo na jeden typ v textu skriptu) — to řeší jeden mod, ne třídu problému.
+
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
