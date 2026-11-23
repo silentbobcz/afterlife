@@ -1,17 +1,18 @@
 # AFTERLIFE: co čeká na tebe
 
 Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
-Další volná čísla: A28 B12 C12 D6 · balíky S2 O29 F6
+Další volná čísla: A29 B12 C12 D6 · balíky S2 O29 F6
 
 **Stav (23. 11.):** verze **1.0.0-beta.1 je vydaná** na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.1>): instalátor a zip plné edice a Offline zip, každý se `.sha256`. Všechno je v `main`, žádná pracovní větev nezůstala.
 
-**Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), 5. dávka: O28 (odkaz nxm otevírá další okna). Do nového vlákna s Opusem stačí napsat: „Přečti `D:/_AI/afterlife/repo/FRONTA.md` a udělej balík O28.“ Čtvrtá dávka je v `archiv/FRONTA-4-davka.md`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A27. Odložené: z revize S5 (úklid osiřelých složek v knihovně), E10 (přesun do Removed přejmenováním) a rozdělení dvou dlouhých metod; čtyři hlášky s „(s)“ v souborech nasazení; D4 (skutečný log redscriptu) by zpřesnil rozbor chyby.
+**Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), 5. dávka: O28 (odkaz nxm otevíral další okna) je hotový a v `main`, čeká na vyzkoušení A28. Čtvrtá dávka je v `archiv/FRONTA-4-davka.md`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A28. Odložené: z revize S5 (úklid osiřelých složek v knihovně), E10 (přesun do Removed přejmenováním) a rozdělení dvou dlouhých metod; čtyři hlášky s „(s)“ v souborech nasazení; D4 (skutečný log redscriptu) by zpřesnil rozbor chyby.
 
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
 | A24 | Import load listu s účtem zdarma | Zkušební sestavení plné edice → LIST & ORDER → IMPORT ORDER | Jen pokud máš po ruce účet Nexus bez Premium: 1. Načti load list, ve kterém chybí mod se souborem z Nexusu. 2. Klikni „Get from Nexus, page by page“ a na stránce Mod Manager Download. 3. Po posledním souboru LOAD THE LIST AGAIN. Napiš, kde se to zadrhlo. | ☐ čeká na sestavení |
+| A28 | Jedno okno při Mod Manager Download (O28) | Zkušební sestavení plné edice (`AFTERLIFE-full-test`) a Nexus Mods | 1. Spusť AFTERLIFE normálně a u tří různých modů rychle za sebou klikni na Mod Manager Download: má zůstat jedno okno a přijít tři stažení. 2. AFTERLIFE zavři, spusť ho pravým tlačítkem „Spustit jako správce“ a zopakuj to. Napiš, jestli se otevřelo druhé okno nebo se objevilo hlášení „AFTERLIFE is already running…“. | ☐ čeká na sestavení |
 
 ## D. Dodat
 
