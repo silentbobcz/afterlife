@@ -23,4 +23,5 @@ Connect the repository and set:
 | Build output directory | `dist` |
 
 Every push to `main` then publishes the site again. To change a text, edit the Markdown file; to change the look, edit
-`style.css` (colours and fonts are the tokens of the app in `src/Afterlife.App/App.xaml`).
+`style.css` (colours and fonts are the tokens of the app in `src/Afterlife.App/App.xaml`). Screenshots of the app live in
+`screenshots/` (name with the size, `library-1664x1070.png`) and are copied to `dist` as they are.

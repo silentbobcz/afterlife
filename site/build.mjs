@@ -66,9 +66,10 @@ function shell(page, { title, html, sections }) {
   const side = page.toc && sections.length
     ? `<nav class="side" aria-label="Sections"><div class="side-title">// ${escapeHtml(page.nav.toUpperCase())}</div>${sections.map(s => `<a href="#${s.id}">${escapeHtml(s.text)}</a>`).join('')}</nav>`
     : '';
-  const heading = page.to === 'index.html'
-    ? `<header class="hero"><img src="assets/logo.png" alt="" width="96" height="96"><div><div class="kicker">AFTERLIFE · MOD MANAGER</div><h1>${escapeHtml(title)}</h1></div></header>`
-    : `<h1>${escapeHtml(title)}</h1>`;
+  const home = page.to === 'index.html';
+  const heading = home
+    ? `<header class="hero"><img class="hero-logo" src="assets/logo.png" alt="" width="112" height="112"><div><div class="wordmark" data-text="AFTERLIFE">AFTERLIFE</div><div class="kicker">MOD MANAGER FOR CYBERPUNK 2077 <span class="cursor"></span></div><h1>${escapeHtml(title)}</h1></div></header>`
+    : `<div class="kicker page-kicker">// AFTERLIFE · ${escapeHtml(page.nav.toUpperCase())}</div><h1>${escapeHtml(title)}</h1>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -81,14 +82,14 @@ function shell(page, { title, html, sections }) {
 </head>
 <body>
 <div class="top"><a class="brand" href="index.html"><img src="assets/logo.png" alt="" width="28" height="28">AFTERLIFE</a><nav class="main">${nav}<a href="${source}">GitHub</a></nav></div>
-<div class="wrap${side ? ' with-side' : ''}">
+<div class="wrap${side ? ' with-side' : ''}${home ? ' home' : ''}">
 ${side}
 <main>
 ${heading}
 ${html}
 </main>
 </div>
-<footer>© 2026 Silentbobcz · MIT License · AFTERLIFE is an unofficial fan work and is not approved or endorsed by CD PROJEKT RED. Cyberpunk 2077 is a trademark of CD PROJEKT S.A. Nexus Mods is a trademark of Black Tree Gaming Ltd.</footer>
+<footer><div class="foot-brand">AFTERLIFE <span>// free &amp; open source</span></div>© 2026 Silentbobcz · MIT License · AFTERLIFE is an unofficial fan work and is not approved or endorsed by CD PROJEKT RED. Cyberpunk 2077 is a trademark of CD PROJEKT S.A. Nexus Mods is a trademark of Black Tree Gaming Ltd.</footer>
 </body>
 </html>
 `;
@@ -98,6 +99,7 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
 for (const page of pages) fs.writeFileSync(path.join(out, page.to), shell(page, render(page)));
 fs.copyFileSync(path.join(here, 'style.css'), path.join(out, 'style.css'));
+fs.cpSync(path.join(here, 'screenshots'), path.join(out, 'screenshots'), { recursive: true });
 fs.copyFileSync(path.join(repo, 'branding/out/afterlife-logo-transparent-512.png'), path.join(out, 'assets/logo.png'));
 const fonts = path.join(repo, 'src/Afterlife.App/Assets/Fonts');
 for (const f of ['ChakraPetch-Regular.ttf', 'ChakraPetch-SemiBold.ttf', 'ChakraPetch-Bold.ttf', 'JetBrainsMono.ttf', 'OFL-ChakraPetch.txt', 'OFL-JetBrainsMono.txt'])
