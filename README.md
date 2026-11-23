@@ -4,7 +4,7 @@
 
 <p align="center">
   <b>AFTERLIFE</b> · a safe, open-source mod manager for <b>Cyberpunk 2077</b> on Windows<br>
-  <a href="https://afterlife-13h.pages.dev">Website</a> ·
+  <a href="https://afterlife.silentbob.cz">Website</a> ·
   <a href="docs/USER-GUIDE.md">User guide</a> ·
   <a href="docs/FAQ.md">FAQ</a> ·
   <a href="docs/HOW-IT-WORKS.md">How it works</a> ·
@@ -61,7 +61,7 @@ Requirements: Windows 10 or 11 (64-bit), Cyberpunk 2077 2.x (Steam, GOG or Epic)
 5. Press **APPLY CHANGES**, check the list, **LOAD TO DECK**.
 6. **JACK IN** starts the game.
 
-Full walkthrough: **[User guide](docs/USER-GUIDE.md)**, also on the web at **[afterlife-13h.pages.dev](https://afterlife-13h.pages.dev/guide.html)**.
+Full walkthrough: **[User guide](docs/USER-GUIDE.md)**, also on the web at **[afterlife.silentbob.cz](https://afterlife.silentbob.cz/guide.html)**.
 
 ## Privacy in one paragraph
 

@@ -36,7 +36,7 @@ Opus. Může začít hned. Uživatel 23. 11.: „vydáváme plnou verzi + instal
 
 ## O18. Web: dvě edice ke stažení
 
-Sonnet. Čeká na O20 (názvy souborů a text vydání). Uživatel 23. 11.: na webu <https://afterlife-13h.pages.dev> musí být jasné, co se kde stahuje. Od změny 23. 11.: na GitHubu plná edice (instalátor nebo zip) a Offline zip, na Nexus Mods jen **AFTERLIFE Offline**. Dnes `site/home.md` propaguje Premium a přímé stahování přes API; zmínka o Offline je malá poznámka `<p class="note">` pod tabulkou Premium.
+Sonnet. Čeká na O20 (názvy souborů a text vydání). Uživatel 23. 11.: na webu <https://afterlife.silentbob.cz> musí být jasné, co se kde stahuje. Od změny 23. 11.: na GitHubu plná edice (instalátor nebo zip) a Offline zip, na Nexus Mods jen **AFTERLIFE Offline**. Dnes `site/home.md` propaguje Premium a přímé stahování přes API; zmínka o Offline je malá poznámka `<p class="note">` pod tabulkou Premium.
 1. V `site/home.md` hned pod úvodní odstavec a nad tlačítka ke stažení dej výrazný blok (nový styl v `site/style.css`, jen tokeny z `App.xaml`): plná edice z GitHubu (instalátor doporučeně, nebo zip), s klíčem k Nexusu umí stahovat, aktualizovat a kolekce; na Nexus Mods je AFTERLIFE Offline, která se k Nexusu nepřipojuje, a proč (Nexus dovoluje programům API, až aplikaci zaregistruje). Dvě až čtyři věty, odkaz do FAQ (`faq.html#what-is-afterlife-offline-and-why-do-some-buttons-have-a-lock`).
 2. Oddíl „Better with Nexus Mods Premium“ zůstává a platí pro plnou edici; spodní poznámku o Offline sjednoť s blokem z bodu 1, ať se neopakuje.
 3. Totéž ověř v `README.md` (oddíl ke stažení) a na začátku `docs/USER-GUIDE.md`; fakta ber z FAQ a z textu vydání v `build.yml`, nic nevymýšlej.

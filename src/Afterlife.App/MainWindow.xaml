@@ -1240,7 +1240,7 @@
                             <!-- website with the full guide, in plain sight -->
                             <Button Margin="14,0,0,0" Style="{StaticResource LinkButton}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
                                     Command="{Binding OpenWebsiteCommand}" Content="Guide &amp; website ↗"
-                                    ToolTip="afterlife-13h.pages.dev" AutomationProperties.Name="Open the website with the full guide" />
+                                    ToolTip="afterlife.silentbob.cz" AutomationProperties.Name="Open the website with the full guide" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontSize="11" Foreground="{StaticResource T2}" VerticalAlignment="Center"
