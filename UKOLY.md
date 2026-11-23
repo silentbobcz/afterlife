@@ -11,7 +11,6 @@ Další volná čísla: A28 B12 C12 D6 · balíky S2 O29 F6
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A23 | Přesun knihovny | Zkušební sestavení → Settings → 01 · Game & library → MOVE… | 1. Vyber prázdnou složku na stejném disku a potvrď; má to být hned a seznam modů zůstat stejný. 2. Totéž na jiný disk; sleduj procenta, po dokončení zkontroluj, že stará složka zmizela a hra jde spustit s mody. 3. Napiš, co se stalo. Neověřeno: okno, velká knihovna mezi disky. Pracuje se skutečnou knihovnou: napoprvé zkus stejný disk. | ☐ čeká na sestavení |
 | A24 | Import load listu s účtem zdarma | Zkušební sestavení plné edice → LIST & ORDER → IMPORT ORDER | Jen pokud máš po ruce účet Nexus bez Premium: 1. Načti load list, ve kterém chybí mod se souborem z Nexusu. 2. Klikni „Get from Nexus, page by page“ a na stránce Mod Manager Download. 3. Po posledním souboru LOAD THE LIST AGAIN. Napiš, kde se to zadrhlo. | ☐ čeká na sestavení |
 
 ## D. Dodat
@@ -29,6 +28,7 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | A23 uzavřeno bez zkoušky (rozhodnutí uživatele): přesun knihovny (MOVE… v Nastavení) zůstává v aplikaci, kryjí ho testy, v okně a na skutečné knihovně ověřen není. |
 | 23. 11. | Vyzkoušeno na zkušebním sestavení `380579e`: A22 (RedFileSystem už nehlásí chybějící RedData), A25 (nové popisky a hlášky), A26 (okno chyby redscriptu) a A27 (blok NEW) v pořádku. |
 | 23. 11. | Čtvrtá dávka uzavřena a celá v `main`: přibylo okno chyby redscriptu (O24, zkouší se v A26) a blok NEW (O27, zkouší se v A27). Fronta je v archivu. |
 | 23. 11. | B10 rozhodnuto: blok NEW je ve výchozím stavu nahoře, jde přesunout mezi bloky (nad a pod kolekce a MODS) a mod v něm se načítá tam, kde NEW stojí; žádný vypínač v Nastavení (kdo NEW nechce, použije MOVE ALL TO MODS). Kód je balík O27. |
@@ -40,4 +40,3 @@ Starší řádky jsou v [archiv/UKOLY-hotovo.md](archiv/UKOLY-hotovo.md).
 | 23. 11. | A18 (lišta APPLY při zaškrtnutých modech), A19 (nabídka LIST & ORDER) a A20 (instalátor) zkontrolovány a schváleny. Instalátor ani odinstalátor nemažou knihovnu ani nastavení; ověřeno i zkušební instalací a odinstalací. |
 | 23. 11. | A15 (dialog při vypnutí modu), A16 (export a import load listu) a A17 (odkaz na web v patičce, doplněný rychlý návod) schváleny. A15 a A16 jsou v `main`, A17 ve větvi vydání. |
 | 23. 11. | O20, O18 a O19 hotové ve větvi `beta1-release`: workflow vyrábí instalátor a zip plné edice a Offline zip; README, návod, FAQ a web říkají, co se kde stahuje; nový oddíl Updating AFTERLIFE. Nainstalovaná kopie nenabízí knihovnu ve vlastní složce. Zkouší se v A20 a A21. |
-| 23. 11. | D2: doména afterlife.silentbob.cz je připojená a web na ní odpovídá (u některých poskytovatelů se adresa ještě šíří). |

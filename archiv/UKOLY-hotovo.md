@@ -4,6 +4,7 @@ Starší řádky z oddílu Hotovo v `UKOLY.md`. Jen archiv; co platí dál, je v
 
 | Kdy | Co |
 |---|---|
+| 23. 11. | D2: doména afterlife.silentbob.cz je připojená a web na ní odpovídá (u některých poskytovatelů se adresa ještě šíří). |
 | 23. 11. | B9 schváleno: pod seznamem zůstává REFRESH, CHECK UPDATES a UPDATE ALL, čtyři občasná tlačítka jsou v nabídce LIST & ORDER (náhled `docs/previews/tools-menu.html`). V kódu, zkouší se v A19. |
 | 22. 11. | B7: vybrána varianta B (fialová) a dlouhý popisek; O16 je v kódu a zkontrolované, zkouší se v A14. O14 a O16 sloučeny do `main`. |
 | 22. 11. | O14: návrh formátu load listu hotový (`docs/previews/load-list-format.md`), čeká na B6. |
