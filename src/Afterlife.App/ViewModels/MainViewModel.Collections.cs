@@ -432,6 +432,7 @@ public sealed partial class MainViewModel
                 RemoveCommand = new AsyncRelayCommand(() => RemoveCategoryAsync(id)),
             }, x => x.Chapter == key);
         }
+        AddNewChapter(map, rows, canEdit, Marks, Folded, Fold); // MainViewModel.NewBlock.cs
         CollectionChapters = map;
     }
 

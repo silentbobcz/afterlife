@@ -35,14 +35,15 @@ public sealed partial class MainViewModel
 
     /// <summary>
     /// The row of the mod that now wins <paramref name="winnerName"/>'s file, when a mod can be moved before it:
-    /// both mods in MODS or its categories (not layers), the load order not locked. Null otherwise.
+    /// both mods in MODS or its categories (not layers), or the mod in NEW and the other one in NEW, MODS or a
+    /// category (a mod never moves into NEW); the load order not locked. Null otherwise.
     /// </summary>
     public ModRowVm? LoadBeforeTarget(string modId, string? winnerName)
     {
         if (winnerName is null || IsModsOff) return null;
         var self = Mods.FirstOrDefault(m => m.PackageId == modId);
-        if (self is null || !self.CanToggle || self.IsCore || !self.InModsBlock || self.Overview.Package.LayerOfModId is not null) return null;
-        return Mods.FirstOrDefault(m => m.PackageId != modId && !m.IsCore && m.InModsBlock && m.Overview.Package.LayerOfModId is null
+        if (self is null || !self.CanToggle || self.IsCore || !self.InFreeBlock || self.Overview.Package.LayerOfModId is not null) return null;
+        return Mods.FirstOrDefault(m => m.PackageId != modId && !m.IsCore && (m.InModsBlock || (m.InNewBlock && self.InNewBlock)) && m.Overview.Package.LayerOfModId is null
             && string.Equals(m.Overview.Package.ModName, winnerName, StringComparison.Ordinal));
     }
 

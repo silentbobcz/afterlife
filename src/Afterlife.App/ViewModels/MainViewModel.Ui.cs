@@ -28,9 +28,12 @@ public sealed partial class MainViewModel
 
     private void ToastTick(object? sender, EventArgs e) { _toastTimer?.Stop(); Toast = null; }
 
-    public void CopyToClipboard(string text)
+    public void CopyToClipboard(string text) => CopyToClipboard(text, $"Copied to clipboard: {text}");
+
+    /// <summary>Copies <paramref name="text"/> and shows <paramref name="shown"/> instead of the text (for long texts).</summary>
+    public void CopyToClipboard(string text, string shown)
     {
-        try { System.Windows.Clipboard.SetText(text); ShowToast($"Copied to clipboard: {text}"); }
+        try { System.Windows.Clipboard.SetText(text); ShowToast(shown); }
         catch (System.Runtime.InteropServices.ExternalException) { ShowToast("The clipboard is busy; try again."); }
     }
 

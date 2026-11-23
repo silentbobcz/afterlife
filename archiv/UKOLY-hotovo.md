@@ -28,3 +28,10 @@ Starší řádky z oddílu Hotovo v `UKOLY.md`. Jen archiv; co platí dál, je v
 | 21. 11. | C2: nic se nesestavuje, dokud neřekneš; testy si vlákna pouštějí sama. |
 | 21. 11. | C1 a C5: do pracovních větví na GitHubu se zapisuje průběžně. |
 | 21. 11. | Rozbor komentáře z Nexus Mods proti kódu a anglické otázky pro pisatele. |
+| 23. 11. | B8 schváleno: při zaškrtnutí modů se vymění jen řada malých tlačítek, stavový řádek a APPLY zůstávají (náhled `docs/previews/bulk-bar.html`). V kódu (O21), zkouší se v A18. |
+| 23. 11. | Web má adresu afterlife.silentbob.cz: aplikace (patička, About, rychlý návod), README, návod a changelog odkazují jen na ni. |
+| 23. 11. | Rozhodnuto: na GitHubu se vydává plná edice (instalátor a zip) a vedle ní Offline zip, který jde na Nexus Mods; na Nexusu zůstává jen Offline. Instalátor jen pro plnou edici. |
+| 23. 11. | C10: web s návodem běží na Cloudflare Pages a obnovuje se po každé změně v `main`. |
+| 23. 11. | O15 (export a import load listu) a O17 (nový dialog při vypnutí modu) hotové a zkontrolované; druhá dávka fronty je uzavřená a v archivu. |
+| 23. 11. | Vyzkoušeno na pracovní verzi `1c1256e`: A2, A7, A8, A13 (volné pořadí modů) a A14 (fialová tlačítka) v pořádku. A12 (web a dokumentace): bez výhrad. |
+| 23. 11. | Schváleno: B4 (náhled volného pořadí), B5 (texty dialogu při vypnutí modu) a B6 (formát load listu). |

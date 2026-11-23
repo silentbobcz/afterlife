@@ -6,7 +6,7 @@ namespace Afterlife.App.ViewModels;
 
 /// <summary>
 /// The LIST &amp; ORDER menu under the mod list (Views/ToolsMenu.xaml) holds the tools used now and then:
-/// EXPORT LIST, EXPORT ORDER, IMPORT ORDER and RESET ORDER.
+/// ANALYZE REDSCRIPT ERROR (MainViewModel.Redscript.cs), EXPORT LIST, EXPORT ORDER, IMPORT ORDER and RESET ORDER.
 /// </summary>
 public sealed partial class MainViewModel
 {

@@ -1,5 +1,7 @@
 # AFTERLIFE: fronta pro modely (4. dávka)
 
+**Stav: dávka uzavřena 23. 11. 2026.** Vše je sloučené v `main`. Tento soubor je archiv; stav z něj nečti.
+
 Sestaveno 23. 11. 2026 z námětů a odložených věcí v [`UKOLY.md`](UKOLY.md) (stav po vydání 1.0.0-beta.1) a z odložených nálezů revize z 19. 11. Pravidla a kontroly v [`CLAUDE.md`](CLAUDE.md). Starší dávky jsou v `archiv/` (jen archiv, stav z nich nečti).
 Další volná čísla: S2 O28 F6
 
@@ -26,12 +28,12 @@ Skilly: alt, ukoly-a-fronty, kohn, afterlife, u náhledů grafika-cyberpunk (zdr
 | F5 | Fable | Přesun knihovny do jiné složky z aplikace | ✅ hotovo (testy a uživatel: A23) |
 | O22 | sub-Opus | Chyba redscriptu: čtení logu a nalezení viníka (bez okna) | ✅ zkontrolováno |
 | O23 | sub-Opus | Chyba redscriptu: náhled okna a texty (návrh, bez kódu) | ✅ hotovo, čeká na B11 |
-| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ▶ běží (B11 schváleno 23. 11.) |
-| O27 | sub-Opus | Kategorie NEW: kód podle schváleného návrhu (kontroluje Fable) | ▶ běží (B10 rozhodnuto 23. 11.) |
+| O24 | sub-Opus | Chyba redscriptu: okno a tlačítko v aplikaci | ✅ zkontrolováno (A26) |
+| O27 | sub-Opus | Kategorie NEW: kód podle schváleného návrhu (kontroluje Fable) | ✅ zkontrolováno (A27) |
 | O25 | sub-Opus | Import load listu: fronta stránek pro účty zdarma | ✅ zkontrolováno (A24) |
 | O26 | sub-Opus | Drobné opravy z revize: počítadlo „pracuji“, jeden klient HTTP | ✅ zkontrolováno |
 | S1 | sub-Sonnet | Texty: „mod(s)“ ve hláškách, „selected“ a „checked“ v návodu | ✅ zkontrolováno (A25) |
-| F-kontrola | Fable | Kontrola dávky a její uzavření | ✅ proběhla po každém agentovi; dávka se uzavře po O24 |
+| F-kontrola | Fable | Kontrola dávky a její uzavření | ✅ proběhla po každém agentovi; dávka uzavřena 23. 11. |
 
 ## F4. Kategorie NEW pro nově nainstalované mody (návrh, bez kódu)
 
@@ -197,6 +199,27 @@ Projít commity dávky proti zadání a předávkám (nejvíc „Neověřeno“ 
 - Změněné popisky: „Select all mods“ → „Check all mods“, „REMOVE SELECTED FROM GAME“ → „REMOVE CHECKED FROM GAME“, nápověda „SELECTING AND MOVING“ → „CHECKING AND MOVING“; návod upraven stejně.
 - Nedotčeno: čtyři texty s „(s)“ v `Deploy.cs` a `Deployment.cs` (zakázané soubory; `PreviewTests.cs` jeden z nich porovnává). O24 má pro počty použít `Plural`.
 - Pro uživatele: A25.
+
+**Předávka O24** (23. 11., agent Opus, zkontrolovalo výrobní vlákno)
+- Stav: hotovo. Nové `MainViewModel.Redscript.cs`, `Overlays/RedscriptVm.cs`, `Views/Redscript.xaml`, `Afterlife.Core/RedscriptHandled.cs`, `RedscriptHandledTests.cs`; pruh v `MainWindow.xaml`, první řádek nabídky v `ToolsMenu.xaml`, jeden řádek v `MainViewModel.Apply.cs`, návod a FAQ.
+- Samočinná kontrola: při startu a při každém návratu do okna; čte jen čas zápisu logu a log sám (bez skenu složky hry), neběží při práci, otevřeném dialogu ani za běhu hry. Pruh jen u selhaného překladu.
+- „Zpracováno“ je čas zápisu logu v tabulce meta knihovny (`redscript.handled`): zapisuje Dismiss a otevření rozboru, přežije restart.
+- Vypnutí viníků jde stejnou cestou jako hromadné DEACTIVATE (dialog závislostí), nic se nepoužije samo.
+- Ověřeno: běh na GitHubu, testy. Neověřeno: okno, pruh a nabídka ve Windows, skutečný pád překladu ve hře, jestli se návrat ze hry opravdu pozná.
+- Rozhodl agent: čas spuštění hry se drží jen v paměti; text dotazu pro AI je z O22 a liší se zněním od ukázky v textech; okno má dvě žlutá tlačítka (COPY a SWITCH OFF), jak říkal náhled.
+- Pro uživatele: A26.
+
+**Předávka O27** (23. 11., agent Opus, zkontrolovalo výrobní vlákno)
+- Stav: hotovo. `BlockLayout` má blok `new` a sadu `NewIds` (v JSON jen když není prázdná, staré rozložení se ukládá beze změny); nové `MainViewModel.NewBlock.cs`, `NewBlockTests.cs`; změny v `Rows.cs`, `MainViewModel.Blocks.cs`, `Import.cs`, `LoadList.cs`, `LoadOrder.cs`, `OrderKeys.cs`, `Updates.cs`, `LoadListPlan.cs`, šablona hlavičky v `MainWindow.xaml`.
+- Do NEW: import souborů a složek, Mod Manager Download, znovu-import z historie stahování. Mimo: aktualizace (dědí místo staré verze), kolekce, stahování pro load list, FIXER, ruční mody.
+- Stávající knihovna: NEW je prázdný, `Compose` vrací stejné pořadí, žádný profil se nepřepíše. Profil ve výchozím pořadí hry instalací nedostane `modlist.txt`.
+- Ověřeno: běh na GitHubu, testy rozložení a load listu. Neověřeno: vše v okně (hlavička, tažení, šipky, MOVE ALL TO MODS).
+- Rozhodl agent: hlavička NEW má i vypínač bloku (náhled ho neměl); kategorie má přednost před NEW; mod kolekce se ukazuje v kolekci, i kdyby byl v `NewIds`.
+- Pro uživatele: A27.
+
+**Uzavření dávky** (23. 11., výrobní vlákno)
+- O24 a O27 prošly každý zvlášť i společně během na GitHubu a jsou sloučené; dávka je celá. Co má žít dál, je v `docs/HOW-IT-WORKS.md`, `CHANGELOG.md` (oddíl Unreleased) a v položkách A22 až A27 v `UKOLY.md`.
+- Odloženo (zapsáno v `UKOLY.md`): S5, E10 a rozdělení dvou dlouhých metod z revize; čtyři hlášky s „(s)“ v `Deploy.cs` a `Deployment.cs`.
 
 **Kontrola dávky** (23. 11., výrobní vlákno)
 - Každá větev balíku s kódem prošla sama během na GitHubu (sestavení obou edic, testy, instalátor); potom vše sloučeno do `batch4` a puštěno znovu.

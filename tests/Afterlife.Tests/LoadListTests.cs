@@ -364,7 +364,7 @@ public class LoadListTests
         var collections = new[] { new LoadListCollection("glow", "Glow", false) };
         var plan = Plan(ListOf("@category Weapons", "+ Alpha", "@collection Glow | slug=glow", "+ First", "@mods", "+ Bravo"), library, collections: collections);
         Assert.True(plan.SectionOrderNote);
-        Assert.Equal(["mods", "collection:glow"], plan.Layout.NormalizedBlocks(["glow"]));
+        Assert.Equal(["new", "mods", "collection:glow"], plan.Layout.NormalizedBlocks(["glow"]));
         Assert.Equal(["b", "a", "x1"], BlockLayout.Compose(plan.Order, id => After(plan, library).First(p => p.PackageId == id).Section, plan.Layout.Sections(["glow"])));
 
         var fine = Plan(ListOf("@collection Glow | slug=glow", "+ First", "@mods", "+ Bravo", "@category Weapons", "+ Alpha"), library, collections: collections);
@@ -379,6 +379,19 @@ public class LoadListTests
         Assert.True(plan.TakesOwnOrder);
         Assert.False(plan.IsEmpty);
         Assert.True(Plan(text, Library).IsEmpty);
+    }
+
+    [Fact]
+    public void A_mod_in_NEW_placed_by_the_list_leaves_NEW_and_the_others_stay_there()
+    {
+        var library = new List<LoadListPackage> { Pkg("n", "Fresh", section: "new"), Pkg("m", "Other Fresh", section: "new"), Pkg("a", "Alpha"), Pkg("b", "Bravo") };
+        var layout = BlockLayout.Empty.AddNew(["n", "m"]);
+        var plan = Plan(ListOf("@mods", "+ Bravo", "+ Fresh"), library, layout);
+        Assert.Equal(["m", "b", "n", "a"], plan.Order);
+        Assert.False(plan.Layout.IsNew("n"));
+        Assert.True(plan.Layout.IsNew("m"));
+        Assert.Contains("Fresh → MODS", plan.CategoryMoves);
+        Assert.True(plan.LayoutChanged);
     }
 
     [Fact]

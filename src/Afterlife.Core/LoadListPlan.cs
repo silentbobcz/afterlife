@@ -2,7 +2,7 @@ namespace Afterlife.Core;
 
 /// <summary>
 /// A package of the library as an import of a load list sees it. <see cref="Section"/> is where the window shows it
-/// now: <c>core</c>, <c>collection:&lt;slug&gt;</c>, <c>mods</c> or <c>category:&lt;id&gt;</c>.
+/// now: <c>core</c>, <c>collection:&lt;slug&gt;</c>, <c>new</c>, <c>mods</c> or <c>category:&lt;id&gt;</c>.
 /// </summary>
 public sealed record LoadListPackage(
     string PackageId,
@@ -179,8 +179,10 @@ public static class LoadListPlanner
             else missingCollections.Add(s);
         }
 
+        // a mod in NEW is placed like a mod of MODS; once placed it leaves NEW (Assign)
         static bool InModsFamily(LoadListPackage p) =>
-            !p.IsCore && (p.Section == BlockLayout.ModsBlock || p.Section.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal));
+            !p.IsCore && (p.Section == BlockLayout.ModsBlock || p.Section == BlockLayout.NewBlock
+                          || p.Section.StartsWith(BlockLayout.CategoryPrefix, StringComparison.Ordinal));
 
         // ---- categories: found by name, created where the list has them (case 1, 12) ----
         var categories = layout.Categories.ToList();
@@ -255,7 +257,7 @@ public static class LoadListPlanner
                 string? category = categoryOf.TryGetValue(si, out var id) ? id : null;
                 if (s.Kind == LoadListSectionKind.Collection && category is null) continue;
                 target = category is null ? BlockLayout.ModsBlock : BlockLayout.CategoryKey(category);
-                if (layout.CategoryIdOf(p.PackageId) != category)
+                if (layout.CategoryIdOf(p.PackageId) != category || layout.IsNew(p.PackageId))
                     categoryMoves.Add($"{p.Name} → {(category is null ? "MODS" : categoryById[category].Name)}");
                 newLayout = newLayout.Assign([p.PackageId], category);
             }
@@ -267,6 +269,7 @@ public static class LoadListPlanner
         {
             var p = byId[id];
             if (!InModsFamily(p)) return p.Section;
+            if (newLayout.IsNew(id)) return BlockLayout.NewBlock;
             return newLayout.CategoryIdOf(id) is { } cat ? BlockLayout.CategoryKey(cat) : BlockLayout.ModsBlock;
         }
 
@@ -368,7 +371,8 @@ public static class LoadListPlanner
         a.NormalizedBlocks(slugs).SequenceEqual(b.NormalizedBlocks(slugs))
         && a.Categories.SequenceEqual(b.Categories)
         && a.CategoryOf.Count == b.CategoryOf.Count
-        && a.CategoryOf.All(kv => b.CategoryOf.TryGetValue(kv.Key, out var v) && v == kv.Value);
+        && a.CategoryOf.All(kv => b.CategoryOf.TryGetValue(kv.Key, out var v) && v == kv.Value)
+        && a.NewIds.SetEquals(b.NewIds);
 
     /// <summary>
     /// <paramref name="current"/> with the items of <paramref name="wanted"/> in the order of <paramref name="wanted"/>:

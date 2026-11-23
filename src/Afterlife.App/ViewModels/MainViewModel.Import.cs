@@ -38,7 +38,7 @@ public sealed partial class MainViewModel
         var got = await DownloadNexusFileAsync(link, key);
         if (got is null) return;
         var (dest, info) = got.Value;
-        await ImportDownloadedAsync(link, dest, info);
+        await ImportDownloadedAsync(link, dest, info, intoNew: true);
     });
 
     /// <summary>Downloads one Nexus file into library/downloads and records it in the history. Null when it failed (message shown).</summary>
@@ -80,9 +80,12 @@ public sealed partial class MainViewModel
         return (dest, info);
     }
 
-    /// <summary>Imports a downloaded Nexus file; a newer file of a mod already in the library replaces it in the profile.</summary>
+    /// <summary>
+    /// Imports a downloaded Nexus file; a newer file of a mod already in the library replaces it in the profile.
+    /// <paramref name="intoNew"/>: a download the user started puts a mod that is new to the library into NEW.
+    /// </summary>
     private async Task<List<PackageManifest>> ImportDownloadedAsync(NxmLink link, string dest, NexusFileInfo info,
-        IReadOnlyList<FomodChoice>? presetChoices = null, bool enable = true, bool quiet = false)
+        IReadOnlyList<FomodChoice>? presetChoices = null, bool enable = true, bool quiet = false, bool intoNew = false)
     {
         // a file a collection is waiting for goes to that collection
         if (_collectionWaiting is { } waiting && waiting(link, dest, info)) return [];
@@ -91,7 +94,7 @@ public sealed partial class MainViewModel
         if (forList) { enable = false; quiet = true; }
         var older = OlderVersionOf(link.ModId, link.FileId);
         var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, info.ModName ?? older?.ModName, info.Version ?? info.ModVersion, older?.ModId),
-            presetChoices ?? older?.FomodChoices, enable, quiet);
+            presetChoices ?? older?.FomodChoices, enable, quiet, intoNew && older is null && !forList); // an update keeps the place of the old version
         if (older is not null && imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet);
         if (imported.Count > 0) UpdateQueueArrived(link);
         if (forList) ListFileArrived(link, imported.Count > 0);
@@ -112,17 +115,21 @@ public sealed partial class MainViewModel
         };
         if (d.ShowDialog() != true) return;
         var rest = await ImportUpdatesFromFilesAsync(d.FileNames);
-        if (rest.Count > 0) await ImportFilesCoreAsync(rest);
+        if (rest.Count > 0) await ImportFilesCoreAsync(rest, intoNew: true);
     });
 
     public Task ImportFilesAsync(IReadOnlyList<string> files) => RunUiAsync(async () =>
     {
         var rest = await ImportUpdatesFromFilesAsync(files);
-        if (rest.Count > 0) await ImportFilesCoreAsync(rest);
+        if (rest.Count > 0) await ImportFilesCoreAsync(rest, intoNew: true);
     });
 
+    /// <summary>
+    /// Imports archives or folders into the library. <paramref name="intoNew"/> is set only where the user adds mods
+    /// (files, folders, a Nexus download); collections, load lists, updates and the rest stay out of NEW.
+    /// </summary>
     private async Task<List<PackageManifest>> ImportFilesCoreAsync(IReadOnlyList<string> files, NexusSource? nexus = null,
-        IReadOnlyList<FomodChoice>? presetChoices = null, bool enable = true, bool quiet = false)
+        IReadOnlyList<FomodChoice>? presetChoices = null, bool enable = true, bool quiet = false, bool intoNew = false)
     {
         var imported = new List<string>();
         var packages = new List<PackageManifest>();
@@ -144,6 +151,7 @@ public sealed partial class MainViewModel
                     imported.Add(r.AlreadyInLibrary ? $"{p.ModName} (already in the library, no second copy)" : p.ModName);
                     packages.Add(p);
                     if (!IsModsOff && enable) await _host.RunAsync(c => c.SetEnabled(p.PackageId, true));
+                    if (intoNew && !r.AlreadyInLibrary) await PutIntoNewAsync([p.PackageId]);
                     await RefreshAsync();
                     SelectedMod = Mods.FirstOrDefault(m => m.PackageId == p.PackageId) ?? SelectedMod;
                     break;

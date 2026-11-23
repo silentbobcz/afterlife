@@ -10,6 +10,7 @@ This guide covers everything in AFTERLIFE (`AFTERLIFE.exe`), from the first run 
 - [5. Profiles](#5-profiles)
 - [6. Apply changes: load to the deck](#6-apply-changes-load-to-the-deck)
 - [7. Jack in: starting the game](#7-jack-in-starting-the-game)
+  - [Script mods did not load (redscript error)](#script-mods-did-not-load-redscript-error)
 - [8. Mod details](#8-mod-details)
 - [9. Requirements and core mods](#9-requirements-and-core-mods)
 - [10. Conflicts and load order](#10-conflicts-and-load-order)
@@ -116,7 +117,7 @@ The **search** box above the list filters by name and tag; **✕** or Esc clears
 
 When several mods are checked, the bar at the bottom offers **MOVE TO CATEGORY**, **ACTIVATE**, **DEACTIVATE** and **DELETE EVERYWHERE** for all of them. While any mod is checked, these buttons take the place of the small tools (REFRESH, CHECK UPDATES and the others); the status line, PREVIEW and APPLY CHANGES stay. The row also says how many checked mods the search, a filter or a folded section hides. Press **Esc** or **Clear (Esc)** to uncheck everything.
 
-The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or check them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category you set the order yourself: drag a row up or down (local edits stay right below their mod), and **A→Z** in the header sorts that section by name once; collections keep the curator's order. Profiles are sorted by name, with *Mods off* first.
+The list is split into blocks, each with its own icon in its colour: **CORE MODS** (yellow chip with a lock, always on top), **NEW** (green, only while it has mods), every **COLLECTION** (cyan layers) and **MODS** (light grey cube) for the rest. Drag a block by its icon or use the small arrows next to it. **+ CATEGORY** in the MODS header adds your own category: a smaller violet divider with a bookmark icon inside MODS; double-click its name to rename it. Moved mods are unchecked afterwards; a click into the column header unchecks all mods. Drag mods onto a category (a row or its header) or check them and use **MOVE TO CATEGORY**; **Rename** and **Remove** are in the category header, and removing a category never deletes its mods. Collections, MODS and categories can be moved by their **⋮⋮** handle or the small arrows; see [section 10](#10-conflicts-and-load-order) for what that does to the load order and how to load one mod before another. Inside MODS and every category you set the order yourself: drag a row up or down (local edits stay right below their mod), and **A→Z** in the header sorts that section by name once; collections keep the curator's order. Profiles are sorted by name, with *Mods off* first.
 
 Below the list: **REFRESH** (F5) reads the game folder and the library again, **CHECK UPDATES** asks Nexus now, **UPDATE ALL** (see section 11), the **LIST & ORDER** menu with **EXPORT LIST** ([section 16](#16-export-the-mod-list)), **EXPORT ORDER**, **IMPORT ORDER** and **RESET ORDER**, then **PREVIEW** and **APPLY CHANGES**. The **GUIDE** tab next to CORE MODS explains columns, colours and marks; **SHOW EVERYTHING** opens the rest.
 
@@ -127,6 +128,8 @@ Three ways, all ending up in the library:
 1. **Drag and drop** `.zip`, `.7z`, `.rar` or `.archive` files into the window, or use **+ ADD MOD** (Ctrl+O).
 2. **Mod Manager Download** on a Nexus Mods page, once AFTERLIFE handles those links (Settings → Nexus Mods). The file is downloaded and imported; you see it in *Download history*.
 3. **+ ADD COLLECTION** for a whole Nexus collection ([section 12](#12-collections)).
+
+**NEW: where a freshly added mod lands.** A mod you add from a file or folder, or download from Nexus yourself (Mod Manager Download, or again from *Download history*), goes into the green block **NEW**, right under CORE MODS until you move the block. Drag each mod from there into MODS or a category (a row or the header), check several and use **MOVE TO CATEGORY**, or press **MOVE ALL TO MODS** in the NEW header: the mods go to the end of MODS without a category, in their order. A mod in NEW loads where NEW stands, like every block, so on top it wins file conflicts until you move it; installing never changes the order of your other mods among themselves. Inside NEW you order the mods like in MODS (drag, Ctrl+arrows), but nothing can be dragged into NEW. Move the whole block with its arrows or by its icon; when the last mod leaves, NEW is hidden and keeps its place for the next one. An update of a mod you have keeps the old version's place (in NEW only if the old one was there); mods of a collection, mods downloaded for IMPORT ORDER, FIXER quests and files taken over by Scan manual mods never go to NEW.
 
 Every archive is checked before it is accepted: paths are validated, the layout is recognised (archives, CET, RED4ext, redscript, TweakXL, REDmod, `bin/x64` plugins and so on) and the files are stored with their hashes. AFTERLIFE never runs `.exe`, `.bat` or script files from an archive.
 
@@ -177,6 +180,18 @@ When an apply takes a core mod out of the game, the files that mod created itsel
 
 JACK IN asks you to apply first when the game does not match the selected profile.
 
+### Script mods did not load (redscript error)
+
+When the game cannot compile redscript, **no** script mod runs, and you usually only notice that some other mod misbehaves. The game writes the reason to `r6\logs\redscript_rCURRENT.log`. When you come back to AFTERLIFE after the game (and at start, when the game ran without AFTERLIFE), it reads that log; if the compilation failed, an orange banner **SCRIPT MODS DID NOT LOAD** appears above the list. **Dismiss** hides it until the game writes a new log.
+
+**ANALYZE** on the banner, or **ANALYZE REDSCRIPT ERROR** at any time (first line of the **LIST & ORDER** menu under the list), opens the window **REDSCRIPT ERROR**:
+
+- **From your library**: the mods the log names, with their version and error lines. Mods that are on in the selected profile are checked; **SWITCH OFF n MODS** switches the checked ones off through the normal switch-off (the usual dialog follows when other mods need them). Nothing is deleted and nothing changes in the game until you **APPLY CHANGES**; then launch the game again.
+- **Not in your library**: scripts AFTERLIFE did not install. It does not switch them off; **Open folder** shows where they are, so you can update the mod or move its folder out of `r6\scripts` while the game is closed. *Scan manual mods* can add them to the library.
+- **Ask an AI**: a ready text with the game version, the mods, the errors and your frameworks. **COPY** puts it on the clipboard for an AI chat or a forum post. Nothing is sent anywhere, and your user name is removed from the paths.
+
+When the last compilation was fine, the log is missing or it is older than the last launch, the analysis says so in the notice line instead.
+
 ## 8. Mod details
 
 - **Picture and description** come from the Nexus page (needs a Nexus key). Click the picture to open the page.
@@ -215,7 +230,7 @@ Two mods can bring the same file. AFTERLIFE shows **! CONFLICT · DECIDE** and t
 **How the list maps to the order.** The top of the list loads first and wins:
 
 1. CORE MODS (always first, cannot be moved),
-2. then the blocks from top to bottom (every COLLECTION and MODS),
+2. then the blocks from top to bottom (NEW, every COLLECTION and MODS),
 3. inside MODS: the mods without a category first, then each category from top to bottom,
 4. inside MODS and inside every category the mods load in the order you give them; inside a collection they keep the curator's order.
 
@@ -229,7 +244,7 @@ A number shown dimmer belongs to a mod without any `.archive` file in `archive/p
 
 From the keyboard (only in the load order view, not while sorted with **SORT**): **Ctrl+Up** / **Ctrl+Down** move the checked mods (or the selected row) by one row inside their section (MODS, one category or an unlocked collection), **Ctrl+Home** / **Ctrl+End** to its start or end. They never cross into another section.
 
-A mod's local edits (**└ name**) always stay right below the mod and move with it. Categories still group mods, and a whole category moves by its handle or the small arrows. **A→Z** in the header of MODS or a category sorts that section by name once, after a question; nothing changes in the game before you apply. New mods go to the end of MODS, without a category; an updated mod keeps the place of the old version. The order belongs to the profile: another profile can order the same mods differently (categories are shared by all profiles).
+A mod's local edits (**└ name**) always stay right below the mod and move with it. Categories still group mods, and a whole category moves by its handle or the small arrows. **A→Z** in the header of MODS or a category sorts that section by name once, after a question; nothing changes in the game before you apply. Mods you add go to NEW ([section 4](#4-adding-mods)); MOVE ALL TO MODS puts them at the end of MODS, without a category; an updated mod keeps the place of the old version. The order belongs to the profile: another profile can order the same mods differently (categories are shared by all profiles).
 
 Inside an unlocked collection you can drag rows the same way ([section 12](#12-collections)). Moving a mod, a block or a category changes the load order; AFTERLIFE tells you when a conflicting file gets another winner, and nothing changes in the game before you apply. AFTERLIFE writes the order to `modlist.txt` when you apply. Until you change the order of a profile, the game uses its default (alphabetical by archive name) and the list shows the mods of MODS by name. **Reset order** returns to that default. Sorting the list (**SORT**) changes only the view, never the order.
 
@@ -251,6 +266,7 @@ Good to know:
 - Mods missing in the library are listed, each with a link to its page. With Nexus Mods Premium **Get from Nexus** downloads those with a Nexus file and loads the list again. Other accounts get **Get from Nexus, page by page** (Mod Manager Download links must be on in Settings): AFTERLIFE opens the file page of each such mod in turn, you click **Mod Manager Download** there and the file comes into the library switched off, then the next page opens. The window shows every mod as waiting, open on Nexus, in library or skipped; **Skip this mod** moves on, **PAUSE** and **RESUME** stop and go on (RESUME at the end opens the skipped pages again), and closing the window lets it run on (IMPORT ORDER shows it again). When the pages are done, **LOAD THE LIST AGAIN** shows the preview of the same list with the new mods, and the import puts them in place. A mod the list names without a Nexus file stays a link. Loading the same list twice gives the same result. AFTERLIFE Offline only lists them.
 - A collection your library does not have becomes a category named "<name> (collection)" with the mods that are found; **Add collection from Nexus…** adds the real one (not in AFTERLIFE Offline). Which mods belong to a collection always comes from Nexus, never from the file.
 - Core mods always load first; the list only switches them on or off.
+- NEW is not written to the file: EXPORT ORDER writes its mods under `@mods`, first when NEW stands above MODS, last when below. Every mod IMPORT ORDER puts in place leaves NEW.
 - Before an import AFTERLIFE saves the current order into the library (`exports/before-import-<date>.txt`, the newest 10 are kept).
 - Nothing changes in the game until you press **APPLY CHANGES**. IMPORT ORDER is greyed out in Mods off.
 
@@ -391,6 +407,7 @@ When the game version or build changes, AFTERLIFE shows a **game updated** banne
 ## 19. If something goes wrong
 
 - **The game crashes after applying**: apply **Mods off** and test. If the game runs, switch half of your mods on, apply, test, and repeat. *Export list* helps you keep track.
+- **Script mods stopped working**: **LIST & ORDER → ANALYZE REDSCRIPT ERROR** names the mods behind a failed script compilation and can switch them off (section 7).
 - **An apply was interrupted** (crash, power cut): start AFTERLIFE; it offers **FINISH** or **RETURN TO PREVIOUS**.
 - **Something looks wrong in the list**: **Refresh** (F5).
 - **The game itself is damaged**: verify the game files in Steam, GOG Galaxy or Epic, then apply again.

@@ -204,6 +204,7 @@ public sealed partial class MainViewModel
             note = r.Outcome == RedModOutcome.ToolMissing ? r.Message : r.Outcome == RedModOutcome.Deployed ? r.Message + "." : null;
         }
         await _host.RunAsync(c => c.LaunchGame(args, allowChangedBuild));
+        _redscriptLaunchedAt = DateTimeOffset.UtcNow; // the script log of this session is checked on return (MainViewModel.Redscript.cs)
         if (note is null) Say("Wake up, choom. The game is starting.", Tone.Ok);
         else SayLines(["Wake up, choom. The game is starting.", note], Tone.Ok);
     });
