@@ -66,6 +66,7 @@ Opus. Může začít hned. Hlášení z Nexusu (23. 11.): po přidání dalšíc
 - Ověřeno: překlad a testy na GitHubu (ruční běh `build` na větvi), rozdíl přečten proti kódu.
 - Neověřeno: nic neběželo v okně; výška lišty se třemi řádky v úzkém okně, Esc s fokusem na řádku seznamu.
 - Rozhodnuto bez uživatele: Esc výběr neruší, dokud je fokus v hledání (ani v prázdném), v otevřeném seznamu nebo nabídce; tooltip je na celém prvním řádku a říká, že hromadné akce berou i schované mody; „folded sections“ místo „category“; jednotné číslo „1 mod checked“.
+- Změna po B8 (uživatel schválil náhled `docs/previews/bulk-bar.html`): lišta se už nevyměňuje celá. Při zaškrtnutí ustoupí jen řada malých nástrojů hromadným akcím (malá tlačítka), stavový řádek, PREVIEW a APPLY zůstávají; vysvětlující věta odpadla. Body 1 a 4 zadání tím neplatí. Neověřeno navíc: malá barevná tlačítka při najetí myší zmodrají (šablona `SmallButton`).
 - Mimo balík: zaškrtnutí celé sekce přepočítává výběr po každém řádku (bylo i dřív); návod říká zaškrtnutým modům střídavě „selected“ a „checked“.
 - Pro uživatele: A18 v `UKOLY.md`.
 
@@ -74,7 +75,6 @@ Opus. Může začít hned. Hlášení z Nexusu (23. 11.): po přidání dalšíc
 - Přestavba celého okna (návrhy W1 až W3) a styl MUTED: odložené alternativy.
 - Instalátor pro AFTERLIFE Offline: není třeba, na Nexus jde zip (23. 11.).
 - Hlášky ve stavovém řádku s „mod(s)“: drobnost k příští úpravě textů.
-- Lišta hromadných akcí nad lištou APPLY, aby APPLY nemizelo vůbec: mění rozložení okna, nejdřív statický náhled; až o ni uživatel řekne (navazuje na O21).
 - Fronta stránek pro účty zdarma u chybějících modů z load listu (dnes jen odkazy): až o ni uživatel řekne.
 
 ## Co přinesla 2. dávka (22. až 23. 11.)

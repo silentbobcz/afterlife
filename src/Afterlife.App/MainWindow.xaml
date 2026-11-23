@@ -912,35 +912,9 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Bulk actions -->
-                        <Grid Grid.Row="6" Margin="0,12,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource BoolToVis}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource Body}" FontSize="13" ToolTip="{Binding HiddenCheckedTip}">
-                                    <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="{Binding CheckedLabel, Mode=OneWay}" /><Run Text="{Binding HiddenCheckedNote, Mode=OneWay}" Foreground="{StaticResource T2}" />
-                                </TextBlock>
-                                <TextBlock Style="{StaticResource Meta}" Text="APPLY and JACK IN come back when nothing is checked" />
-                                <Button HorizontalAlignment="Left" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear selection (Esc)" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <!-- checked mods into a category (or back to MODS) -->
-                                <Button Style="{StaticResource AccentButton}" Command="{Binding BulkMoveToCategoryCommand}" Content="MOVE TO CATEGORY" Margin="0,0,10,0"
-                                        BorderBrush="{StaticResource V}" Foreground="{StaticResource V}" Background="{StaticResource VTint}"
-                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Put the checked mods into a category inside MODS; their load order moves with it" />
-                                <Button Style="{StaticResource AccentButton}" Command="{Binding BulkActivateCommand}" Content="ACTIVATE" Margin="0,0,10,0"
-                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch on in the selected profile" />
-                                <Button Style="{StaticResource WarnButton}" Command="{Binding BulkDeactivateCommand}" Content="DEACTIVATE" Margin="0,0,10,0"
-                                        IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch off in the selected profile" />
-                                <Button Style="{StaticResource DangerButton}" Command="{Binding BulkDeleteCommand}" Content="DELETE EVERYWHERE"
-                                        ToolTip="Out of every profile, out of the game and out of the library" />
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Apply bar: status left, small bevelled tools, APPLY on the right; the legend moved to the GUIDE tab -->
-                        <Grid Grid.Row="6" Margin="0,12,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource InverseBoolToVis}}">
+                        <!-- Apply bar: status left, small bevelled tools, APPLY on the right; the legend moved to the GUIDE tab.
+                             While mods are checked only the row of tools gives way to the bulk actions: the status and APPLY stay. -->
+                        <Grid Grid.Row="6" Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -966,7 +940,27 @@
                                             ToolTip="Scroll to the mod this concerns and select it" />
                                     <TextBlock Style="{StaticResource Body}" FontSize="12" Foreground="{StaticResource M}" Text="{Binding ApplyBlockedReason}" TextWrapping="Wrap" />
                                 </DockPanel>
-                                <WrapPanel Margin="0,7,0,0">
+                                <!-- bulk actions for the checked mods, in place of the tools -->
+                                <WrapPanel Margin="0,7,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Style="{StaticResource Body}" FontSize="13" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="{Binding HiddenCheckedTip}">
+                                        <Run Text="{Binding SelectedCount, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=" checked" /><Run Text="{Binding HiddenCheckedNote, Mode=OneWay}" Foreground="{StaticResource T2}" />
+                                    </TextBlock>
+                                    <!-- checked mods into a category (or back to MODS) -->
+                                    <Button Style="{StaticResource SmallButton}" Command="{Binding BulkMoveToCategoryCommand}" Content="MOVE TO CATEGORY"
+                                            BorderBrush="{StaticResource V}" Foreground="{StaticResource V}" Background="{StaticResource VTint}"
+                                            IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Put the checked mods into a category inside MODS; their load order moves with it" />
+                                    <Button Style="{StaticResource SmallAccentButton}" Command="{Binding BulkActivateCommand}" Content="ACTIVATE"
+                                            IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch on in the selected profile" />
+                                    <Button Style="{StaticResource SmallButton}" Command="{Binding BulkDeactivateCommand}" Content="DEACTIVATE"
+                                            BorderBrush="{StaticResource O}" Foreground="{StaticResource O}" Background="{StaticResource OTint}"
+                                            IsEnabled="{Binding IsModsOff, Converter={StaticResource Not}}" ToolTip="Switch off in the selected profile" />
+                                    <Button Style="{StaticResource SmallButton}" Command="{Binding BulkDeleteCommand}" Content="DELETE EVERYWHERE"
+                                            BorderBrush="{StaticResource M}" Foreground="{StaticResource M}" Background="{StaticResource MTint}"
+                                            ToolTip="Out of every profile, out of the game and out of the library" />
+                                    <Button VerticalAlignment="Center" Margin="4,0,0,0" Style="{StaticResource QuietLinkButton}" Command="{Binding ClearSelectionCommand}" Content="Clear (Esc)"
+                                            ToolTip="Uncheck every mod and bring the tools back" />
+                                </WrapPanel>
+                                <WrapPanel Margin="0,7,0,0" Visibility="{Binding HasMultiSelection, Converter={StaticResource InverseBoolToVis}}">
                                 <!-- always visible -->
                                 <Button Style="{StaticResource SmallButton}" Command="{Binding RefreshLibraryCommand}" Content="REFRESH"
                                         ToolTip="Read the game folder and the library again (F5)" />
