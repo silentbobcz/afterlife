@@ -4,13 +4,13 @@ Naposledy upraveno: 23. 11. 2026. Když něco vyřídíš, napiš číslo úkolu
 
 **Fronta modelů:** [FRONTA.md](FRONTA.md). Nejnovější stav je v `main`. Může začít hned: O20 (vydání plné edice s instalátorem, Opus); po něm O18 a O19 (Sonnet). Nezávisle může začít O21 (proč zaškrtnuté mody schovají APPLY a jak se k němu vrátit, Opus). Spouštěcí věta: „Přečti FRONTA.md v repozitáři silentbobcz/afterlife (větev main) a udělej balík O20.“
 
-Poslední pracovní verze plné edice je `AFTERLIFE-test-32dfa69-win-x64.zip` ve složce `zkusebni` (23. 11.): obsahuje odkaz v patičce a doplněný rychlý návod (A17). Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
+Poslední pracovní verze plné edice je `AFTERLIFE-test-bf0d097-win-x64.zip` ve složce `zkusebni` (23. 11.): obsahuje odkaz v patičce a doplněný rychlý návod (A17). Pracuje s tvou skutečnou knihovnou a hrou, stejně jako nainstalovaná verze. Další verzi vyrobí ruční spuštění workflow `build` (artefakt `AFTERLIFE-full-test`); řekni si o ni.
 
 ## A. Vyzkoušet
 
 | # | Co | Kde to najdu | Co mám udělat | Stav |
 |---|---|---|---|---|
-| A17 | Odkaz na web s návodem v patičce okna a doplněný rychlý návod | Pracovní verze `AFTERLIFE-test-32dfa69-win-x64.zip` ve složce `zkusebni`; patička dole v hlavním okně, rychlý návod (QUICK GUIDE) | 1. V patičce vedle „© 2026 Silentbobcz …“ klikni na **Guide & website ↗**: otevře web v prohlížeči. Je dost vidět? 2. V rychlém návodu je „Full guide on the web ↗“ hned nahoře (dole už není); v About zůstává WEBSITE. 3. Rychlý návod má nově řádky EXPORT / IMPORT ORDER a LOAD BEFORE a v KEYS klávesy Ctrl+šipky; vejde se nadpis EXPORT / IMPORT ORDER do levého sloupce? Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
+| A17 | Odkaz na web s návodem v patičce okna a doplněný rychlý návod | Pracovní verze `AFTERLIFE-test-bf0d097-win-x64.zip` ve složce `zkusebni`; patička dole v hlavním okně, rychlý návod (QUICK GUIDE) | 1. V patičce vedle „© 2026 Silentbobcz …“ klikni na **Guide & website ↗**: otevře web v prohlížeči. Je dost vidět? 2. V rychlém návodu je „Full guide on the web ↗“ hned nahoře (dole už není); v About zůstává WEBSITE. 3. Rychlý návod má nově řádky EXPORT / IMPORT ORDER a LOAD BEFORE a v KEYS klávesy Ctrl+šipky; vejde se nadpis EXPORT / IMPORT ORDER do levého sloupce? Neověřeno: nic z toho neběželo v okně. | ☐ čeká na tebe |
 
 ## C. Rozhodnout (stačí odpověď)
 
