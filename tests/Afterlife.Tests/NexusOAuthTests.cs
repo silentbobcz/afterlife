@@ -95,14 +95,25 @@ public class NexusOAuthTests
         finally { NexusOAuth.Refreshed = null; }
     }
 
-    [Fact]
-    public async Task A_refused_refresh_signs_the_user_out()
+    [Theory]
+    [InlineData(400, true, false)]
+    [InlineData(401, true, false)]
+    [InlineData(429, false, true)]
+    [InlineData(503, false, false)]
+    public async Task Only_a_plain_refusal_of_the_refresh_signs_the_user_out(int status, bool signedOut, bool rateLimited)
     {
-        var fake = new FakeNexus { TokenStatus = 400 };
+        var fake = new FakeNexus { TokenStatus = status };
         var old = new NexusTokens("A", "R", 0, Guid.NewGuid().ToString("N"));
         using var client = new NexusClient(old.Serialize(), "1.0", fake);
         var ex = await Assert.ThrowsAsync<NexusException>(() => client.ValidateAsync());
-        Assert.True(ex.SignedOut);
+        Assert.Equal((signedOut, rateLimited), (ex.SignedOut, ex.RateLimited));
+    }
+
+    [Fact]
+    public void A_token_answer_with_a_text_lifetime_falls_back_to_an_hour()
+    {
+        using var doc = JsonDocument.Parse("""{"access_token":"A","refresh_token":"R","expires_in":"soon"}""");
+        Assert.Equal(4600, NexusOAuth.ParseTokens(doc.RootElement, "l", DateTimeOffset.FromUnixTimeSeconds(1000)).ExpiresAt);
     }
 
     [Fact]

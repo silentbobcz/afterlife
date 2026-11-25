@@ -223,7 +223,7 @@
                                     <TextBlock Style="{StaticResource GroupLabel}" Text="ACCOUNT" />
                                     <TextBlock Style="{StaticResource Meta}" Text="{Binding NexusHint}" TextWrapping="Wrap" />
                                     <Button Margin="0,8,0,0" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}" Command="{Binding LoginNexusCommand}" Content="LOG IN WITH NEXUS MODS"
-                                            Visibility="{Binding LoginAvailable,Converter={StaticResource BoolToVis}}" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+                                            Visibility="{Binding LoginAvailable, Converter={StaticResource BoolToVis}}" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
                                     <Grid Margin="0,8,0,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />

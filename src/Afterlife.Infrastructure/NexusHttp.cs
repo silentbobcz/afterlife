@@ -35,7 +35,7 @@ public static class NexusHttp
 
     /// <summary>
     /// A request to the Nexus Mods API with the credential (OAuth bearer token or personal key) and the application
-/// headers on the request itself.
+    /// headers on the request itself.
     /// A relative <paramref name="uri"/> is resolved against <see cref="NexusClient.ApiBase"/>.
     /// </summary>
     public static HttpRequestMessage ApiRequest(HttpMethod method, string uri, string credential, string appVersion, HttpContent? content = null)

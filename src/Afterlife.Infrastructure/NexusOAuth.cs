@@ -25,7 +25,7 @@ public sealed record NexusTokens(string Access, string Refresh, long ExpiresAt, 
             var r = doc.RootElement;
             string? S(string k) => r.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
             if (S("type") != Marker || S("access") is not { Length: > 0 } a || S("refresh") is not { Length: > 0 } f) return null;
-            var exp = r.TryGetProperty("expires", out var e) && e.TryGetInt64(out var x) ? x : 0;
+            var exp = r.TryGetProperty("expires", out var e) && e.ValueKind == JsonValueKind.Number && e.TryGetInt64(out var x) ? x : 0;
             return new NexusTokens(a, f, exp, S("login") ?? "");
         }
         catch (JsonException) { return null; }
@@ -66,6 +66,7 @@ public static class NexusOAuth
     /// <summary>Called with the new credential after every refresh so the app can store it.</summary>
     public static Action<string>? Refreshed { get; set; }
 
+    private const string ForeignState = "the login answer did not match; try again";
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private static NexusTokens? _latest;
 
@@ -99,7 +100,7 @@ public static class NexusOAuth
         }
         finally { listener.Stop(); }
         var tokens = await TokenRequestAsync([("grant_type", "authorization_code"), ("client_id", ClientId!), ("redirect_uri", RedirectUri),
-            ("code", code), ("code_verifier", verifier)], Guid.NewGuid().ToString("N"), handler, ct);
+            ("code", code), ("code_verifier", verifier)], Guid.NewGuid().ToString("N"), refresh: false, handler, ct);
         _latest = tokens;
         return tokens.Serialize();
     }
@@ -116,7 +117,7 @@ public static class NexusOAuth
             if (_latest is { } l && l.Login == tokens.Login && l.ExpiresAt > tokens.ExpiresAt) tokens = l;
             if (!tokens.Expired(DateTimeOffset.UtcNow)) return tokens;
             var fresh = await TokenRequestAsync([("grant_type", "refresh_token"), ("client_id", ClientId ?? ""), ("refresh_token", tokens.Refresh)],
-                tokens.Login, handler, ct);
+                tokens.Login, refresh: true, handler, ct);
             _latest = fresh;
             Refreshed?.Invoke(fresh.Serialize());
             return fresh;
@@ -141,6 +142,7 @@ public static class NexusOAuth
             var target = line?.Split(' ') is [_, var t, ..] ? t : "";
             if (!target.StartsWith("/callback", StringComparison.Ordinal)) { await RespondAsync(stream, 404, "Not found", ct); continue; }
             var (code, error) = ParseCallback(target, state);
+            if (error == ForeignState) { await RespondAsync(stream, 404, "Not found", ct); continue; } // not our browser tab: keep waiting
             await RespondAsync(stream, 200, code is not null
                 ? "AFTERLIFE is logged in to Nexus Mods. You can close this tab."
                 : "AFTERLIFE was not logged in. You can close this tab and try again.", ct);
@@ -157,7 +159,7 @@ public static class NexusOAuth
             .GroupBy(p => Uri.UnescapeDataString(p[0]))
             .ToDictionary(g => g.Key, g => g.First() is [_, var v] ? Uri.UnescapeDataString(v.Replace('+', ' ')) : "");
         if (map.TryGetValue("error", out var err)) return (null, err == "access_denied" ? "the login was refused on Nexus Mods" : "Nexus Mods login: " + err);
-        if (!map.TryGetValue("state", out var s) || s != state) return (null, "the login answer did not match; try again");
+        if (!map.TryGetValue("state", out var s) || s != state) return (null, ForeignState);
         return map.TryGetValue("code", out var c) && c.Length > 0 ? (c, null) : (null, "Nexus Mods sent no login code");
     }
 
@@ -167,11 +169,11 @@ public static class NexusOAuth
         string? S(string k) => r.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
         if (S("access_token") is not { Length: > 0 } access || S("refresh_token") is not { Length: > 0 } refresh)
             throw new NexusException("unexpected answer from Nexus Mods");
-        var life = r.TryGetProperty("expires_in", out var e) && e.TryGetInt64(out var x) ? x : 3600;
+        var life = r.TryGetProperty("expires_in", out var e) && e.ValueKind == JsonValueKind.Number && e.TryGetInt64(out var x) && x > 0 ? x : 3600;
         return new NexusTokens(access, refresh, now.ToUnixTimeSeconds() + life, login);
     }
 
-    private static async Task<NexusTokens> TokenRequestAsync((string, string)[] fields, string login, HttpMessageHandler? handler, CancellationToken ct)
+    private static async Task<NexusTokens> TokenRequestAsync((string, string)[] fields, string login, bool refresh, HttpMessageHandler? handler, CancellationToken ct)
     {
         using var own = handler is null ? null : NexusHttp.WithHandler(handler);
         var http = own ?? NexusHttp.Api;
@@ -180,11 +182,16 @@ public static class NexusOAuth
         HttpResponseMessage resp;
         try { resp = await http.SendAsync(req, ct); }
         catch (HttpRequestException ex) { throw new NexusException("Nexus Mods is not reachable: " + ex.Message); }
+        catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new NexusException("Nexus Mods did not answer in time"); }
         using (resp)
         {
             var body = await resp.Content.ReadAsStringAsync(ct);
             var code = (int)resp.StatusCode;
-            if (code is >= 400 and < 500) throw new NexusException("the Nexus Mods login expired or was revoked; log in again in Settings") { SignedOut = true };
+            // only a plain refusal ends the login; a rate limit or a blocked request must not log the user out
+            if (code is 400 or 401) throw refresh
+                ? new NexusException("the Nexus Mods login expired or was revoked; log in again in Settings") { SignedOut = true }
+                : new NexusException("Nexus Mods did not accept the login; try again");
+            if (code == 429) throw new NexusException("Nexus Mods rate limit reached; try again later") { RateLimited = true };
             if (!resp.IsSuccessStatusCode) throw new NexusException($"Nexus Mods answered {code}");
             try
             {
@@ -204,10 +211,11 @@ public static class NexusOAuth
             var n = await stream.ReadAsync(buf.AsMemory(total), ct);
             if (n == 0) break;
             total += n;
-            var text = Encoding.ASCII.GetString(buf, 0, total);
-            if (text.IndexOf("\r\n", StringComparison.Ordinal) is var end and >= 0) return text[..end];
+            // read the whole request head: closing a socket with unread data resets it before the page arrives
+            if (Encoding.ASCII.GetString(buf, 0, total).Contains("\r\n\r\n", StringComparison.Ordinal)) break;
         }
-        return null;
+        var head = Encoding.ASCII.GetString(buf, 0, total);
+        return head.IndexOf("\r\n", StringComparison.Ordinal) is var end and >= 0 ? head[..end] : null;
     }
 
     private static async Task RespondAsync(NetworkStream stream, int status, string message, CancellationToken ct)

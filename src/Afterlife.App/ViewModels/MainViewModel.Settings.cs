@@ -135,7 +135,7 @@ public sealed partial class MainViewModel
 
     private async Task SaveNexusKeyAsync(SettingsVm vm, string key)
     {
-        vm.NexusStatus = "Checking the key with Nexus Mods…";
+        vm.NexusStatus = NexusTokens.From(key) is null ? "Checking the key with Nexus Mods…" : "Checking the login with Nexus Mods…";
         vm.NexusTone = Tone.Info;
         try
         {

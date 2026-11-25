@@ -17,7 +17,7 @@ public static class LogPrivacy
 
     private static readonly Regex UserFolder = new(@"(?i)(\b[A-Z]:[\\/]+(?:Users|Documents and Settings)[\\/]+)[^\\/:*?""<>|\r\n]+", RegexOptions.Compiled);
     private static readonly Regex NetworkShare = new(@"\\\\[^\\/\s""']+\\", RegexOptions.Compiled);
-    private static readonly Regex Secret = new(@"(?i)\b(apikey|api_key|key|expires|user_id|token|access_token|refresh_token|code|code_verifier|code_challenge|state|md5)=[^&\s""']+", RegexOptions.Compiled);
+    private static readonly Regex Secret = new(@"(?i)\b(apikey|api_key|key|expires|user_id|token|access_token|refresh_token|code_verifier|code_challenge|md5)=[^&\s""']+", RegexOptions.Compiled);
     private static readonly Regex Mail = new(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", RegexOptions.Compiled);
 
     public static string Scrub(string text) =>
