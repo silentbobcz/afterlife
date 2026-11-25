@@ -245,6 +245,7 @@ public sealed partial class MainViewModel
         if (LockedOffline("Updating from Nexus Mods")) return;
         var m = _overview?.Mods.FirstOrDefault(x => x.Package.PackageId == packageId);
         if (m?.Update is not { } u) return;
+        ExpectUpdate(m.Package.PackageId, u);
         var key = NexusKeyStore.Load();
         // the account check may not have finished yet; without it a Premium account was sent to the website
         if (key is not null && _nexusAccount is null) await CheckNexusAsync(null);
@@ -291,18 +292,19 @@ public sealed partial class MainViewModel
         if (_updateQueue is not null) { await UpdateQueueMenuAsync(); return; }
         if (NexusKeyStore.Load() is not null && _nexusAccount is null) await CheckNexusAsync(null);
         if (_nexusAccount is not { IsPremium: true }) { await UpdateAllViaWebsiteAsync(); return; }
-        var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!)).ToList();
+        var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!, m.Package.PackageId)).ToList();
         if (list.Count == 0) return;
         var ok = await AskAsync(new ConfirmVm("UPDATE ALL?",
             $"AFTERLIFE downloads {list.Count} newer {Plural.Word(list.Count, "version")} from Nexus Mods, puts {Plural.Word(list.Count, "it", "them")} in place of the old {Plural.Word(list.Count, "one", "ones")} (profiles, collections, categories), updates the game and deletes the old versions from the library.",
             "UPDATE ALL", false, list.Select(x => $"{x.ModName}   → {x.Update.Version ?? x.Update.Name}").ToList()));
         if (!ok) return;
+        foreach (var x in list) ExpectUpdate(x.PackageId, x.Update);
         var failed = new List<string>();
         _updateBatch = true;
         try
         {
             var i = 0;
-            foreach (var (name, u) in list)
+            foreach (var (name, u, _) in list)
             {
                 Say($"Updating {name} ({++i}/{list.Count})…", Tone.Info);
                 if (!await UpdateOneAsync(u, quiet: true)) failed.Add(name);
@@ -317,7 +319,7 @@ public sealed partial class MainViewModel
     private async Task UpdateAllViaWebsiteAsync()
     {
         if (_overview is null) return;
-        var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!)).ToList();
+        var list = _overview.Mods.Where(m => m.Update is not null).Select(m => (m.Package.ModName, Update: m.Update!, m.Package.PackageId)).ToList();
         if (list.Count == 0) return;
         if (!SafeNxmRegistered())
         {
@@ -328,8 +330,9 @@ public sealed partial class MainViewModel
             $"Nexus lets free accounts download only on the website. AFTERLIFE opens the download page of each of the {list.Count} mods one after another: click Slow download there and the file comes into AFTERLIFE, replaces the old version, goes into the game and the old version is deleted. The next page opens as soon as the previous file has arrived.",
             "OPEN THE FIRST PAGE", false, list.Select(x => $"{x.ModName}   → {x.Update.Version ?? x.Update.Name}").ToList()));
         if (!ok) return;
+        foreach (var x in list) ExpectUpdate(x.PackageId, x.Update);
         _collectionUpdateChoice = null;
-        _updateQueue = new Queue<(string, NexusUpdate)>(list);
+        _updateQueue = new Queue<(string, NexusUpdate)>(list.Select(x => (x.ModName, x.Update)));
         _updateQueueTotal = list.Count;
         OpenNextUpdatePage();
     }

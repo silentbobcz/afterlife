@@ -11,6 +11,14 @@ public sealed partial class MainViewModel
     /// <param name="Name">The file's own name on the page, for a file that stays beside the others.</param>
     private sealed record Arrival(PackageManifest? Replaces, string? Name);
 
+    /// <summary>
+    /// Updates the user started (UPDATE, UPDATE ALL), by the Nexus file they bring: package to replace. An update
+    /// that is only on offer replaces nothing when its file is downloaded from the page for another reason.
+    /// </summary>
+    private readonly Dictionary<(string ModId, string FileId), string> _updateAsked = [];
+
+    private void ExpectUpdate(string packageId, NexusUpdate u) => _updateAsked[(u.ModId, u.FileId)] = packageId;
+
     private async Task<Arrival> ArrivalOfAsync(NxmLink link, NexusFileInfo info, bool quiet)
     {
         if (_overview is null) return new Arrival(null, null);
@@ -19,9 +27,9 @@ public sealed partial class MainViewModel
             .OrderByDescending(p => p.ImportedAt).ToList();
         if (same.Count == 0) return new Arrival(null, null);
 
-        // the update AFTERLIFE itself found for a package points at this very file
-        var updated = _overview.Mods.FirstOrDefault(m => m.Package.LayerOfModId is null && m.Update is { } u && u.ModId == link.ModId && u.FileId == link.FileId);
-        if (updated is not null) return new Arrival(updated.Package, null);
+        // the user asked AFTERLIFE to update a package with this very file
+        if (_updateAsked.Remove((link.ModId, link.FileId), out var askedId) && same.FirstOrDefault(p => p.PackageId == askedId) is { } asked)
+            return new Arrival(asked, null);
 
         NexusFiles? files = null;
         if (NexusKeyStore.Load() is { } key)

@@ -27,12 +27,21 @@ public static class NexusSamePage
             if (fileId == incomingFileId) continue;
             if (fileId is null) { unknown ??= packageId; continue; }
             var later = Later(files, fileId);
-            if (later.Contains(incomingFileId)) return (SamePageVerdict.Replace, packageId);
             var mine = files.Files.FirstOrDefault(f => f.FileId == fileId);
+            var named = mine is not null && incoming is not null && SameName(mine.Name, incoming.Name);
+            var live = mine is not null && !mine.IsArchived && !mine.Category.Equals("OLD_VERSION", StringComparison.OrdinalIgnoreCase);
+            if (later.Contains(incomingFileId))
+            {
+                // a variant uploaded as "a new version" of another one, while both are still offered: not for us to delete
+                if (live && !named) { unknown ??= packageId; continue; }
+                return (SamePageVerdict.Replace, packageId);
+            }
             // authors often upload the next version without marking what it replaces; the file keeps its name
-            if (mine is not null && incoming is not null && SameName(mine.Name, incoming.Name)) { sameName ??= packageId; continue; }
-            if (later.Count > 0) continue; // its line of versions goes on in another file
-            if (mine is null || mine.IsArchived || mine.Category.Equals("OLD_VERSION", StringComparison.OrdinalIgnoreCase)) unknown ??= packageId;
+            if (named) { sameName ??= packageId; continue; }
+            // its line of versions goes on in another file: marked by Nexus, or a later upload under its own name
+            if (later.Count > 0) continue;
+            if (mine is not null && files.Files.Any(f => f.FileId != fileId && f.UploadedAt > mine.UploadedAt && SameName(f.Name, mine.Name))) continue;
+            if (!live) unknown ??= packageId;
         }
         if (sameName is not null) return (SamePageVerdict.Replace, sameName);
         return unknown is not null ? (SamePageVerdict.Unknown, unknown) : (SamePageVerdict.Separate, null);

@@ -98,7 +98,7 @@ public static class NexusUpdates
     private static string Key(string packageId) => "nexus:update:" + packageId;
     private const string None = "none";
 
-    /// <summary>Follows "file X was replaced by file Y" from our file; without a file id compares the version of the newest main file.</summary>
+    /// <summary>Follows "file X was replaced by file Y" from our file; without a file id compares the version of the page's one main file.</summary>
     public static NexusUpdate? Find(NexusFiles files, string? currentFileId, string? currentVersion, DateTimeOffset now)
     {
         if (currentFileId is not null && files.Files.Any(f => f.FileId == currentFileId))
@@ -110,7 +110,10 @@ public static class NexusUpdates
             var f = files.Files.FirstOrDefault(x => x.FileId == id);
             return f is null || f.IsArchived ? null : new NexusUpdate(files.ModId, f.FileId, f.Version, f.Name, true, now);
         }
-        var main = files.Files.Where(f => f.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)).OrderByDescending(f => f.UploadedAt).FirstOrDefault();
+        // several main files that do not replace each other are different mods of one page: no telling which is ours
+        var mains = files.Files.Where(f => f.Category.Equals("MAIN", StringComparison.OrdinalIgnoreCase)).ToList();
+        var heads = mains.Where(f => !files.Updates.Any(u => u.Old == f.FileId && mains.Any(m => m.FileId == u.New))).ToList();
+        var main = heads.Count == 1 ? heads[0] : null;
         if (main?.Version is null || currentVersion is null) return null;
         return Norm(main.Version) == Norm(currentVersion) ? null : new NexusUpdate(files.ModId, main.FileId, main.Version, main.Name, false, now);
     }

@@ -63,4 +63,41 @@ public class NexusSamePageTests
     {
         Assert.Equal((SamePageVerdict.Separate, (string?)null), Decide("12", ("core", "12")));
     }
+
+    [Fact]
+    public void An_old_file_with_a_later_upload_under_its_name_is_left_alone_without_a_question()
+    {
+        // Core 0.3.0 is in the library, 0.3.1 is on the page unmarked; the data file arrives
+        Assert.Equal((SamePageVerdict.Separate, (string?)null), Decide("21", ("core", "11")));
+    }
+
+    /// <summary>Two variants of one mod, the second uploaded as "a new version" of the first while both stay on offer.</summary>
+    private static NexusFiles Variants(bool firstStillOffered) => NexusClient.ParseFiles("7638", System.Text.Json.JsonDocument.Parse($$"""
+        {"files":[
+          {"file_id":40,"name":"Tattoo Japanese","version":"1.0","category_name":"{{(firstStillOffered ? "MAIN" : "OLD_VERSION")}}","uploaded_timestamp":100,"file_name":"jp.zip"},
+          {"file_id":41,"name":"Tattoo Blackout","version":"1.0","category_name":"MAIN","uploaded_timestamp":200,"file_name":"bo.zip"}],
+         "file_updates":[{"old_file_id":40,"new_file_id":41}]}
+        """).RootElement);
+
+    [Fact]
+    public void A_marked_replacement_of_a_file_still_on_offer_under_another_name_is_never_silent()
+    {
+        Assert.Equal((SamePageVerdict.Unknown, "jp"), NexusSamePage.Decide(Variants(true), "41", [("jp", "40")]));
+        Assert.Equal((SamePageVerdict.Replace, "jp"), NexusSamePage.Decide(Variants(false), "41", [("jp", "40")]));
+    }
+
+    [Fact]
+    public void Without_a_file_id_several_main_files_offer_no_update()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var twoMains = NexusClient.ParseFiles("7638", System.Text.Json.JsonDocument.Parse("""
+            {"files":[
+              {"file_id":40,"name":"Tattoo Japanese","version":"1.0","category_name":"MAIN","uploaded_timestamp":100,"file_name":"jp.zip"},
+              {"file_id":41,"name":"Tattoo Blackout","version":"2.0","category_name":"MAIN","uploaded_timestamp":200,"file_name":"bo.zip"}],
+             "file_updates":[]}
+            """).RootElement);
+        Assert.Null(NexusUpdates.Find(twoMains, null, "1.0", now));
+        // one line of versions, both still listed as main: the newest is the update
+        Assert.Equal("41", NexusUpdates.Find(Variants(true), null, "0.9", now)!.FileId);
+    }
 }
