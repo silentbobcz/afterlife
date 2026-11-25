@@ -8,6 +8,8 @@
     <!-- the tag on GitHub is v$(Version); the zip is AFTERLIFE-$(Version)-win-x64.zip -->
     <VersionPrefix>1.0.0</VersionPrefix>
     <VersionSuffix>beta.3</VersionSuffix>
+    <!-- the version suffix of the marked test build for Nexus Mods (-p:Edition=OAuthPreview) -->
+    <OAuthPreviewSuffix>beta.OAUTH2.1</OAuthPreviewSuffix>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>Silentbobcz</Authors>
     <Product>AFTERLIFE</Product>

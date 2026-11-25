@@ -3,7 +3,7 @@ AFTERLIFE OAuth preview
 
 This is a test build for Nexus Mods, not a normal release. It is the full edition of AFTERLIFE with one difference:
 "LOG IN WITH NEXUS MODS" (OAuth 2.0 with PKCE) is always shown in Settings > Nexus Mods, so the login can be tried
-before AFTERLIFE has a client ID built in. The version of this build ends with "oauth-preview"; it is in the window
+before AFTERLIFE has a client ID built in. This build has its own version, 1.0.0-beta.OAUTH2.1; it is in the window
 title, in About, and in the Application-Version header of every request.
 
 How to try the login

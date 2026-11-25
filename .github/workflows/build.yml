@@ -54,7 +54,7 @@ jobs:
           New-Item -ItemType Directory -Force dist | Out-Null
           # each zip holds one folder AFTERLIFE with the app and its libraries side by side
           if ((Get-FileHash publish/full/AFTERLIFE.dll).Hash -eq (Get-FileHash publish/oauth/AFTERLIFE.dll).Hash) { throw "The full build is identical to the OAuth preview" }
-          foreach ($e in @(@{ From = 'full'; Zip = "AFTERLIFE-$v-win-x64.zip" }, @{ From = 'offline'; Zip = "AFTERLIFE-Offline-$v-win-x64.zip" }, @{ From = 'oauth'; Zip = "AFTERLIFE-OAuth-Preview-$v-win-x64.zip" })) {
+          foreach ($e in @(@{ From = 'full'; Zip = "AFTERLIFE-$v-win-x64.zip" }, @{ From = 'offline'; Zip = "AFTERLIFE-Offline-$v-win-x64.zip" }, @{ From = 'oauth'; Zip = "AFTERLIFE-OAuth-Preview-$($pg.VersionPrefix)-$($pg.OAuthPreviewSuffix)-win-x64.zip" })) {
             if (-not (Test-Path "publish/$($e.From)/AFTERLIFE.exe")) { throw "AFTERLIFE.exe missing in publish/$($e.From)" }
             $dir = "stage/$($e.From)/AFTERLIFE"
             New-Item -ItemType Directory -Force $dir | Out-Null
@@ -153,7 +153,7 @@ jobs:
             echo "- \`AFTERLIFE-$v-win-x64-Setup.exe\` · recommended. The installer of the full edition: installs for your Windows user only (no admin rights) with a Start menu shortcut and an uninstaller. Neither the installer nor the uninstaller ever deletes your library or settings."
             echo "- \`AFTERLIFE-$v-win-x64.zip\` · the same full edition as a folder: unzip anywhere outside the game folder and run \`AFTERLIFE.exe\` in the folder AFTERLIFE. Keep the whole folder together."
             echo "- \`AFTERLIFE-Offline-$v-win-x64.zip\` · AFTERLIFE Offline, the edition published on Nexus Mods: the same app without any connection to Nexus Mods (no API key, no downloads, updates or collections) until Nexus Mods registers AFTERLIFE."
-            echo "- \`AFTERLIFE-OAuth-Preview-$v-win-x64.zip\` · **not for normal use.** A marked test build for Nexus Mods to try the new *Log in with Nexus Mods* (OAuth 2.0 with PKCE); it needs an OAuth client ID, see \`OAUTH-PREVIEW.txt\` inside."
+            echo "- \`AFTERLIFE-OAuth-Preview-…-win-x64.zip\` · **not for normal use.** A marked test build with a version of its own for Nexus Mods to try the new *Log in with Nexus Mods* (OAuth 2.0 with PKCE); it needs an OAuth client ID, see \`OAUTH-PREVIEW.txt\` inside."
             echo
             echo "Updating from an older version: your library and settings stay. If your library is inside the old AFTERLIFE folder, do not delete that folder; see *Updating AFTERLIFE* in the user guide."
             echo "Not code-signed yet: on the SmartScreen warning click *More info* → *Run anyway*. Check a download with its \`.sha256\` file."

@@ -16,8 +16,8 @@ public static class AppEdition
 #endif
 
     /// <summary>
-    /// <c>-p:Edition=OAuthPreview</c>: the full edition marked as a test build for Nexus Mods. Its version ends with
-    /// "oauth-preview", Log in with Nexus Mods is always shown, and the OAuth client ID comes from the first line of
+    /// <c>-p:Edition=OAuthPreview</c>: the full edition marked as a test build for Nexus Mods. Its version is its own
+    /// (OAuthPreviewSuffix in Directory.Build.props), Log in with Nexus Mods is always shown, and the OAuth client ID comes from the first line of
     /// <see cref="ClientIdFile"/> next to the executable, so the login can be tried before an ID is built in.
     /// </summary>
 #if OAUTH_PREVIEW
