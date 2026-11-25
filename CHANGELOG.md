@@ -5,7 +5,7 @@ All notable changes. Versions follow [semantic versioning](https://semver.org/);
 ## 1.0.0-beta.3
 
 - **Log in with Nexus Mods now uses OAuth**: the login that replaces pasting a personal API key follows Nexus Mods' current OAuth 2.0 with PKCE instead of the older single sign-on. You approve AFTERLIFE in the browser, the login comes back to AFTERLIFE on your own PC and renews itself; revoking it on nexusmods.com logs AFTERLIFE out. The button appears once Nexus Mods issues AFTERLIFE's client ID; a personal key keeps working until then, and nothing else changes in this version.
-- **OAuth preview build**: releases carry one more zip, `AFTERLIFE-OAuth-Preview`, a marked test build for Nexus Mods in which the login button is always shown and the client ID is read from a text file next to the app. It is not meant for normal use.
+- **OAuth preview build**: a marked test build for Nexus Mods (`AFTERLIFE-OAuth-Preview`, version 1.0.0-beta.OAUTH2.1) in which the login button is always shown and the client ID is read from a text file next to the app. It is published on its own, is not part of a normal release and is not meant for normal use.
 
 ## 1.0.0-beta.2
 
