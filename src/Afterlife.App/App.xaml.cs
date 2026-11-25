@@ -13,6 +13,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
         if (AppEdition.Offline) Afterlife.Infrastructure.NexusHttp.Disable(); // no HTTP client is ever created
+        // a refreshed login survives a restart; a login the user removed meanwhile stays removed
+        else Afterlife.Infrastructure.NexusOAuth.Refreshed = c => { if (Services.NexusKeyStore.Load() is not null) Services.NexusKeyStore.Save(c); };
         DispatcherUnhandledException += OnUnhandled;
         AppDomain.CurrentDomain.UnhandledException += (_, args) => Log(args.ExceptionObject as Exception);
         TaskScheduler.UnobservedTaskException += (_, args) => { Log(args.Exception); args.SetObserved(); };

@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
+## Unreleased
+
+- **Log in with Nexus Mods now uses OAuth**: the login that replaces pasting a personal API key follows Nexus Mods' current OAuth 2.0 with PKCE instead of the older single sign-on. You approve AFTERLIFE in the browser, the login comes back to AFTERLIFE on your own PC and renews itself; revoking it on nexusmods.com logs AFTERLIFE out. The button appears once Nexus Mods issues AFTERLIFE's client ID; a personal key keeps working until then.
+
 ## 1.0.0-beta.2
 
 - **Mod Manager Download no longer opens a new window**: when the running AFTERLIFE could not be reached (for example because it runs as administrator, or was still starting), each click on Mod Manager Download opened another AFTERLIFE window. Now the link always goes to the window that is open, also as administrator, and several quick clicks each become their own download; if it really cannot get there, a short message says why instead.

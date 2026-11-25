@@ -276,7 +276,7 @@ Good to know:
 
 AFTERLIFE uses your personal Nexus Mods API key. Get it on [nexusmods.com → Site preferences → API Keys](https://www.nexusmods.com/settings/api-keys) (*Personal API Key*), paste it in **Settings → Nexus Mods** and **SAVE KEY**. AFTERLIFE checks it and shows your account type. The key is stored encrypted for your Windows user; **Remove key** deletes it.
 
-*Log in with Nexus Mods* (single sign-on) will replace the copy-paste once Nexus Mods has registered AFTERLIFE as an application.
+**LOG IN WITH NEXUS MODS** will replace the copy-paste once Nexus Mods has registered AFTERLIFE as an application: your browser opens, you approve AFTERLIFE on nexusmods.com, and the login comes back by itself. You can revoke it on nexusmods.com at any time.
 
 ### Mod Manager Download
 

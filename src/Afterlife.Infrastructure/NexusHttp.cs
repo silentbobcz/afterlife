@@ -34,13 +34,15 @@ public static class NexusHttp
     public static HttpClient WithHandler(HttpMessageHandler handler) => Create(new HttpClient(handler), ApiTimeout);
 
     /// <summary>
-    /// A request to the Nexus Mods API with the key and the application headers on the request itself.
+    /// A request to the Nexus Mods API with the credential (OAuth bearer token or personal key) and the application
+/// headers on the request itself.
     /// A relative <paramref name="uri"/> is resolved against <see cref="NexusClient.ApiBase"/>.
     /// </summary>
-    public static HttpRequestMessage ApiRequest(HttpMethod method, string uri, string apiKey, string appVersion, HttpContent? content = null)
+    public static HttpRequestMessage ApiRequest(HttpMethod method, string uri, string credential, string appVersion, HttpContent? content = null)
     {
         var req = new HttpRequestMessage(method, new Uri(ApiBase, uri)) { Content = content };
-        req.Headers.Add("apikey", apiKey);
+        if (NexusTokens.From(credential) is { } tokens) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.Access);
+        else req.Headers.Add("apikey", credential);
         req.Headers.Add("Application-Name", "AFTERLIFE");
         req.Headers.Add("Application-Version", appVersion);
         req.Headers.UserAgent.Add(new ProductInfoHeaderValue("AFTERLIFE", appVersion));

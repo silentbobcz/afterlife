@@ -130,19 +130,6 @@ public class UpdateFeedTests
     }
 }
 
-public class SsoTests
-{
-    [Fact]
-    public void Reads_sso_messages_and_stays_hidden_without_a_slug()
-    {
-        Assert.False(NexusSso.Available);
-        Assert.Null(NexusSso.ParseMessage("""{"success":true,"data":{"connection_token":"t"},"error":null}""", out var c));
-        Assert.True(c);
-        Assert.Equal("KEY", NexusSso.ParseMessage("""{"success":true,"data":{"api_key":"KEY"},"error":null}""", out _));
-        Assert.Throws<NexusException>(() => NexusSso.ParseMessage("""{"success":false,"data":null,"error":"bad"}""", out _));
-    }
-}
-
 public class NexusLinkerTests
 {
     /// <summary>Answers by the path of the request; an unknown path is a 404, like on Nexus Mods.</summary>

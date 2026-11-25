@@ -211,8 +211,8 @@ public sealed partial class SettingsVm : OverlayVm
         finally { Busy = false; }
     }
 
-    /// <summary>Nexus Mods single sign-on; shown only once Nexus Mods has issued the application slug.</summary>
-    public bool SsoAvailable => NexusSso.Available;
+    /// <summary>Log in with Nexus Mods (OAuth); shown only once Nexus Mods has issued the client ID.</summary>
+    public bool LoginAvailable => NexusOAuth.Available;
 
     [RelayCommand]
     private async Task LoginNexus()
@@ -223,10 +223,10 @@ public sealed partial class SettingsVm : OverlayVm
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var key = await NexusSso.LoginAsync(AppLinks.Open, cts.Token);
-            await _a.SaveNexusKey(this, key);
+            var credential = await NexusOAuth.LoginAsync(AppLinks.Open, cts.Token);
+            await _a.SaveNexusKey(this, credential);
         }
-        catch (Exception ex) when (ex is NexusException or OperationCanceledException or System.Net.WebSockets.WebSocketException or System.Text.Json.JsonException)
+        catch (Exception ex) when (ex is NexusException or OperationCanceledException or System.Net.Sockets.SocketException or System.IO.IOException)
         {
             NexusStatus = ex is OperationCanceledException ? "Login timed out · try again or paste your key" : "Login failed: " + ex.Message;
             NexusTone = Tone.Block;

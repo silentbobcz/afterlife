@@ -44,6 +44,8 @@ public sealed class NexusException(string message) : Exception(message)
     public bool RateLimited { get; init; }
     /// <summary>Nexus Mods answered 404: it does not know what was asked for.</summary>
     public bool NotFound { get; init; }
+    /// <summary>The OAuth login was revoked or expired for good: the user has to log in again.</summary>
+    public bool SignedOut { get; init; }
 }
 
 /// <summary>A mod the Nexus page lists as required.</summary>
@@ -260,7 +262,8 @@ public static class NexusInfo
 
 /// <summary>
 /// Minimal Nexus Mods API v1 client: who owns the key (Premium or not), mod and file names, download links.
-/// Every user enters their own personal API key; it never leaves this machine except to api.nexusmods.com.
+/// The credential is the user's OAuth login (<see cref="NexusTokens"/>) or, in test builds, a personal API key;
+/// it never leaves this machine except to Nexus Mods.
 /// </summary>
 public sealed class NexusClient : IDisposable
 {
@@ -270,14 +273,25 @@ public sealed class NexusClient : IDisposable
     public const string GraphQl = "https://api.nexusmods.com/v2/graphql";
     public const string CyberpunkGameId = "3333";
 
-    private readonly string _apiKey, _appVersion;
+    private readonly string _appVersion;
+    private string _apiKey;
+    private readonly HttpMessageHandler? _handler;
     private readonly HttpClient? _own; // only with an injected handler; otherwise the shared client of NexusHttp
     private HttpClient Http => _own ?? NexusHttp.Api;
 
-    public NexusClient(string apiKey, string appVersion, HttpMessageHandler? handler = null)
+    public NexusClient(string credential, string appVersion, HttpMessageHandler? handler = null)
     {
-        (_apiKey, _appVersion) = (apiKey, appVersion);
+        (_apiKey, _appVersion, _handler) = (credential, appVersion, handler);
         _own = handler is null ? null : NexusHttp.WithHandler(handler);
+    }
+
+    /// <summary>The credential for the next request; an OAuth access token is refreshed first when it is about to expire.</summary>
+    private async Task<string> CredentialAsync(CancellationToken ct)
+    {
+        if (NexusTokens.From(_apiKey) is not { } tokens) return _apiKey;
+        var fresh = await NexusOAuth.FreshAsync(tokens, ct, _handler);
+        if (fresh != tokens) _apiKey = fresh.Serialize();
+        return _apiKey;
     }
 
     public async Task<NexusAccount> ValidateAsync(CancellationToken ct = default)
@@ -324,7 +338,7 @@ public sealed class NexusClient : IDisposable
     public async Task<CollectionRevisionInfo> CollectionRevisionAsync(CollectionLink link, CancellationToken ct = default)
     {
         var body = JsonSerializer.Serialize(new { query = CollectionLogic.RevisionQuery, variables = new { slug = link.Slug, revision = link.Revision, domain = link.Game } });
-        using var req = NexusHttp.ApiRequest(HttpMethod.Post, GraphQl, _apiKey, _appVersion, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        using var req = NexusHttp.ApiRequest(HttpMethod.Post, GraphQl, await CredentialAsync(ct), _appVersion, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
         HttpResponseMessage resp;
         try { resp = await Http.SendAsync(req, ct); }
         catch (HttpRequestException ex) { throw new NexusException("Nexus Mods is not reachable: " + ex.Message); }
@@ -456,7 +470,7 @@ public sealed class NexusClient : IDisposable
     {
         const string query = "query($modId: ID!, $gameId: ID!) { mod(modId: $modId, gameId: $gameId) { modRequirements { nexusRequirements { nodes { modId modName url externalRequirement notes } } } } }";
         var body = JsonSerializer.Serialize(new { query, variables = new { modId, gameId = CyberpunkGameId } });
-        using var req = NexusHttp.ApiRequest(HttpMethod.Post, GraphQl, _apiKey, _appVersion, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        using var req = NexusHttp.ApiRequest(HttpMethod.Post, GraphQl, await CredentialAsync(ct), _appVersion, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
         using var resp = await Http.SendAsync(req, ct);
         if (!resp.IsSuccessStatusCode) throw new NexusException($"Nexus Mods answered {(int)resp.StatusCode}");
         using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
@@ -533,7 +547,7 @@ public sealed class NexusClient : IDisposable
 
     private async Task<JsonDocument> GetJsonAsync(string path, CancellationToken ct)
     {
-        using var req = NexusHttp.ApiRequest(HttpMethod.Get, path, _apiKey, _appVersion);
+        using var req = NexusHttp.ApiRequest(HttpMethod.Get, path, await CredentialAsync(ct), _appVersion);
         HttpResponseMessage resp;
         try { resp = await Http.SendAsync(req, ct); }
         catch (HttpRequestException ex) { throw new NexusException("Nexus Mods is not reachable: " + ex.Message); }
@@ -545,7 +559,7 @@ public sealed class NexusClient : IDisposable
             if (!resp.IsSuccessStatusCode)
                 throw new NexusException((int)resp.StatusCode switch
                 {
-                    401 => "the API key was not accepted; paste it again from your Nexus Mods account",
+                    401 => "Nexus Mods did not accept the login; log in again or paste your key again in Settings",
                     403 => "Nexus Mods refused the download. Free accounts download with the Mod Manager Download button on the website",
                     404 => "Nexus Mods does not know this file",
                     410 => "the download link expired; click Mod Manager Download again",
@@ -565,112 +579,4 @@ public sealed class NexusClient : IDisposable
     }
 
     public void Dispose() => _own?.Dispose(); // the shared client stays for the next action
-}
-
-/// <summary>
-/// Nexus Mods single sign-on (wss://sso.nexusmods.com): the user approves AFTERLIFE on the website and the key comes
-/// Back without copying. Needs the application slug Nexus Mods issues after registration (API Acceptable Use Policy);
-/// Until then <see cref="ApplicationSlug"/> is null and the app uses the personal key.
-/// </summary>
-public static class NexusSso
-{
-    public const string Endpoint = "wss://sso.nexusmods.com";
-    /// <summary>Issued by Nexus Mods after the application is registered (support@nexusmods.com).</summary>
-    public static string? ApplicationSlug { get; set; }
-    public static bool Available => !string.IsNullOrWhiteSpace(ApplicationSlug);
-
-    public static string ApprovalPage(string id) => $"https://www.nexusmods.com/sso?id={Uri.EscapeDataString(id)}&application={Uri.EscapeDataString(ApplicationSlug ?? "")}";
-
-    public static async Task<string> LoginAsync(Action<string> openBrowser, CancellationToken ct)
-    {
-        if (!Available) throw new NexusException("Log in with Nexus Mods is not available in this version; paste your personal key");
-        using var ws = new System.Net.WebSockets.ClientWebSocket();
-        await ws.ConnectAsync(new Uri(Endpoint), ct);
-        var id = Guid.NewGuid().ToString();
-        await SendAsync(ws, JsonSerializer.Serialize(new { id, token = (string?)null, protocol = 2 }), ct);
-        var opened = false;
-        while (!ct.IsCancellationRequested && ws.State == System.Net.WebSockets.WebSocketState.Open)
-        {
-            var text = await ReceiveAsync(ws, ct);
-            if (text is null) break;
-            var key = ParseMessage(text, out var connected);
-            if (connected && !opened) { opened = true; openBrowser(ApprovalPage(id)); }
-            if (key is not null)
-            {
-                try { await ws.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None); } catch (System.Net.WebSockets.WebSocketException) { }
-                return key;
-            }
-        }
-        throw new NexusException("the login was not finished");
-    }
-
-    /// <summary>Returns the API key when the message carries it; connected = the server accepted the request.</summary>
-    public static string? ParseMessage(string text, out bool connected)
-    {
-        connected = false;
-        using var doc = JsonDocument.Parse(text);
-        var r = doc.RootElement;
-        if (!r.TryGetProperty("success", out var ok) || ok.ValueKind != JsonValueKind.True)
-        {
-            var err = r.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String ? e.GetString() : "rejected";
-            throw new NexusException("Nexus Mods login: " + err);
-        }
-        if (!r.TryGetProperty("data", out var d) || d.ValueKind != JsonValueKind.Object) return null;
-        if (d.TryGetProperty("connection_token", out _)) connected = true;
-        return d.TryGetProperty("api_key", out var k) && k.ValueKind == JsonValueKind.String ? k.GetString() : null;
-    }
-
-    private static Task SendAsync(System.Net.WebSockets.ClientWebSocket ws, string text, CancellationToken ct) =>
-        ws.SendAsync(System.Text.Encoding.UTF8.GetBytes(text), System.Net.WebSockets.WebSocketMessageType.Text, true, ct);
-
-    private static async Task<string?> ReceiveAsync(System.Net.WebSockets.ClientWebSocket ws, CancellationToken ct)
-    {
-        var buffer = new byte[8192];
-        using var ms = new MemoryStream();
-        while (true)
-        {
-            var r = await ws.ReceiveAsync(buffer, ct);
-            if (r.MessageType == System.Net.WebSockets.WebSocketMessageType.Close) return null;
-            ms.Write(buffer, 0, r.Count);
-            if (r.EndOfMessage) return System.Text.Encoding.UTF8.GetString(ms.ToArray());
-            if (ms.Length > 1 << 20) throw new NexusException("unexpected answer from Nexus Mods");
-        }
-    }
-}
-
-/// <summary>
-/// The picture of a mod from its Nexus page, kept in the library so it is fetched once per mod (only for mods
-/// In the library, never in bulk). Missing or failing pictures just leave the details without one.
-/// </summary>
-public static class ModImageCache
-{
-    private static HttpClient Http => NexusHttp.Images;
-    public const long MaxBytes = 4 * 1024 * 1024;
-
-    public static string PathFor(LibraryPaths lib, string modId, string url)
-    {
-        var ext = Path.GetExtension(new Uri(url).AbsolutePath).ToLowerInvariant();
-        if (ext is not (".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" or ".bmp")) ext = ".jpg";
-        return Path.Combine(lib.Images, $"{modId}{ext}");
-    }
-
-    public static string? Cached(LibraryPaths lib, string modId, string? url) =>
-        url is null || !Uri.IsWellFormedUriString(url, UriKind.Absolute) ? null : File.Exists(PathFor(lib, modId, url)) ? PathFor(lib, modId, url) : null;
-
-    public static async Task<string?> EnsureAsync(LibraryPaths lib, string modId, string? url, CancellationToken ct = default)
-    {
-        if (url is null || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return null;
-        var path = PathFor(lib, modId, url);
-        if (File.Exists(path)) return path;
-        Directory.CreateDirectory(lib.Images);
-        using var resp = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, ct);
-        if (!resp.IsSuccessStatusCode || resp.Content.Headers.ContentLength > MaxBytes) return null;
-        if (resp.Content.Headers.ContentType?.MediaType is { } mt && !mt.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) return null;
-        var bytes = await resp.Content.ReadAsByteArrayAsync(ct);
-        if (bytes.Length == 0 || bytes.Length > MaxBytes) return null;
-        var tmp = path + ".part";
-        await File.WriteAllBytesAsync(tmp, bytes, ct);
-        File.Move(tmp, path, true);
-        return path;
-    }
 }
