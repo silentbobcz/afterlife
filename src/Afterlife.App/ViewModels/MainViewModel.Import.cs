@@ -97,7 +97,8 @@ public sealed partial class MainViewModel
     }
 
     /// <summary>
-    /// Imports a downloaded Nexus file; a newer file of a mod already in the library replaces it in the profile.
+    /// Imports a downloaded Nexus file; the next version of a package in the library replaces it in the profile,
+    /// any other file of the same page comes in as a mod of its own (<see cref="ArrivalOfAsync"/>).
     /// <paramref name="intoNew"/>: a download the user started puts a mod that is new to the library into NEW.
     /// </summary>
     private async Task<List<PackageManifest>> ImportDownloadedAsync(NxmLink link, string dest, NexusFileInfo info,
@@ -108,8 +109,10 @@ public sealed partial class MainViewModel
         // a file the load list queue waits for comes in switched off, as with Premium
         var forList = ListQueueWants(link);
         if (forList) { enable = false; quiet = true; }
-        var older = OlderVersionOf(link.ModId, link.FileId);
-        var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, info.ModName ?? older?.ModName, info.Version ?? info.ModVersion, older?.ModId),
+        // another file of a page already in the library replaces a package only when it is its next version
+        var arrival = await ArrivalOfAsync(link, info, quiet);
+        var older = arrival.Replaces;
+        var imported = await ImportFilesCoreAsync([dest], new NexusSource(link.ModId, link.FileId, older?.ModName ?? arrival.Name ?? info.ModName, info.Version ?? info.ModVersion, older?.ModId),
             presetChoices ?? older?.FomodChoices, enable, quiet, intoNew && older is null && !forList); // an update keeps the place of the old version
         if (older is not null && imported.Count == 1 && imported[0].PackageId != older.PackageId) await ReplaceOlderAsync(older, imported[0], quiet);
         if (imported.Count > 0) UpdateQueueArrived(link);
