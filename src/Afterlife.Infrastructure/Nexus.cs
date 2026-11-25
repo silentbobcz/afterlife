@@ -580,3 +580,40 @@ public sealed class NexusClient : IDisposable
 
     public void Dispose() => _own?.Dispose(); // the shared client stays for the next action
 }
+
+/// <summary>
+/// The picture of a mod from its Nexus page, kept in the library so it is fetched once per mod (only for mods
+/// In the library, never in bulk). Missing or failing pictures just leave the details without one.
+/// </summary>
+public static class ModImageCache
+{
+    private static HttpClient Http => NexusHttp.Images;
+    public const long MaxBytes = 4 * 1024 * 1024;
+
+    public static string PathFor(LibraryPaths lib, string modId, string url)
+    {
+        var ext = Path.GetExtension(new Uri(url).AbsolutePath).ToLowerInvariant();
+        if (ext is not (".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" or ".bmp")) ext = ".jpg";
+        return Path.Combine(lib.Images, $"{modId}{ext}");
+    }
+
+    public static string? Cached(LibraryPaths lib, string modId, string? url) =>
+        url is null || !Uri.IsWellFormedUriString(url, UriKind.Absolute) ? null : File.Exists(PathFor(lib, modId, url)) ? PathFor(lib, modId, url) : null;
+
+    public static async Task<string?> EnsureAsync(LibraryPaths lib, string modId, string? url, CancellationToken ct = default)
+    {
+        if (url is null || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return null;
+        var path = PathFor(lib, modId, url);
+        if (File.Exists(path)) return path;
+        Directory.CreateDirectory(lib.Images);
+        using var resp = await Http.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (!resp.IsSuccessStatusCode || resp.Content.Headers.ContentLength > MaxBytes) return null;
+        if (resp.Content.Headers.ContentType?.MediaType is { } mt && !mt.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) return null;
+        var bytes = await resp.Content.ReadAsByteArrayAsync(ct);
+        if (bytes.Length == 0 || bytes.Length > MaxBytes) return null;
+        var tmp = path + ".part";
+        await File.WriteAllBytesAsync(tmp, bytes, ct);
+        File.Move(tmp, path, true);
+        return path;
+    }
+}
