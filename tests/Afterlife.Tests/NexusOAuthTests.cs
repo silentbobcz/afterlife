@@ -28,10 +28,14 @@ public class NexusOAuthTests
     }
 
     [Fact]
-    public void Pkce_challenge_matches_the_rfc_example()
+    public void Pkce_challenge_is_the_url_safe_sha256_of_the_verifier()
     {
-        Assert.Equal("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM", NexusOAuth.Challenge("dBjftJeZ4CVP-mJ92IqVc8_xF6r4dl0VHhxDB_6xOgQ"));
+        var hash = System.Security.Cryptography.SHA256.HashData("abc"u8.ToArray());
+        Assert.Equal(Convert.ToBase64String(hash).TrimEnd('=').Replace('+', '-').Replace('/', '_'), NexusOAuth.Challenge("abc"));
+        Assert.Matches("^[A-Za-z0-9_-]{43}$", NexusOAuth.Challenge("abc"));
         var (verifier, challenge) = NexusOAuth.NewPkce();
+        Assert.Matches("^[A-Za-z0-9_-]{43}$", verifier);
+        Assert.NotEqual(verifier, NexusOAuth.NewPkce().Verifier);
         Assert.Equal(43, verifier.Length);
         Assert.Equal(NexusOAuth.Challenge(verifier), challenge);
     }
