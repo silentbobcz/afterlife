@@ -1,7 +1,7 @@
 # AFTERLIFE: co čeká na tebe
 
 Naposledy upraveno: 25. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
-Další volná čísla: A30 B12 C12 D8 · balíky S2 O29 F6
+Další volná čísla: A31 B12 C12 D8 · balíky S2 O29 F6
 
 **Stav (25. 11.):** poslední běžné vydání je **1.0.0-beta.2** (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.2>). V `main` je připravená **1.0.0-beta.3, zatím nevydaná**: přihlášení k Nexus Mods je přepsané ze starého SSO na OAuth 2.0 s PKCE, jak to Nexus chce u nových aplikací. Tlačítko LOG IN WITH NEXUS MODS zůstává skryté, dokud Nexus nevydá Client ID (D7); osobní klíč funguje dál. Pro podporu Nexusu je samostatně vydaný jen zkušební zip **1.0.0-beta.OAUTH2.1** (<https://github.com/silentbobcz/afterlife/releases/tag/1.0.0-beta.OAUTH2.1>), žádná plná edice ani Offline. Na Nexus Mods je zatím beta.1 (D6). Všechno je v `main`, žádná pracovní větev nezůstala.
 
@@ -14,6 +14,7 @@ Další volná čísla: A30 B12 C12 D8 · balíky S2 O29 F6
 | A24 | Import load listu s účtem zdarma | Zkušební sestavení plné edice → LIST & ORDER → IMPORT ORDER | Jen pokud máš po ruce účet Nexus bez Premium: 1. Načti load list, ve kterém chybí mod se souborem z Nexusu. 2. Klikni „Get from Nexus, page by page“ a na stránce Mod Manager Download. 3. Po posledním souboru LOAD THE LIST AGAIN. Napiš, kde se to zadrhlo. | ☐ čeká na sestavení |
 | A28 | Jedno okno při Mod Manager Download (O28) | Zkušební sestavení plné edice (`AFTERLIFE-full-test`) a Nexus Mods | 1. Spusť AFTERLIFE normálně a u tří různých modů rychle za sebou klikni na Mod Manager Download: má zůstat jedno okno a přijít tři stažení. 2. AFTERLIFE zavři, spusť ho pravým tlačítkem „Spustit jako správce“ a zopakuj to. Napiš, jestli se otevřelo druhé okno nebo se objevilo hlášení „AFTERLIFE is already running…“. | ☐ čeká na sestavení |
 | A29 | Přihlášení přes Nexus Mods (OAuth) | Až přijde Client ID (D7): Nastavení → Nexus Mods → LOG IN WITH NEXUS MODS | 1. Klikni na tlačítko, v prohlížeči AFTERLIFE schval. 2. Karta v prohlížeči má napsat, že je AFTERLIFE přihlášený, a v Nastavení má být tvoje jméno a Premium. 3. Stáhni jeden mod a spusť kontrolu aktualizací. 4. Na nexusmods.com (API Access) AFTERLIFE odvolej a spusť ho znovu: má ukázat „no key“ a chtít nové přihlášení. Napiš, kde se to zadrhlo. | ☐ čeká na D7 |
+| A30 | Víc souborů z jedné stránky Nexusu vedle sebe | Zkušební sestavení plné edice (`AFTERLIFE-full-test`) a Nexus Mods | 1. Ze stránky <https://www.nexusmods.com/cyberpunk2077/mods/38654?tab=files> stáhni přes Mod Manager Download „Cyberpunk Hair Overhaul“ a potom „Hairstyles“: v knihovně mají zůstat oba, druhý pod jménem souboru. 2. Totéž s „Mandy - Main“ a „Mandy - Overhaul“ ze stránky 39571. 3. U modu, který má aktualizaci, klikni na UPDATE: stará verze se má nahradit jako dřív. Napiš, jestli se některý mod ztratil, nebo jestli se okno zeptalo „NEWER VERSION, OR A FILE OF ITS OWN?“ a u čeho. | ☐ čeká na sestavení |
 
 ## D. Dodat
 
