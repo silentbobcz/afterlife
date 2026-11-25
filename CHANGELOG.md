@@ -2,7 +2,7 @@
 
 All notable changes. Versions follow [semantic versioning](https://semver.org/); everything before 1.0 is beta.
 
-## Unreleased
+## 1.0.0-beta.4
 
 - **A file from a Nexus page you already have a mod of is replaced only when it is certain**: 1.0.0-beta.3 still replaced a mod without asking when an update was merely on offer for it and you downloaded that file from the page yourself, or when the author had uploaded a variant as "a new version" of another file that is still offered. Now only UPDATE and UPDATE ALL replace on your word; a download from the page replaces a mod when the old file is gone from the page's current files or the new one carries the same name, and otherwise comes in as a mod of its own. AFTERLIFE no longer asks about an old file whose newer version is on the page under the same name.
 - **No update offered when it cannot be told which file is yours**: a mod added from a file that could not be matched to one file of its Nexus page was offered the newest main file of the page as its update, even on pages with several main files that belong side by side. Such a mod now gets an update only when the page has one main file.
