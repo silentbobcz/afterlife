@@ -212,11 +212,17 @@ public sealed partial class SettingsVm : OverlayVm
     }
 
     /// <summary>Log in with Nexus Mods (OAuth); shown only once Nexus Mods has issued the client ID.</summary>
-    public bool LoginAvailable => NexusOAuth.Available;
+    public bool LoginAvailable => NexusOAuth.Available || AppEdition.OAuthPreview;
 
     [RelayCommand]
     private async Task LoginNexus()
     {
+        if (!NexusOAuth.Available)
+        {
+            NexusStatus = $"No OAuth client ID yet · write it on the first line of {AppEdition.ClientIdFile} next to AFTERLIFE.exe and start AFTERLIFE again";
+            NexusTone = Tone.Warn;
+            return;
+        }
         Busy = true;
         NexusStatus = "Approve AFTERLIFE in the browser window that opens…";
         NexusTone = Tone.Info;

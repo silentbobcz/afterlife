@@ -1,0 +1,40 @@
+AFTERLIFE OAuth preview
+=======================
+
+This is a test build for Nexus Mods, not a normal release. It is the full edition of AFTERLIFE with one difference:
+"LOG IN WITH NEXUS MODS" (OAuth 2.0 with PKCE) is always shown in Settings > Nexus Mods, so the login can be tried
+before AFTERLIFE has a client ID built in. The version of this build ends with "oauth-preview"; it is in the window
+title, in About, and in the Application-Version header of every request.
+
+How to try the login
+--------------------
+1. Open nexus-client-id.txt in this folder and write the OAuth client ID on its first line. Save it.
+2. Start AFTERLIFE.exe, open Settings > Nexus Mods and click LOG IN WITH NEXUS MODS.
+3. Your browser opens the Nexus Mods approval page. After you approve, the browser is sent to
+   http://127.0.0.1:47213/callback, where AFTERLIFE is listening, and the tab says that AFTERLIFE is logged in.
+4. Settings now shows the account name and Premium or Free.
+
+What the client needs
+---------------------
+- Public client, PKCE with S256, no client secret
+- Redirect URI: http://127.0.0.1:47213/callback
+- No scopes
+
+What AFTERLIFE does with the login
+----------------------------------
+- Authorize: https://users.nexusmods.com/oauth/authorize
+- Token and refresh: https://users.nexusmods.com/oauth/token
+- The access token goes on API v1 and v2 requests as "Authorization: Bearer". It is refreshed a minute before it
+  runs out. Both tokens are stored encrypted with Windows DPAPI for the current Windows user and are sent nowhere
+  except Nexus Mods.
+- If the refresh is refused (the app was revoked on nexusmods.com), AFTERLIFE forgets the login and asks for a new one.
+- "Remove key" in Settings deletes the login from this PC.
+
+A personal API key still works in this build, as in the normal release.
+
+Good to know
+------------
+- This build uses the same settings folder (%APPDATA%\AFTERLIFE) and the same library as a normal AFTERLIFE on this PC.
+- If port 47213 is taken, set the environment variable AFTERLIFE_NEXUS_REDIRECT_PORT to another port before starting
+  (the redirect URI of the client must then use that port).
+- Source of the login: src/Afterlife.Infrastructure/NexusOAuth.cs in https://github.com/silentbobcz/afterlife

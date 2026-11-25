@@ -19,6 +19,8 @@ public partial class App : Application
             var stored = Services.NexusKeyStore.Load() is { } s ? Afterlife.Infrastructure.NexusTokens.From(s) : null;
             if (stored is not null && stored.Login == Afterlife.Infrastructure.NexusTokens.From(c)?.Login) Services.NexusKeyStore.Save(c);
         };
+        if (AppEdition.OAuthPreview && !Afterlife.Infrastructure.NexusOAuth.Available)
+            Afterlife.Infrastructure.NexusOAuth.ClientId = AppEdition.PreviewClientId();
         DispatcherUnhandledException += OnUnhandled;
         AppDomain.CurrentDomain.UnhandledException += (_, args) => Log(args.ExceptionObject as Exception);
         TaskScheduler.UnobservedTaskException += (_, args) => { Log(args.Exception); args.SetObserved(); };

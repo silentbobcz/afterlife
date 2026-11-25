@@ -1,9 +1,9 @@
 # AFTERLIFE: co čeká na tebe
 
-Naposledy upraveno: 24. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
-Další volná čísla: A29 B12 C12 D7 · balíky S2 O29 F6
+Naposledy upraveno: 25. 11. 2026. Když něco vyřídíš, napiš číslo úkolu (třeba „A18 hotovo“ nebo „C11 první možnost“) v kterémkoli vláknu.
+Další volná čísla: A30 B12 C12 D8 · balíky S2 O29 F6
 
-**Stav (24. 11.):** verze **1.0.0-beta.2 je vydaná** na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.2>): instalátor a zip plné edice a Offline zip, každý se `.sha256`. Na Nexus Mods je zatím beta.1 (D6). Všechno je v `main`, žádná pracovní větev nezůstala.
+**Stav (25. 11.):** verze **1.0.0-beta.3** (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.3>): přihlášení k Nexus Mods je přepsané ze starého SSO na OAuth 2.0 s PKCE, jak to Nexus chce u nových aplikací. Tlačítko LOG IN WITH NEXUS MODS zůstává skryté, dokud Nexus nevydá Client ID (D7); osobní klíč funguje dál. Vydání má navíc označené zkušební sestavení `AFTERLIFE-OAuth-Preview-…zip` pro podporu Nexusu. Na Nexus Mods je zatím beta.1 (D6). Všechno je v `main`, žádná pracovní větev nezůstala.
 
 **Fronta modelů:** [FRONTA.md](FRONTA.md) (`D:/_AI/afterlife/repo/FRONTA.md`), 5. dávka: O28 (odkaz nxm otevíral další okna) je hotový a v `main`, čeká na vyzkoušení A28. Čtvrtá dávka je v `archiv/FRONTA-4-davka.md`. Napiš „sestavení“, až budeš chtít zkušební verzi k A22 až A28. Odložené: z revize S5 (úklid osiřelých složek v knihovně), E10 (přesun do Removed přejmenováním) a rozdělení dvou dlouhých metod; čtyři hlášky s „(s)“ v souborech nasazení; D4 (skutečný log redscriptu) by zpřesnil rozbor chyby.
 
@@ -13,12 +13,14 @@ Další volná čísla: A29 B12 C12 D7 · balíky S2 O29 F6
 |---|---|---|---|---|
 | A24 | Import load listu s účtem zdarma | Zkušební sestavení plné edice → LIST & ORDER → IMPORT ORDER | Jen pokud máš po ruce účet Nexus bez Premium: 1. Načti load list, ve kterém chybí mod se souborem z Nexusu. 2. Klikni „Get from Nexus, page by page“ a na stránce Mod Manager Download. 3. Po posledním souboru LOAD THE LIST AGAIN. Napiš, kde se to zadrhlo. | ☐ čeká na sestavení |
 | A28 | Jedno okno při Mod Manager Download (O28) | Zkušební sestavení plné edice (`AFTERLIFE-full-test`) a Nexus Mods | 1. Spusť AFTERLIFE normálně a u tří různých modů rychle za sebou klikni na Mod Manager Download: má zůstat jedno okno a přijít tři stažení. 2. AFTERLIFE zavři, spusť ho pravým tlačítkem „Spustit jako správce“ a zopakuj to. Napiš, jestli se otevřelo druhé okno nebo se objevilo hlášení „AFTERLIFE is already running…“. | ☐ čeká na sestavení |
+| A29 | Přihlášení přes Nexus Mods (OAuth) | Až přijde Client ID (D7): Nastavení → Nexus Mods → LOG IN WITH NEXUS MODS | 1. Klikni na tlačítko, v prohlížeči AFTERLIFE schval. 2. Karta v prohlížeči má napsat, že je AFTERLIFE přihlášený, a v Nastavení má být tvoje jméno a Premium. 3. Stáhni jeden mod a spusť kontrolu aktualizací. 4. Na nexusmods.com (API Access) AFTERLIFE odvolej a spusť ho znovu: má ukázat „no key“ a chtít nové přihlášení. Napiš, kde se to zadrhlo. | ☐ čeká na D7 |
 
 ## D. Dodat
 
 | # | Co | Kde to vezmu | Stav |
 |---|---|---|---|
-| D6 | Nahrát Offline zip 1.0.0-beta.2 na Nexus Mods | `AFTERLIFE-Offline-1.0.0-beta.2-win-x64.zip` z vydání na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.2>); text změn pro Nexus jsi dostal ve vlákně, které vydání dělalo. | ☐ čeká |
+| D6 | Nahrát Offline zip 1.0.0-beta.3 na Nexus Mods | `AFTERLIFE-Offline-1.0.0-beta.3-win-x64.zip` z vydání na GitHubu (<https://github.com/silentbobcz/afterlife/releases/tag/v1.0.0-beta.3>); pro edici Offline je beta.3 stejná jako beta.2, text změn pro Nexus jsi dostal ve vlákně, které dělalo beta.2. | ☐ čeká |
+| D7 | Client ID pro OAuth od Nexus Mods | Odpověď podpory Nexusu na e-mail z 25. 11. (vlákno „Application registration… AFTERLIFE“). Vlož ID do vlákna, které na AFTERLIFE pracuje; doplní se do `NexusOAuth.cs` a tlačítko pro přihlášení se objeví všem. Adresa pro návrat, kterou mají zaregistrovat: `http://127.0.0.1:47213/callback`. | ☐ čeká na Nexus |
 | D1 | Odpověď pisatele komentáře | Komentáře u AFTERLIFE na Nexus Mods: snímek maximalizovaného okna, rozlišení a měřítko, příklad vypnutého modu, názvy ZIPů, pohledy, které chce. Vlož ji do vlákna, které na AFTERLIFE pracuje. | ☐ čeká |
 | D4 | Log s chybou redscriptu (nepovinné, zpřesní balík O22) | `<složka hry>/r6/logs/redscript_rCURRENT.log` z doby, kdy skripty nefungovaly (hra ho při dalším spuštění přepíše). Vlož text do vlákna, které frontu vyrábí; cesty se jménem uživatele se před uložením do repozitáře odstraní. | ☐ čeká |
 | D5 | Odpověď pisatele o „30 oknech“ (nepovinné, zpřesní O28) | Nexus Mods, komentář o oknech při stahování: běží AFTERLIFE jako správce? A poslední záznam z `%LOCALAPPDATA%\AFTERLIFE\logs\error-….log`, pokud existuje. Vlož do vlákna s O28. | ☐ čeká |

@@ -8,7 +8,7 @@ public sealed partial class MainViewModel
 {
     public bool IsOffline => AppEdition.Offline;
 
-    public string WindowTitle => AppEdition.Offline ? "AFTERLIFE Offline · mod manager for Cyberpunk 2077" : "AFTERLIFE · mod manager for Cyberpunk 2077";
+    public string WindowTitle => AppEdition.Name + (AppEdition.OAuthPreview ? " (test build)" : "") + " · mod manager for Cyberpunk 2077";
 
     public string LockedNote => AppEdition.LockedNote;
 

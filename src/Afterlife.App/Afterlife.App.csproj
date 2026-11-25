@@ -16,6 +16,13 @@
     <DefineConstants>$(DefineConstants);OFFLINE</DefineConstants>
     <Product>AFTERLIFE Offline</Product>
   </PropertyGroup>
+  <!-- -p:Edition=OAuthPreview builds the marked test build of Log in with Nexus Mods (see AppEdition.cs) -->
+  <PropertyGroup Condition="'$(Edition)' == 'OAuthPreview'">
+    <DefineConstants>$(DefineConstants);OAUTH_PREVIEW</DefineConstants>
+    <VersionSuffix Condition="'$(VersionSuffix)' != ''">$(VersionSuffix).oauth-preview</VersionSuffix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''">oauth-preview</VersionSuffix>
+    <Product>AFTERLIFE OAuth preview</Product>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>
