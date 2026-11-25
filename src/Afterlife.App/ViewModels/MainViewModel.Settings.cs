@@ -176,6 +176,11 @@ public sealed partial class MainViewModel
             using var client = new NexusClient(key, AppVersion);
             SetAccount(await client.ValidateAsync(), vm);
         }
+        catch (NexusException ex) when (ex.SignedOut)
+        {
+            ForgetNexusKey(); // revoked on nexusmods.com: a dead login would fail every action
+            if (vm is not null) { vm.HasNexusKey = false; vm.NexusStatus = ex.Message; vm.NexusTone = Tone.Warn; }
+        }
         catch (NexusException ex)
         {
             NexusBadge = "NEXUS · offline";

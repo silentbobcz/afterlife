@@ -131,7 +131,13 @@ public static class NexusOAuth
         {
             using var socket = await listener.AcceptTcpClientAsync(ct);
             await using var stream = socket.GetStream();
-            var line = await ReadRequestLineAsync(stream, ct);
+            // browsers open spare connections that never send anything; give each one a few seconds, then take the next
+            using var read = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            read.CancelAfter(TimeSpan.FromSeconds(3));
+            string? line;
+            try { line = await ReadRequestLineAsync(stream, read.Token); }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested) { continue; }
+            catch (IOException) { continue; }
             var target = line?.Split(' ') is [_, var t, ..] ? t : "";
             if (!target.StartsWith("/callback", StringComparison.Ordinal)) { await RespondAsync(stream, 404, "Not found", ct); continue; }
             var (code, error) = ParseCallback(target, state);
